@@ -7,6 +7,7 @@
 source include/01_prepare_ubuntu_base.sh
 source include/02_prepare_rootfs_qt.sh
 source include/03_prepare_conf.sh
+source include/04_mount.sh
 
 
 # main function
@@ -24,6 +25,12 @@ function main(){
     fi
 
     set_config
+    if [[ $? -eq 1 ]]; then
+        echo "set_config failed."
+        exit 1
+    fi
+
+    chroot_run_1_script "apt_install_base.sh"
     if [[ $? -eq 1 ]]; then
         echo "set_config failed."
         exit 1
