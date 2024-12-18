@@ -41,6 +41,12 @@ function main(){
         echo "set_root_password failed."
         exit 1
     fi
+
+    chroot_run_1_script "create_rzpi_user.sh"
+    if [[ $? -eq 1 ]]; then
+        echo "create_rzpi_user failed."
+        exit 1
+    fi
 }
 
 # call main
