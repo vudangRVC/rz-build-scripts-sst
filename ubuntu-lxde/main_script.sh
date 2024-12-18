@@ -6,6 +6,7 @@
 # include
 source include/01_prepare_ubuntu_base.sh
 source include/02_prepare_rootfs_qt.sh
+source include/03_prepare_conf.sh
 
 
 # main function
@@ -19,6 +20,12 @@ function main(){
     rootfs_qt
     if [[ $? -eq 1 ]]; then
         echo "rootfs_qt failed."
+        exit 1
+    fi
+
+    set_config
+    if [[ $? -eq 1 ]]; then
+        echo "set_config failed."
         exit 1
     fi
 }
