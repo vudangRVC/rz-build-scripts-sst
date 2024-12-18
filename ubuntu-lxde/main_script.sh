@@ -60,6 +60,12 @@ function main(){
         exit 1
     fi
 
+    chroot_run_1_script "apt_lxde_desktop.sh"
+    if [[ $? -eq 1 ]]; then
+        echo "apt_lxde_desktop failed."
+        exit 1
+    fi
+
     package_rootfs
     if [[ $? -eq 1 ]]; then
         echo "package_rootfs failed."
