@@ -60,6 +60,12 @@ function main(){
         exit 1
     fi
 
+    package_rootfs
+    if [[ $? -eq 1 ]]; then
+        echo "package_rootfs failed."
+        exit 1
+    fi
+
 }
 
 # call main
