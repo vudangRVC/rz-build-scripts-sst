@@ -35,6 +35,12 @@ function main(){
         echo "set_config failed."
         exit 1
     fi
+
+    chroot_run_1_script "set_root_password.sh"
+    if [[ $? -eq 1 ]]; then
+        echo "set_root_password failed."
+        exit 1
+    fi
 }
 
 # call main
