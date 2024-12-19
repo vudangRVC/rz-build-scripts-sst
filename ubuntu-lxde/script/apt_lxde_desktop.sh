@@ -5,8 +5,13 @@ export LC_ALL=C
 chmod 777 /tmp
 apt update
 
-# default config debian
-apt install -y debconf-utils
+# Install debconf-utils for preconfiguring
+# apt install -y debconf-utils
+
+# time zone data
+echo 'tzdata tzdata/Areas select Asia' | sudo debconf-set-selections
+echo 'tzdata tzdata/Zones/Asia select Ho_Chi_Minh' | sudo debconf-set-selections
+DEBIAN_FRONTEND=noninteractive dpkg-reconfigure tzdata
 
 # debconf-get-selections | grep xinit
 DEBIAN_FRONTEND=noninteractive apt install -y xinit
@@ -15,7 +20,7 @@ DEBIAN_FRONTEND=noninteractive apt install -y xinit
 DEBIAN_FRONTEND=noninteractive apt install -y lxde lightdm xserver-xorg
 
 # browser
-apt install -y epiphany-browser
+DEBIAN_FRONTEND=noninteractive apt install -y epiphany-browser
 
 # play media
-apt install -y xine-ui
+DEBIAN_FRONTEND=noninteractive apt install -y xine-ui
