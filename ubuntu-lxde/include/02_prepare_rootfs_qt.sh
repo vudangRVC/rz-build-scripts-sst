@@ -88,12 +88,50 @@ function copy_boot_folder() {
     fi
 
     # Copy folder boot
-    cp -r $src_boot/* "$target_dir" || { echo "Failed to copy 'overlays' directory"; return 1; }
+    cp -r $src_boot/* "$target_dir" || { echo "Failed to copy 'boot' directory"; return 1; }
     echo "Copied contain in '$src_boot' directory to '$target_dir'."
 
     echo "copy completed successfully."
     return 0
 }
+
+# Copy kernel module
+function copy_kernel_modules() {
+    echo "Copying copy_kernel_modules folder..."
+
+    # Change dir WORK_DIR
+    echo "Current working directory is: $WORK_DIR"
+    cd "$WORK_DIR" || { echo "Failed to change to WORK_DIR"; return 1; }
+
+    local src_dir="rootfs_qt/lib/modules/"
+    local target_dir="rootfs/lib"
+
+    # Check folder src
+    if [[ ! -d "$src_dir" ]]; then
+        echo "Source directory '$src_dir' does not exist!"
+        return 1
+    fi
+
+    # Create target folder
+    if [[ ! -d "$target_dir" ]]; then
+        echo "Directory $target_dir does not exist. Creating it..."
+        mkdir -p "$target_dir"
+        if [[ $? -ne 0 ]]; then
+            echo "Failed to create directory $target_dir."
+            return 1
+        fi
+    else
+        echo "Directory $target_dir already exists. Skipping creation."
+    fi
+
+    # Copy folder
+    cp -r $src_dir "$target_dir" || { echo "Failed to copy '$src_dir' directory"; return 1; }
+    echo "Copied folder '$src_dir' directory to '$target_dir'."
+
+    echo "Copy completed successfully."
+    return 0
+}
+
 
 # Function main
 function rootfs_qt() {
@@ -101,7 +139,7 @@ function rootfs_qt() {
     tar_core_image_qt
     if [[ $? -eq 1 ]]; then
         echo "tar_core_image_qt failed."
-        exit 1
+        return 1
     fi
     echo "tar_core_image_qt completed successfully."
 
@@ -109,7 +147,16 @@ function rootfs_qt() {
     copy_boot_folder
     if [[ $? -eq 1 ]]; then
         echo "copy_boot_folder failed."
-        exit 1
+        return 1
     fi
     echo "copy_boot_folder completed successfully."
+
+    echo "6. Starting copy_kernel_modules..."
+    copy_kernel_modules
+    if [[ $? -eq 1 ]]; then
+        echo "copy_kernel_modules failed."
+        return 1
+    fi
+    echo "copy_kernel_modules completed successfully."
+    return 0
 }
