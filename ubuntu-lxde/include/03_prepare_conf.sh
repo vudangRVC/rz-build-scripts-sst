@@ -130,6 +130,42 @@ function set_network_config() {
     return 0
 }
 
+# Configure camera
+function config_camera() {
+    echo "Configuring camera..."
+
+    # Change dir WORK_DIR
+    echo "Current working directory is: $WORK_DIR"
+    cd "$WORK_DIR" || { echo "Failed to change to WORK_DIR"; return 1; }
+
+    # Check script
+    local script_dir="$WORK_DIR/config/v4l2-init.sh"
+    if [[ ! -e "$script_dir" ]]; then
+        echo "v4l2-init.sh is not exist."
+        return 1
+    fi
+
+    local target_dir="$WORK_DIR/rootfs/etc/profile.d"
+    # Create target folder
+    if [[ ! -d "$target_dir" ]]; then
+        echo "Directory $target_dir does not exist. Creating it..."
+        mkdir "$target_dir"
+        if [[ $? -ne 0 ]]; then
+            echo "Failed to create directory $target_dir."
+            return 1
+        fi
+    else
+        echo "Directory $target_dir already exists. Skipping creation."
+    fi
+
+    # Copy script to target
+    sudo cp "$script_dir" "$target_dir" || { echo "Failed to copy $script_dir to $target_dir"; return 1; }
+
+    echo "copy $script_dir to $target_dir successfully."
+    return 0
+}
+
+
 # Function set_config
 function set_config() {
     echo "Setting configuration..."
@@ -169,6 +205,13 @@ function set_config() {
         return 1
     fi
 
+    config_camera
+    if [[ $? -eq 1 ]]; then
+        echo "Failed to configure config_camera. Exiting."
+        return 1
+    fi
+
     echo "Configuration completed successfully."
     return 0
 }
+
