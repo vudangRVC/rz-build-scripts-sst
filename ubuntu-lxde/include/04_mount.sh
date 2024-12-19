@@ -140,6 +140,11 @@ function package_rootfs() {
         return 1
     fi
 
+    # Check and remove old rootfs file if exist
+    if [[ -e "rootfs.tar.bz2" ]]; then
+        rm rootfs.tar.bz2
+    fi
+
     # Create file tar.bz2 from folder rootfs and check error
     sudo tar -cvjf rootfs.tar.bz2 rootfs/ || { echo "Failed to package rootfs into rootfs.tar.bz2"; return 1; }
 
