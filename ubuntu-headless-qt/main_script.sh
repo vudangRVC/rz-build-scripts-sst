@@ -4,14 +4,21 @@
 # --------------------------------------------------------------------------------#
 
 # include
+source include/00_prepare_env.sh
 source include/01_prepare_ubuntu_base.sh
 source include/02_prepare_rootfs_qt.sh
 source include/03_prepare_conf.sh
 source include/04_mount.sh
-
+source include/05_create_wic.sh
 
 # main function
 function main(){
+    prepare_env
+    if [[ $? -eq 1 ]]; then
+        echo "prepare_env failed."
+        exit 1
+    fi
+
     ubuntu_base_prepare
     if [[ $? -eq 1 ]]; then
         echo "ubuntu_base_prepare failed."
@@ -60,18 +67,17 @@ function main(){
         exit 1
     fi
 
-    chroot_run_1_script "apt_lxde_desktop.sh"
-    if [[ $? -eq 1 ]]; then
-        echo "apt_lxde_desktop failed."
-        exit 1
-    fi
-
     package_rootfs
     if [[ $? -eq 1 ]]; then
         echo "package_rootfs failed."
         exit 1
     fi
 
+    create_wic
+    if [[ $? -eq 1 ]]; then
+        echo "create_wic failed."
+        exit 1
+    fi
 }
 
 # call main
