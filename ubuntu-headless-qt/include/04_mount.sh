@@ -100,6 +100,7 @@ copy_script() {
 
 # 4. run only 1 script
 chroot_run_1_script() {
+    trap 'echo "Caught Ctrl+C, running umount_chroot..."; umount_chroot; exit 1' SIGINT
     copy_script $1
     if [[ $? -eq 1 ]]; then
         echo "copy_script $1 failed."
