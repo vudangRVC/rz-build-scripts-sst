@@ -20,8 +20,8 @@ function create_wic() {
     BOOT_SIZE_MB=200
     ROOTFS_SIZE_MB=$(du -s -B 1048576 "$ROOTFS_DIR" 2>/dev/null |awk '{print $1}')
 
-    # Calculate total size for WIC
-    TOTAL_SIZE_MB=$((BOOT_SIZE_MB + ROOTFS_SIZE_MB + 100))
+    # Calculate total size for WIC, add 5000MB space
+    TOTAL_SIZE_MB=$((BOOT_SIZE_MB + ROOTFS_SIZE_MB + 5000))
 
     # Step 1: Create blank *.wic
     echo "Creating blank WIC file : ${TOTAL_SIZE_MB}MB..."
