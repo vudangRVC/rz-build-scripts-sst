@@ -55,12 +55,6 @@ function main(){
         exit 1
     fi
 
-    chroot_run_1_script "apt_audio_video.sh"
-    if [[ $? -eq 1 ]]; then
-        echo "apt_audio_video failed."
-        exit 1
-    fi
-
     chroot_run_1_script "apt_wifi_ble.sh"
     if [[ $? -eq 1 ]]; then
         echo "apt_wifi_ble failed."
