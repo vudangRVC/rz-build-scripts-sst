@@ -118,6 +118,26 @@ function copy_qt() {
     return 0
 }
 
+# 4. Copy wifi firmware folder
+function copy_wifi_firmware() {
+    echo "Copying wifi_firmware files..."
+
+    # Change dir WORK_DIR
+    echo "Current working directory is: $WORK_DIR"
+    cd "$WORK_DIR" || { echo "Failed to change to WORK_DIR"; return 1; }
+
+    local src_qt="rootfs_qt/lib/firmware"
+    local target_dir="rootfs/lib"
+
+    # Copy folder
+    mkdir -p "$target_dir/firmware" || { echo "Failed to mkdir '/lib/firmware' directory"; return 1; }
+    cp -rd "$src_qt/"* "$target_dir/firmware/" || { echo "Failed to copy 'firmware' directory"; return 1; }
+    echo "Copied contents."
+
+    echo "copy completed successfully."
+    return 0
+}
+
 # Function main
 function rootfs_qt() {
     echo "4. Starting tar_core_image_qt..."
@@ -128,7 +148,7 @@ function rootfs_qt() {
     fi
     echo "tar_core_image_qt completed successfully."
 
-    echo "5. Starting copy_boot_folder and copy_qt..."
+    echo "5. Starting copy_boot_folder and copy_qt, copy_wifi_firmware..."
     copy_boot_folder
     if [[ $? -eq 1 ]]; then
         echo "copy_boot_folder failed."
@@ -139,5 +159,10 @@ function rootfs_qt() {
         echo "copy_qt failed."
         exit 1
     fi
-    echo "copy_boot_folder and copy_qt completed successfully."
+    copy_wifi_firmware
+    if [[ $? -eq 1 ]]; then
+        echo "copy_wifi_firmware failed."
+        exit 1
+    fi
+    echo "copy_boot_folder and copy_qt, copy_wifi_firmware completed successfully."
 }

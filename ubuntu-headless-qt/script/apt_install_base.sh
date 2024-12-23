@@ -35,3 +35,12 @@ apt install -y ufw
 
 # sudo 
 apt install -y sudo
+
+# pip3
+apt install -y python3-pip
+
+# dpkg
+apt install -y dpkg
+
+# pkg-config
+apt install -y pkg-config
