@@ -44,3 +44,12 @@ apt install -y dpkg
 
 # pkg-config
 apt install -y pkg-config
+
+# testing
+apt install can-utils -y
+apt install i2c-tools -y
+apt install spi-tools -y
+
+# wifi bluetooth controller
+apt install bluez -y
+apt install connman -y
