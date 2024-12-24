@@ -53,3 +53,5 @@ apt install spi-tools -y
 # wifi bluetooth controller
 apt install bluez -y
 apt install connman -y
+apt-get install network-manager -y
+apt-get install rfkill -y

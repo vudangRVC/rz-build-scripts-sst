@@ -10,8 +10,8 @@
 # --------------------------------------------------------------------------#
 
 function create_wic() {
-    # sudo apt-get update
-    # sudo apt-get install -y parted multipath-tools
+    sudo apt-get update
+    sudo apt-get install -y parted multipath-tools kpartx dosfstools e2fsprogs
 
     ROOTFS_DIR="./rootfs"
     OUTPUT_WIC="ubuntu-image-qt-rzpi.wic"
@@ -76,11 +76,13 @@ function create_wic() {
     ls "$MOUNT_DIR"
     sudo umount "$MOUNT_DIR"
 
-    # Step 5: Done
+    # Step 5: Clean up
     sync
     sudo kpartx -d "$LOOP_DEVICE"
     sudo losetup -d "$LOOP_DEVICE"
     rmdir "$MOUNT_DIR"
 
+    # Step 6 : Create file tar.gz from .wic file
+    sudo tar -cvzf "$OUTPUT_WIC".tar.gz "$OUTPUT_WIC" || { echo "Failed to package .wic into .wic.tar.gz"; return 1; }
     echo "File WIC has been created: $OUTPUT_WIC"
 }
