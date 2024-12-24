@@ -16,7 +16,6 @@ function prepare_env() {
     fi
 
     if [ -d "rootfs_qt" ]; then
-        rm -rf "rootfs_qt"
-        echo "Directory 'rootfs_qt' removed."
+        echo "Directory 'rootfs_qt' exists and can be reused."
     fi
 }
