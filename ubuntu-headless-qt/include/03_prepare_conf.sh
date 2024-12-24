@@ -157,12 +157,6 @@ function set_config() {
         return 1
     fi
 
-    set_lightdm_config
-    if [[ $? -eq 1 ]]; then
-        echo "Failed to set LightDM configuration. Exiting."
-        return 1
-    fi
-
     set_network_config
     if [[ $? -eq 1 ]]; then
         echo "Failed to configure network interfaces. Exiting."
