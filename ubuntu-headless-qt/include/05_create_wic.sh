@@ -28,7 +28,7 @@ function create_wic() {
     dd if=/dev/zero of="$OUTPUT_WIC" bs=1M count="$TOTAL_SIZE_MB" status=progress
     if [[ $? -eq 1 ]]; then
         echo "Create WIC failed."
-        exit 1
+        return 1
     fi
     # Step 2: Create 2 partition using fdisk
     echo "Create 2 partition in $OUTPUT_WIC..."
@@ -85,4 +85,5 @@ function create_wic() {
     # Step 6 : Create file tar.gz from .wic file
     sudo tar -cvzf "$OUTPUT_WIC".tar.gz "$OUTPUT_WIC" || { echo "Failed to package .wic into .wic.tar.gz"; return 1; }
     echo "File WIC has been created: $OUTPUT_WIC"
+    return 0
 }
