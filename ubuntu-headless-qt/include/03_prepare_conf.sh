@@ -1,12 +1,8 @@
 #!/bin/bash
 # --------------------------------------------------------------------------#
-# function set_config use to copy config file to ubuntu os.
-# function set_config contain steps:
-# 1. Copy qemu-aarch64-static
-# 2. Copy resolv.conf
-# 3. Set up log file for syslog
-# 4. Set LightDM configuration
-# 5. Configure network interfaces
+# Description:
+# The script configures the Ubuntu OS by copying necessary configuration files
+# and setting up system parameters.
 # --------------------------------------------------------------------------#
 
 # Define global variable:
@@ -130,6 +126,15 @@ function set_network_config() {
     return 0
 }
 
+# --------------------------------------------------------------------------#
+# function set_config use to copy config file to ubuntu os.
+# function set_config contain steps:
+# 1. Copy qemu-aarch64-static
+# 2. Copy resolv.conf
+# 3. Set up log file for syslog
+# 4. Set LightDM configuration
+# 5. Configure network interfaces
+# --------------------------------------------------------------------------#
 # Function set_config
 function set_config() {
     echo "Setting configuration..."
@@ -138,25 +143,28 @@ function set_config() {
     echo "Current working directory is: $WORK_DIR"
     cd "$WORK_DIR" || { echo "Failed to change to WORK_DIR"; return 1; }
 
-    # Call Function
+    # Call Function to copy QEMU
     copy_qemu
     if [[ $? -eq 1 ]]; then
         echo "Failed to copy qemu-aarch64-static. Exiting."
         return 1
     fi
 
+    # Call Function to copy resolv.conf
     copy_resolv_conf
     if [[ $? -eq 1 ]]; then
         echo "Failed to copy resolv.conf. Exiting."
         return 1
     fi
 
+    # Call Function to set up log file for syslog
     setup_log_file
     if [[ $? -eq 1 ]]; then
         echo "Failed to set up log file. Exiting."
         return 1
     fi
 
+    # Call Function to set up network interfaces
     set_network_config
     if [[ $? -eq 1 ]]; then
         echo "Failed to configure network interfaces. Exiting."

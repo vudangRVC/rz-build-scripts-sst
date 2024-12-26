@@ -1,7 +1,8 @@
 #!/bin/bash
 # --------------------------------------------------------------------------#
-# function run_in_chroot use to run script in ubuntu os after mount chroot.
-# It will be config ubuntu OS, install applications...
+# Description:
+# The script defines functions to handle mounting behavior, running pre-defined
+# scripts, package target rootfs to tar.bz2.
 # --------------------------------------------------------------------------#
 
 # Define global path
