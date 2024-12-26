@@ -1,12 +1,17 @@
 #!/bin/bash
 # --------------------------------------------------------------------------#
-# function create_wic use to create wic from ubuntu rootfs.
+# Description:
+# The function creates a WIC (Windows Image) file from the Ubuntu root filesystem (rootfs)
+# --------------------------------------------------------------------------#
+
+# --------------------------------------------------------------------------#
 # function create_wic contain 5 steps:
 # Step 1: Create blank *.wic
 # Step 2: Create 2 partition using fdisk
 # Step 3: Format partition
 # Step 4: Mount and copy data
-# Step 5: Done
+# Step 5: Clean up
+# Step 6: Create file tar.gz from .wic file
 # --------------------------------------------------------------------------#
 
 function create_wic() {
@@ -14,14 +19,18 @@ function create_wic() {
     sudo apt-get install -y parted multipath-tools kpartx dosfstools e2fsprogs
 
     ROOTFS_DIR="./rootfs"
-    OUTPUT_WIC="ubuntu-image-qt-rzpi.wic"
+    # Set output wic file name to ubuntu-image-qt-rzpi.wic by default if not defined
+    OUTPUT_WIC="${OUTPUT_WIC:=ubuntu-image-qt-rzpi.wic}"
 
-    # Define Size
-    BOOT_SIZE_MB=200
+    # Set boot size to 200MB by default if not defined
+    BOOT_SIZE_MB=${BOOT_SIZE_MB:-200}
+
+    # Set rootfs size to 5000MB by default if not defined
+    ROOTFS_SPACE=${ROOTFS_SPACE:-5000}
     ROOTFS_SIZE_MB=$(du -s -B 1048576 "$ROOTFS_DIR" 2>/dev/null |awk '{print $1}')
 
-    # Calculate total size for WIC, add 5000MB space
-    TOTAL_SIZE_MB=$((BOOT_SIZE_MB + ROOTFS_SIZE_MB + 5000))
+    # Calculate total size for WIC, add space
+    TOTAL_SIZE_MB=$((BOOT_SIZE_MB + ROOTFS_SIZE_MB + ROOTFS_SPACE))
 
     # Step 1: Create blank *.wic
     echo "Creating blank WIC file : ${TOTAL_SIZE_MB}MB..."

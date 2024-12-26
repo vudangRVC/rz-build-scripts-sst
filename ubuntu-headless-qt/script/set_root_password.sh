@@ -1,4 +1,8 @@
 #!/bin/bash
+# --------------------------------------------------------------------------#
+# Description:
+# Root user can be access without password at first
+# --------------------------------------------------------------------------#
 
 # Check if the script is run as root
 if [ "$(id -u)" -ne 0 ]; then
@@ -6,6 +10,7 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
+# Changes the ownership of critical sudo-related files to root.
 chown root:root /usr/libexec/sudo/sudoers.so
 chown root:root /etc/sudo.conf
 chown root:root /etc/sudoers
@@ -16,16 +21,12 @@ chown root:root /etc/sudoers.d/README
 chown root:root /usr/bin/sudo
 chmod 4755 /usr/bin/sudo
 
-# Set the new password for the root user
-NEW_PASSWORD="1"
-
-# Change the password
-echo "root:$NEW_PASSWORD" | chpasswd
+# Remove the password for the root user
+passwd -d root
 
 if [ $? -eq 0 ]; then
-    echo "Password for user 'root' has been successfully updated."
+    echo "Password for user 'root' has been successfully removed."
 else
-    echo "Failed to change password for user 'root'."
+    echo "Failed to remove password for user 'root'."
     exit 1
 fi
-

@@ -1,10 +1,7 @@
 #!/bin/bash
 # --------------------------------------------------------------------------#
-# function ubuntu_base_prepare use to prepare basic binaries of ubuntu os.
-# function ubuntu_base_prepare contain 3 step:
-# 1. Install qemu-user-static
-# 2. Download ubuntu 22.04-base
-# 3. Tar file ubuntu base
+# Description:
+# This script prepares the basic Ubuntu OS binaries required for the project.
 # --------------------------------------------------------------------------#
 
 # Define global variable:
@@ -47,9 +44,17 @@ function download_ubuntu_base() {
         return 1
     fi
 
-    # Check and download file ubuntu-base
-    local file_name="ubuntu-base-22.04-base-arm64.tar.gz"
-    local url="https://cdimage.ubuntu.com/ubuntu-base/releases/22.04/release/$file_name"
+    # Check if UBUNTU_BASE_FILE_NAME is defined, if not, assign the default value 'ubuntu-base-22.04-base-arm64.tar.gz'
+    : "${UBUNTU_BASE_FILE_NAME:=ubuntu-base-22.04-base-arm64.tar.gz}"
+
+    # Check if UBUNTU_BASE_LINK is defined, if not, assign the default URL
+    : "${UBUNTU_BASE_LINK:=https://cdimage.ubuntu.com/ubuntu-base/releases/22.04/release/$UBUNTU_BASE_FILE_NAME}"
+
+    # Assign the value of UBUNTU_BASE_FILE_NAME to local variable 'file_name'
+    local file_name="$UBUNTU_BASE_FILE_NAME"
+
+    # Assign the value of UBUNTU_BASE_LINK to local variable 'url'
+    local url="$UBUNTU_BASE_LINK"
 
     if [[ ! -e "$file_name" ]]; then
         echo "File $file_name not found. Downloading..."
@@ -107,6 +112,14 @@ function tar_ubuntu_base() {
     echo "tar_ubuntu_base completed successfully."
     return 0
 }
+
+# --------------------------------------------------------------------------#
+# function ubuntu_base_prepare use to prepare basic binaries of ubuntu os.
+# function ubuntu_base_prepare contain 3 step:
+# 1. Install qemu-user-static
+# 2. Download ubuntu 22.04-base
+# 3. Tar file ubuntu base
+# --------------------------------------------------------------------------#
 
 # Main function ubuntu_base_prepare
 function ubuntu_base_prepare() {
