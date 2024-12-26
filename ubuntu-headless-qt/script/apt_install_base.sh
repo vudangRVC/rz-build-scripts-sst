@@ -20,10 +20,10 @@ export DEBIAN_FRONTEND=noninteractive
 apt install -y debconf-utils
 
 # time zone data turn to default if not defined
-TIME_ZONE_AREA="${TIME_ZONE_AREA:=tzdata tzdata/Areas select Asia}"
-TIME_ZONE_CITY="${TIME_ZONE_CITY:=tzdata tzdata/Zones/Asia select Ho_Chi_Minh}"
-echo 'tzdata tzdata/Areas select Asia' | sudo debconf-set-selections
-echo 'tzdata tzdata/Zones/Asia select Ho_Chi_Minh' | sudo debconf-set-selections
+TIME_ZONE_AREA="${TIME_ZONE_AREA:=Asia}"
+TIME_ZONE_CITY="${TIME_ZONE_CITY:=Ho_Chi_Minh}"
+echo "tzdata tzdata/Areas select $TIME_ZONE_AREA" | sudo debconf-set-selections
+echo "tzdata tzdata/Zones/Asia select $TIME_ZONE_CITY" | sudo debconf-set-selections
 DEBIAN_FRONTEND=noninteractive dpkg-reconfigure tzdata
 
 # basic package

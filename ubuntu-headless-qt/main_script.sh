@@ -7,7 +7,7 @@
 # --------------------------------------------------------------------------------#
 
 # include
-source config.sh
+source config.ini
 source include/00_prepare_env.sh
 source include/01_prepare_ubuntu_base.sh
 source include/02_prepare_rootfs_qt.sh
