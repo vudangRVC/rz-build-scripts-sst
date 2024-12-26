@@ -13,6 +13,19 @@ apt autoclean
 apt upgrade -y
 apt update
 
+# Set DEBIAN_FRONTEND globally
+export DEBIAN_FRONTEND=noninteractive
+
+# Install debconf-utils for preconfiguring
+apt install -y debconf-utils
+
+# time zone data turn to default if not defined
+TIME_ZONE_AREA="${TIME_ZONE_AREA:=tzdata tzdata/Areas select Asia}"
+TIME_ZONE_CITY="${TIME_ZONE_CITY:=tzdata tzdata/Zones/Asia select Ho_Chi_Minh}"
+echo 'tzdata tzdata/Areas select Asia' | sudo debconf-set-selections
+echo 'tzdata tzdata/Zones/Asia select Ho_Chi_Minh' | sudo debconf-set-selections
+DEBIAN_FRONTEND=noninteractive dpkg-reconfigure tzdata
+
 # basic package
 apt install -y dialog 
 apt install -y rsyslog
