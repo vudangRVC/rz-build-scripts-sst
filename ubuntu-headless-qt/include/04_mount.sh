@@ -141,14 +141,14 @@ function package_rootfs() {
         echo "Directory rootfs not found"
         return 1
     fi
-
+    OUTPUT_ROOTFS="${OUTPUT_ROOTFS:=rootfs}"
     # Check and remove old rootfs file if exist
-    if [[ -e "rootfs.tar.zst" ]]; then
-        rm rootfs.tar.zst
+    if [[ -e "$OUTPUT_ROOTFS.tar.zst" ]]; then
+        rm "$OUTPUT_ROOTFS".tar.zst
     fi
 
     # Create file tar.zst from folder rootfs and check error
-    sudo tar -I zstd -cvf rootfs.tar.zst -C rootfs . || { echo "Failed to package rootfs into rootfs.tar.zst"; return 1; }
+    sudo tar -I zstd -cvf "$OUTPUT_ROOTFS".tar.zst -C rootfs . || { echo "Failed to package rootfs into $OUTPUT_ROOTFS.tar.zst"; return 1; }
 
     echo "package_rootfs completed successfully."
     return 0
