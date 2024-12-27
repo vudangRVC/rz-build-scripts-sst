@@ -128,7 +128,7 @@ chroot_run_1_script() {
     return 0
 }
 
-# 4. run only 1 script
+# Remove /script
 chroot_rm_script() {
     trap 'echo "Caught Ctrl+C, running umount_chroot..."; umount_chroot; exit 1' SIGINT
     mount_chroot
