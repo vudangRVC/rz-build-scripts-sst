@@ -5,9 +5,6 @@ export LC_ALL=C
 chmod 777 /tmp
 apt update
 
-# Install debconf-utils for preconfiguring
-# apt install -y debconf-utils
-
 # time zone data
 echo 'tzdata tzdata/Areas select Asia' | sudo debconf-set-selections
 echo 'tzdata tzdata/Zones/Asia select Ho_Chi_Minh' | sudo debconf-set-selections

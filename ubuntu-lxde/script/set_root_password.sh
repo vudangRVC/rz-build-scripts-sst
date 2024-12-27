@@ -6,16 +6,6 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-chown root:root /usr/libexec/sudo/sudoers.so
-chown root:root /etc/sudo.conf
-chown root:root /etc/sudoers
-
-chown root:root /etc/sudoers.d
-chown root:root /etc/sudoers.d/README
-
-chown root:root /usr/bin/sudo
-chmod 4755 /usr/bin/sudo
-
 # Set the new password for the root user
 NEW_PASSWORD="1"
 
@@ -28,4 +18,3 @@ else
     echo "Failed to change password for user 'root'."
     exit 1
 fi
-

@@ -42,6 +42,8 @@ function umount_chroot() {
     sudo umount ./rootfs/dev/pts || { echo "Failed to unmount /rootfs/dev/pts"; return 1; }
     sudo umount ./rootfs/dev || { echo "Failed to unmount /rootfs/dev"; return 1; }
 
+    # Sync after unmount
+    sync
     echo "umount_chroot completed successfully."
     return 0
 }

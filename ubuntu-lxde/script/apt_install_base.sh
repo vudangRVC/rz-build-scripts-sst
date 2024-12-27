@@ -4,10 +4,6 @@
 export LC_ALL=C
 chmod 777 /tmp
 apt update
-apt clean
-apt autoclean
-apt upgrade -y
-apt update
 
 # basic package
 apt install -y dialog 
