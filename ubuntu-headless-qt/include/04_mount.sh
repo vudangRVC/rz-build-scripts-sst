@@ -143,12 +143,12 @@ function package_rootfs() {
     fi
 
     # Check and remove old rootfs file if exist
-    if [[ -e "rootfs.tar.bz2" ]]; then
-        rm rootfs.tar.bz2
+    if [[ -e "rootfs.tar.zst" ]]; then
+        rm rootfs.tar.zst
     fi
 
-    # Create file tar.bz2 from folder rootfs and check error
-    sudo tar -cvjf rootfs.tar.bz2 -C rootfs . || { echo "Failed to package rootfs into rootfs.tar.bz2"; return 1; }
+    # Create file tar.zst from folder rootfs and check error
+    sudo tar -I zstd -cvf rootfs.tar.zst -C rootfs . || { echo "Failed to package rootfs into rootfs.tar.zst"; return 1; }
 
     echo "package_rootfs completed successfully."
     return 0
