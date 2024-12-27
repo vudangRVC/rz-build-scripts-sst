@@ -128,8 +128,40 @@ chroot_run_1_script() {
     return 0
 }
 
-# 10. Package file rootfs:
+# 4. run only 1 script
+chroot_rm_script() {
+    trap 'echo "Caught Ctrl+C, running umount_chroot..."; umount_chroot; exit 1' SIGINT
+    mount_chroot
+    local script_dir="/script" 
+
+    # Create target folder
+    if [[ -d "$script_dir" ]]; then
+        echo "Directory $script_dir does exist. Deleting it..."
+        rm -rf "$script_dir"
+        if [[ $? -ne 0 ]]; then
+            echo "Failed to rm directory $script_dir."
+            return 1
+        fi
+    else
+        echo "Directory $destination does not exists. Skipping..."
+    fi
+
+    # Chroot and excute script
+    sudo chroot ./rootfs /bin/bash -c "
+        chmod 777 /tmp
+        chmod 777 $script_dir/$1
+        cd /
+        $script_commands
+    " || { echo "Failed to execute scripts in chroot"; umount_chroot; return 1; }
+    umount_chroot
+
+    return 0
+}
+
+# Package file rootfs:
 function package_rootfs() {
+    echo "Removing /script ..."
+    chroot_rm_script
     echo "Packaging rootfs..."
 
     # Change dir WORK_DIR
