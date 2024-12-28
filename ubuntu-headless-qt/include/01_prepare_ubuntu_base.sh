@@ -9,6 +9,35 @@ WORK_DIR=$(pwd)
 
 # 1. Install qemu-user-static
 function install_qemu() {
+    echo "Config binfmt..."
+    # Mount binfmt to enable this feature
+    if ! mountpoint -q /proc/sys/fs/binfmt_misc; then
+        echo "Mounting binfmt_misc..."
+        if sudo mount binfmt_misc -t binfmt_misc /proc/sys/fs/binfmt_misc; then
+            echo "binfmt_misc mounted successfully."
+        else
+            echo "Failed to mount binfmt_misc."
+            return 1
+        fi
+        echo "binfmt_misc mounted successfully."
+    else
+        echo "binfmt_misc is already mounted."
+    fi
+
+    # Config interpreter for qemu
+    local magic='\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\xb7\x00'
+    local mask='\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff'
+    local arch='aarch64'
+    local interpreter="/usr/bin/qemu-$arch-static"
+    # Check interpreter file's existance
+    if [[ ! -f "$interpreter" ]]; then
+        echo "Interpreter file $interpreter does not exist. Registering QEMU interpreter..."
+        echo ":qemu-$arch:M::$magic:$mask:$interpreter:" | sudo tee /proc/sys/fs/binfmt_misc/register
+        echo "QEMU interpreter registered successfully."
+    else
+        echo "Interpreter file $interpreter already exists."
+    fi
+
     echo "Installing qemu-user-static..."
 
     # Update
@@ -19,7 +48,7 @@ function install_qemu() {
     fi
 
     # Install qemu-user-static
-    sudo apt-get install -y qemu-user-static
+    sudo apt-get install -y qemu-user-static zstd
     if [[ $? -ne 0 ]]; then
         echo "Failed to install qemu-user-static."
         return 1
