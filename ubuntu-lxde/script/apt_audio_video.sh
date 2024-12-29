@@ -5,14 +5,6 @@ export LC_ALL=C
 chmod 777 /tmp
 apt update
 
-# default config debian
-apt install -y debconf-utils
-
-# time zone data
-echo 'tzdata tzdata/Areas select Asia' | sudo debconf-set-selections
-echo 'tzdata tzdata/Zones/Asia select Ho_Chi_Minh' | sudo debconf-set-selections
-DEBIAN_FRONTEND=noninteractive dpkg-reconfigure tzdata
-
 # video for linux utils
 DEBIAN_FRONTEND=noninteractive apt install v4l-utils -y
 

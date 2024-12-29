@@ -132,6 +132,54 @@ function copy_kernel_modules() {
     return 0
 }
 
+# Copy Wi-Fi firmware
+function copy_wifi_firmware() {
+    local source_dir="./rootfs_qt/lib/firmware/brcm/"
+    local dest_dir="./rootfs/lib/firmware/"
+
+    # Change dir WORK_DIR
+    cd "$WORK_DIR" || { echo "Failed to change to WORK_DIR"; return 1; }
+
+    # Check source folder
+    if [[ ! -d "$source_dir" ]]; then
+        echo "Source directory $source_dir does not exist."
+        return 1
+    fi
+
+    # Check destination folder
+    if [[ ! -d "$dest_dir" ]]; then
+        echo "Destination directory $dest_dir does not exist. Creating it..."
+        mkdir -p "$dest_dir" || { echo "Failed to create destination directory $dest_dir"; return 1; }
+    fi
+
+    # Copy folder from source to destination
+    echo "Copying Wi-Fi firmware from $source_dir to $dest_dir..."
+    sudo cp -r "$source_dir" "$dest_dir" || { echo "Failed to copy wifi firmware."; return 1; }
+
+    echo "Wi-Fi firmware copied successfully to $dest_dir."
+    return 0
+}
+
+# Get_bluetooth firmware
+function get_bluetooth_firmware() {
+    echo "Getting Bluetooth firmware..."
+
+    # Change dir WORK_DIR
+    echo "Current working directory is: $WORK_DIR"
+    cd "$WORK_DIR" || { echo "Failed to change to WORK_DIR"; return 1; }
+
+    # Create folder bluetooth firmware folder
+    mkdir -p "$ROOTFS/lib/firmware/rtl_bt" || { echo "Failed to create directory $ROOTFS/lib/firmware/rtl_bt"; return 1; }
+
+    # Download firmware from URL
+    wget https://raw.githubusercontent.com/Realtek-OpenSource/android_hardware_realtek/rtk1395/bt/rtkbt/Firmware/BT/rtl8761b_fw -O "$ROOTFS/lib/firmware/rtl_bt/rtl8761b_fw" || { echo "Failed to download Bluetooth firmware"; return 1; }
+
+    # Rename firmware after download
+    mv "$ROOTFS/lib/firmware/rtl_bt/rtl8761b_fw" "$ROOTFS/lib/firmware/rtl_bt/rtl8761bu_fw.bin" || { echo "Failed to rename firmware file"; return 1; }
+
+    echo "Bluetooth firmware downloaded and renamed successfully."
+    return 0
+}
 
 # Function main
 function rootfs_qt() {
@@ -158,5 +206,23 @@ function rootfs_qt() {
         return 1
     fi
     echo "copy_kernel_modules completed successfully."
+
+    echo "7. Starting copy_wifi_firmware..."
+    copy_wifi_firmware
+    if [[ $? -eq 1 ]]; then
+        echo "copy_wifi_firmware failed."
+        return 1
+    fi
+    echo "copy_wifi_firmware completed successfully."
+
+
+    echo "8. Starting get_bluetooth_firmware..."
+    get_bluetooth_firmware
+    if [[ $? -eq 1 ]]; then
+        echo "get_bluetooth_firmware failed."
+        return 1
+    fi
+    echo "get_bluetooth_firmware completed successfully."
+
     return 0
 }
