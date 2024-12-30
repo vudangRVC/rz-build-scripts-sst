@@ -1,13 +1,13 @@
 # RZG2L SBC board #
 This is the quick startup guide for RZG2L SBC board (hereinafter referred to as `RZG2L-SBC`).
-The below will describe the current status of development, how to build, set up environment for RZG2L-SBC.
+The following sections will describe how to build this custom Ubuntu Core image and set up the development environment for the RZG2L-SBC.
 
 ## Status
-This is a Ubuntu release of the RZG2L development product for RZG2L-SBC.
+This is a Custom Ubuntu Core release of the RZG2L development product for RZG2L-SBC.
 
 This release provides the following features:
 
- - Ubuntu build compatible with RZG2L SoC
+ - Custom Ubuntu Core build scripts for easy setup and deployment.
  - RZG2L-SBC Linux BSP functionalities
  - 40 IO expansion interface supported
  - On-board Wireless Modules enabled (only support for Wi-Fi)
@@ -20,41 +20,381 @@ Known issues:
 
  - Only support for 48 Khz audio sampling rate family.
 
-## Building Ubuntu
-**Step 1**: Linux Ubuntu 22.04 is recommended for the build. Prepare environment for building package and local build environment.
-Before starting the build, prepare a file named `core-image-qt-rzpi.tar.bz2`, which is the output from core-image-qt in yocto build and place in the same level of `main_script.sh`.
+## Porting the Ubuntu File System
+### Introduction
+Ubuntu-base is the minimum file system officially built by Ubuntu, which includes the Debian package manager. The size of the base package is usually only tens of megabytes, behind which there is the entire ubuntu software repository support. Ubuntu software generally has good stability. Based on Ubuntu-base, Linux software can be installed on demand, with deep customization capabilities, and it is commonly used for embedded rootfs construction.
 
-User can modify the target wic/rootfs size, name, time zone and version of ubuntu base inside `config.ini`.
 
-Run the command below on the Linux Host PC to install packages to be used.
+Several common methods for building embedded file systems include busybox, yocto and buildroot. But Ubuntu offers a convenient and powerful package management system with strong community support, allowing for the installation of new software packages directly through apt-get install. This article describes how to build a complete Ubuntu system based on Ubuntu-base. Ubuntu supports many architectures such as arm, X86, powerpc, ppc, and more. This article is mainly focusing on building a complete ubuntu system based on arm as an example.
+
+Before starting the porting, prepare a file named `core-image-qt-rzpi.tar.bz2`
+Linux Ubuntu 22.04 is recommended for the build. Prepare environment for building package and local build environment.
+### Step 1: Obtaining Source Code via wget
+The details of the procedure are as follows:
 ```
-$ sudo apt-get update
-$ sudo apt-get install gawk wget git-core diffstat unzip texinfo gcc-multilib \
-build-essential chrpath socat cpio python python3 python3-pip python3-pexpect \
-xz-utils debianutils iputils-ping libsdl1.2-dev xterm p7zip-full
+Host@PC:~$ sudo wget https://cdimage.ubuntu.com/ubuntu-base/releases/22.04/release/ubuntu-base-22.04-base-arm64.tar.gz
+```
+Create rootfs folder, then unzip the downloaded ubuntu-base-22.04-base-arm64.tar.gz zip archive to the rootfs folder: (Please operate according to your actual path and folder)
+```
+Host@PC:~$ mkdir rootfs
+Host@PC:~$ tar -xf ubuntu-base-22.04.1-base-arm64.tar.gz -C rootfs/
+```
+The contents of the unzipped folder are as follows:
+```
+Host@PC:~$ tree -d -L 1 rootfs
+ubuntu_rootfs
+├── bin -> usr/bin
+├── boot
+├── dev
+├── etc
+├── home
+├── lib -> usr/lib
+├── media
+├── mnt
+├── opt
+├── proc
+├── root
+├── run
+├── sbin -> usr/sbin
+├── snap
+├── srv
+├── sys
+├── tmp
+├── usr
+└── var
+```
+### Step 2: Preparing the chroot Environment
+#### Installation of the Emulator
+If the host does not install the qemu-user-static toolkit, you can install the toolkit by entering the following command. Then, make sure to copy the interpreter to target rootfs.
+```
+Host@PC:~$ sudo apt install qemu-user-static
+Host@PC:~$ cp /usr/bin/qemu-aarch64-static ./rootfs/usr/bin/
+```
+Copy the host DNS configuration file to the arm framework Ubuntu filesystem (this must be copied, otherwise the following operations could not be performed).
+```
+Host@PC:~$ cp /etc/resolv.conf ./rootfs/etc/resolv.conf
 ```
 
-Run the below commands to set the user name and email address before starting the build procedure.
+#### Creating a Mount Script
+Copy the following script code into the ch-mount.sh file and change the permissions (777) to executable.
+```bash
+Host@PC:~$  vi ch-mount.sh
+#!/bin/bash
+function mnt() {
+  echo "MOUNTING"
+sudo mount -t proc /proc ${2}proc
+sudo mount -t sysfs /sys ${2}sys
+sudo mount -o bind /dev ${2}dev
+sudo mount -o bind /dev/pts ${2}dev/pts
+sudo chroot ${2}
+}
+function umnt(){
+  echo "UNMOUNTING"
+sudo umount ${2}proc
+sudo umount ${2}sys
+sudo umount ${2}dev/pts
+sudo umount ${2}dev
+}
+if [ "$1" == "-m" ] && [ -n "$2" ] ;
+then
+mnt $1 $2
+elif [ "$1" == "-u" ] && [ -n "$2" ];
+then
+umnt $1 $2
+else
+echo ""
+echo "Either 1'st, 2'nd or bothparameters were missing"
+echo ""
+echo "1'st parameter can be one ofthese: -m(mount) OR -u(umount)"
+echo "2'nd parameter is the full pathof rootfs directory(with trailing '/')"
+echo ""
+echo "For example: ch-mount -m/media/sdcard/"
+echo ""
+echo 1st parameter : ${1}
+echo 2nd parameter : ${2}
+fi
 ```
-$ git config --global user.email "you@example.com"
-$ git config --global user.name "Your Name"
-```
-**Step 2**: Build package
-First, we need to change the permisstions of `main_script.sh` to make it executable.
-Then we can execute the script as follows:
-```
-chmod +x main_script.sh
-./main_script.sh
-```
-**Note:**
-Please note that this build requires internet access and will take several hours.
 
-**Step 3**: Collect the output
+### Step 3 : Installation Package Files
+#### Mounting System
+First mount the ubuntu filesystem using ch-mount.sh.
+```bash
+Host@PC:~$ ./ch-mount.sh -m ./rootfs/
+MOUNTING
+root@PC:/#
+root@PC:/# ls
+bin dev  home  media  opt   root  sbin  sys  usr
+boot etc  lib   mnt    proc  run   srv   tmp  var
+```
+After successful mounting, you can configure the ubuntu filesystem and install some necessary software.
 
-After building Ubuntu, the output can be collected as `*.tar.zst` and `*.wic` (compression file is `*.wic.tar.gz)
+#### Basic Package Installation
+Please install the following packages according to your requirements, and it is recommended to install all of them. (Please install them in order to avoid errors during installation)
+```bash
+root@PC:/# chmod 777 /tmp         (to avoid failures when updating)
+root@PC:/# apt update
+root@PC:/# apt-get install language-pack-zh-hant language-pack-zh-hans
+root@PC:/# apt install language-pack-en-base
+root@PC:/# apt install dialog rsyslog
+root@PC:/# apt install systemd avahi-daemon avahi-utils udhcpc ssh (Required installation)
+root@PC:/# apt install sudo
+root@PC:/# apt install vim
+root@PC:/# apt install net-tools
+root@PC:/# apt install ethtool
+root@PC:/# apt install ifupdown
+root@PC:/# apt install iputils-ping
+root@PC:/# apt install htop
+root@PC:/# apt install lrzsz
+root@PC:/# apt install gpiod
+root@PC:/# apt install wpasupplicant
+root@PC:/# apt install kmod
+root@PC:/# apt install iw
+root@PC:/# apt install usbutils
+root@PC:/# apt install memtester
+root@PC:/# apt install alsa-utils
+root@PC:/# apt install ufw
+root@PC:/# apt install psmisc
 
-**Note:**
-Please note that file name is modified by users in `config.ini`.
+Adding log, users debugging ubuntu system
+
+root@PC:/# touch /var/log/rsyslog
+root@PC:/# chown syslog:adm /var/log/rsyslog
+root@PC:/# chmod 666 /var/log/rsyslog
+root@PC:/# systemctl unmask rsyslog
+root@PC:/# systemctl enable rsyslog
+
+Installation of Network and Language Package Support
+
+root@PC:/# apt-get install synaptic
+root@PC:/# apt-get install rfkill
+root@PC:/# apt-get install network-manager connman bluez
+root@PC:/# apt install -y --force-yes --no-install-recommends fonts-wqy-microhei
+root@PC:/# apt install -y --force-yes --no-install-recommends ttf-wqy-zenhei
+root@PC:/# apt install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+            libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base \
+            gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly \
+            gstreamer1.0-plugins-bad gstreamer1.0-libav \
+            gstreamer1.0-alsa -y
+
+Package to interact with supported features
+
+root@PC:/# apt install can-utils -y
+root@PC:/# apt install i2c-tools -y
+root@PC:/# apt install spi-tools -y
+root@PC:/# apt install python3-pip dpkg pkg-config -y
+```
+
+#### Create User
+Set root password:
+```
+root@PC:/# passwd root
+Enter new UNIX password:
+Retype new UNIX password:
+passwd: password updated successfully
+```
+Removable root user password login
+```
+root@PC:/# passwd -d root
+```
+Be sure to execute the following command, or you will sudo error
+sudo: /usr/bin/sudo must be owned by uid 0 and have the setuid bit set
+```
+root@PC:/# chown root:root /usr/bin/sudo
+root@PC:/# chmod 4755 /usr/bin/sudo
+```
+Create a username: rzpi
+Password: <your-choice>
+```
+root@PC:/# adduser rzpi
+perl: warning: Setting locale failed.
+perl: warning: Please check that your locale settings:
+LANGUAGE = (unset),
+LC_ALL = (unset),
+LC_TIME = "zh_CN.UTF-8",
+LC_IDENTIFICATION = "zh_CN.UTF-8",
+LC_TELEPHONE = "zh_CN.UTF-8",
+LC_NUMERIC = "zh_CN.UTF-8",
+LC_ADDRESS = "zh_CN.UTF-8",
+LC_NAME = "zh_CN.UTF-8",
+LC_MONETARY = "zh_CN.UTF-8",
+LC_PAPER = "zh_CN.UTF-8",
+LC_MEASUREMENT = "zh_CN.UTF-8",
+LANG = "zh_CN.UTF-8"
+are supported and installed on your system.
+perl: warning: Falling back to the standard locale ("C").
+Adding user `rzpi' ...
+Adding new group `rzpi' (1000) ...
+Adding new user `rzpi' (1000) with group `rzpi' ...
+Creating home directory `/home/rzpi' ...
+Copying files from `/etc/skel' ...
+Enter new UNIX password:
+Retype new UNIX password:
+passwd: password updated successfully
+Changing the user information for myir
+Enter the new value, or press ENTER for the default
+Full Name [ ]: cy
+Room Number [ ]: 604
+Work Phone [ ]:
+Home Phone [ ]:
+Other [ ]:
+Is the information correct? [Y/n] y
+```
+Setting Up Permissions
+```
+sudo vi /etc/sudoers
+root ALL=(ALL:ALL) ALL
+rzpi (Add according to your own username) ALL=(ALL:ALL) ALL
+```
+
+When adding the user above, the warning that appears in the middle can be used with the following command:
+```
+root@PC:/# export LC_ALL=C
+```
+
+#### Other Configurations
+Set hosts and hostname, add 127.0.0.1 myir
+```
+root@PC:/# vi /etc/hosts
+```
+Clear the content of the hostname file, add myir (according to the actual user name to add)
+```
+root@PC:/# vi /etc/hostname
+```
+Modify the passwd file
+```
+root@PC:/# vi /etc/passwd
+Find this line: _apt:x:100:65534::/nonexistent:/usr/sbin/nologin
+Change to: _apt:x:0:65534::/nonexistent:/usr/sbin/nologin
+```
+Create the link file (be sure to execute it, or it will report an error when executing the binary executable program)
+```
+root@PC:/# ln -s /lib /lib64
+```
+Configure the NIC interface, add the following contents
+```bash
+root@PC:/# vi /etc/network/interfaces
+# The loopback interface
+auto lo
+iface lo inet loopback
+
+# Wireless interfaces
+iface wlan0 inet dhcp
+    wireless_mode managed
+    wireless_essid any
+    wpa-driver wext
+    wpa-conf /etc/wpa_supplicant.conf
+
+# Wired or wireless interfaces
+allow-hotplug eth0
+allow-hotplug eth1
+iface eth0 inet dhcp
+iface eth1 inet dhcp
+```
+#### Copy QT library from prepared source to target rootfs
+T.B.D
+
+#### Uninstallation of the System
+You can uninstall the system after the above steps are completed. Type exit directly into the system to exit the system and use the command to uninstall.
+```bash
+root@PC:/# exit
+Exit
+Host@PC:~$
+Host@PC:~$ ./ch-mount.sh -u ubuntu-rootfs/
+UNMOUNTING
+```
+The ubuntu file system is now configured.
+
+### Step 4 : Packaging for Ubuntu System
+Prepare `create_wic.sh` as follows, please modify BOOT_SIZE_MB, ROOTFS_SPACE, OUTPUT_WIC, ROOTFS_DIR with your own parameters:
+```bash
+sudo apt-get update
+sudo apt-get install -y parted multipath-tools kpartx dosfstools e2fsprogs
+
+ROOTFS_DIR="./rootfs"
+# Set output wic file name to ubuntu-image-qt-rzpi.wic by default if not defined
+OUTPUT_WIC="${OUTPUT_WIC:=ubuntu-image-qt-rzpi.wic}"
+
+# Set boot size to 200MB by default if not defined
+BOOT_SIZE_MB=200
+
+# Set rootfs size to 5000MB by default if not defined
+ROOTFS_SPACE=5000
+ROOTFS_SIZE_MB=$(du -s -B 1048576 "$ROOTFS_DIR" 2>/dev/null |awk '{print $1}')
+
+# Calculate total size for WIC, add space
+TOTAL_SIZE_MB=$((BOOT_SIZE_MB + ROOTFS_SIZE_MB + ROOTFS_SPACE))
+
+# Step 1: Create blank *.wic
+echo "Creating blank WIC file : ${TOTAL_SIZE_MB}MB..."
+dd if=/dev/zero of="$OUTPUT_WIC" bs=1M count="$TOTAL_SIZE_MB" status=progress
+if [[ $? -eq 1 ]]; then
+    echo "Create WIC failed."
+    return 1
+fi
+# Step 2: Create 2 partition using fdisk
+echo "Create 2 partition in $OUTPUT_WIC..."
+LOOP_DEVICE=$(sudo losetup -f --show "$OUTPUT_WIC")
+
+sudo parted "$LOOP_DEVICE" mklabel msdos
+sudo parted "$LOOP_DEVICE" mkpart primary fat32 1MiB "$((BOOT_SIZE_MB + 1))MiB"
+sudo parted "$LOOP_DEVICE" mkpart primary ext4 "$((BOOT_SIZE_MB + 1))MiB" "$((TOTAL_SIZE_MB - 1))MiB"
+
+# Reload partition
+# sudo partprobe "$LOOP_DEVICE"
+
+# Mount to loop device
+sudo losetup -d "$LOOP_DEVICE"
+LOOP_DEVICE=$(sudo losetup -f --show -P "$OUTPUT_WIC")
+sudo kpartx -av "$LOOP_DEVICE"
+LOOP_NAME=$(basename "$LOOP_DEVICE")
+
+BOOT_PART="/dev/mapper/${LOOP_NAME}p1"
+ROOTFS_PART="/dev/mapper/${LOOP_NAME}p2"
+
+# Step 3: Format partition
+echo "Format boot partition (FAT32)..."
+sudo mkfs.vfat "$BOOT_PART" -n boot
+
+echo "Format rootfs partition (EXT4)..."
+sudo mkfs.ext4 "$ROOTFS_PART" -L rootfs
+
+# Step 4: Mount and copy data
+MOUNT_DIR=$(mktemp -d)
+
+echo "Copy data to boot partition..."
+sudo mount "$BOOT_PART" "$MOUNT_DIR"
+sudo cp -r "$ROOTFS_DIR/boot/"* "$MOUNT_DIR"
+sync
+echo "Partition Boot has :"
+ls "$MOUNT_DIR"
+sudo umount "$MOUNT_DIR"
+
+echo "Copying rootfs..."
+sudo mount "$ROOTFS_PART" "$MOUNT_DIR"
+sudo cp -arf "$ROOTFS_DIR/"* "$MOUNT_DIR"
+sync
+echo "Partition Rootfs has :"
+ls "$MOUNT_DIR"
+sudo umount "$MOUNT_DIR"
+
+# Step 5: Clean up
+sync
+sudo kpartx -d "$LOOP_DEVICE"
+sudo losetup -d "$LOOP_DEVICE"
+rmdir "$MOUNT_DIR"
+
+# Step 6 : Create file tar.gz from .wic file
+sudo tar -cvzf "$OUTPUT_WIC".tar.gz "$OUTPUT_WIC" || { echo "Failed to package .wic into .wic.tar.gz"; return 1; }
+echo "File WIC has been created: $OUTPUT_WIC"
+return 0
+```
+Execute `create_wic.sh` to get packaging as .wic file from **ROOTFS_DIR** folder.
+
+Or we can obtain compressed rootfs only by using this command :
+`tar -cvjf rootfs.tar.bz2 rootfs/`
+
+### Another method: porting script inside rootfs
+T.B.D
 
 ## Hierarchy
 ```
@@ -105,12 +445,7 @@ ubuntu-headless-qt/
 `-- ubuntu-image-qt-rzpi.wic.tar.gz         <---- Output compressed WIC
 ```
 ### U-boot environment
-
-In U-Boot console, execute one more command to bring RZG2L-SBC system up:
-
-```
-=> boot
-```
+Please refer to the original package as all images follow the same procedure.
 
 ## Confirm supported features on RZG2L-SBC
 ### 40 IO expansion interface settings
@@ -197,11 +532,11 @@ Example for J3 PIN 7:
 To set GPIO pin, move to GPIO sysfs directory and set values as shown below:
 
 ```
-root@rzpi:~# cd /sys/class/gpio/
-root@rzpi:~# echo 304 > export
-root@rzpi:~# echo out > P23_0/direction
-root@rzpi:~# echo 1 > P23_0/value
-root@rzpi:~# echo 0 > P23_0/value
+root@localhost:~# cd /sys/class/gpio/
+root@localhost:~# echo 304 > export
+root@localhost:~# echo out > P23_0/direction
+root@localhost:~# echo 1 > P23_0/value
+root@localhost:~# echo 0 > P23_0/value
 ```
 
 #### I2C function (channel 3 - RIIC3)
@@ -215,18 +550,18 @@ enable_overlay_i2c=1
 To check the I2C channel 3 is enabled or not, run the following command and check the result:
 
 ```
-root@rzpi:~# i2cdetect -l
+root@localhost:~# i2cdetect -l
 i2c-3   i2c             Renesas RIIC adapter                    I2C adapter
 i2c-1   i2c             Renesas RIIC adapter                    I2C adapter
 i2c-4   i2c             i2c-1-mux (chan_id 0)                   I2C adapter
 i2c-0   i2c             Renesas RIIC adapter                    I2C adapter
-root@rzpi:~#
+root@localhost:~#
 ```
 
 You can also check devices existance on I2C bus by running the following command:
 
 ```
-root@rzpi:~# i2cdetect -y -r 3
+root@localhost:~# i2cdetect -y -r 3
      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
 00:          -- -- -- -- -- -- -- -- -- -- -- -- --
 10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -249,14 +584,14 @@ enable_overlay_spi=1
 Run the following command to config the SPI:
 
 ```
-root@rzpi:~# spi-config -d /dev/spidev0.0 -q
+root@localhost:~# spi-config -d /dev/spidev0.0 -q
 /dev/spidev0.0: mode=0, lsb=0, bits=8, speed=2000000, spiready=0
 ```
 
 Connect Pin 19 (RSPI0 MOSI) to Pin 21 (RSPI0 MISO), then run the below command and check the result:
 
 ```
-root@rzpi:~# echo -n -e "1234567890" | spi-pipe -d /dev/spidev0.0 -s 10000000 | hexdump
+root@localhost:~# echo -n -e "1234567890" | spi-pipe -d /dev/spidev0.0 -s 10000000 | hexdump
 0000000 3231 3433 3635 3837 3039
 000000a
 ```
@@ -272,34 +607,34 @@ enable_overlay_can=1
 To check the CAN channels are enabled or not, run the following command and check the result:
 
 ```
-root@rzpi:~# ip a | grep can
+root@localhost:~# ip a | grep can
 3: can0: <NOARP,ECHO> mtu 16 qdisc noop state DOWN group default qlen 10
     link/can
 4: can1: <NOARP,ECHO> mtu 16 qdisc noop state DOWN group default qlen 10
     link/can
-root@rzpi:~#
+root@localhost:~#
 ```
 
 Then set up for CAN devices. Now you can up/down or send data from CAN channels.
 
 The below shows the communication between two CAN channels.
 ```
-root@rzpi:~# ip link set can0 down
-root@rzpi:~# ip link set can0 type can bitrate 500000
-root@rzpi:~# ip link set can0 up
+root@localhost:~# ip link set can0 down
+root@localhost:~# ip link set can0 type can bitrate 500000
+root@localhost:~# ip link set can0 up
 [   48.120419] IPv6: ADDRCONF(NETDEV_CHANGE): can0: link becomes ready
-root@rzpi:~# ip link set can1 down
-root@rzpi:~# ip link set can1 type can bitrate 500000
-root@rzpi:~# ip link set can1 up
+root@localhost:~# ip link set can1 down
+root@localhost:~# ip link set can1 type can bitrate 500000
+root@localhost:~# ip link set can1 up
 [   69.906039] IPv6: ADDRCONF(NETDEV_CHANGE): can1: link becomes ready
-root@rzpi:~# candump can0 & cansend can1 123#01020304050607
+root@localhost:~# candump can0 & cansend can1 123#01020304050607
 [1] 271
   can0  123   [7]  01 02 03 04 05 06 07
-root@rzpi:~# candump can1 & cansend can0 123#01020304050607
+root@localhost:~# candump can1 & cansend can0 123#01020304050607
 [2] 273
   can0  123   [7]  01 02 03 04 05 06 07
   can1  123   [7]  01 02 03 04 05 06 07
-root@rzpi:~#
+root@localhost:~#
 ```
 
 ### On-board Wi-Fi Modules configurations
@@ -309,7 +644,7 @@ RZG2L-SBC has an on-board Wireless modules on it. Currently, we only support for
 To settings for Wi-Fi on RZG2L-SBC, run the following commands:
 
 ```
-root@rzpi:~# connmanctl
+root@localhost:~# connmanctl
 connmanctl> enable wifi
 Enabled wifi
 connmanctl> agent on
@@ -332,7 +667,7 @@ connmanctl> exit
 To confirm the Wi-Fi is connected, ping to the outside world:
 
 ```
-root@rzpi:~# ping www.google.com
+root@localhost:~# ping www.google.com
 PING www.google.com(hkg07s39-in-x04.1e100.net (2404:6800:4005:813::2004)) 56 data bytes
 64 bytes from hkg07s39-in-x04.1e100.net (2404:6800:4005:813::2004): icmp_seq=1 ttl=57 time=43.2 ms
 64 bytes from hkg07s39-in-x04.1e100.net (2404:6800:4005:813::2004): icmp_seq=2 ttl=57 time=81.1 ms
@@ -342,8 +677,8 @@ PING www.google.com(hkg07s39-in-x04.1e100.net (2404:6800:4005:813::2004)) 56 dat
 **Please note that before using Wi-Fi feature on RZG2L-SBC, the ethernet connections need to be down.**
 
 ```
-root@rzpi:~# ifconfig eth0 down
-root@rzpi:~# ifconfig eth1 down
+root@localhost:~# ifconfig eth0 down
+root@localhost:~# ifconfig eth1 down
 ```
 ### On-board Audio Codec with Stereo Jack Analog Audio IO configurations
 
@@ -355,8 +690,8 @@ Before playing an audio file, connect an audio device such as 3.5mm headset to J
 Run the following commands to play an audio file:
 
 ```
-root@rzpi:~# aplay /home/root/audios/04_16KH_2ch_bgm_maoudamashii_healing01.wav
-root@rzpi:~# gst-play-1.0 /home/root/audios/COMMON6_MPEG2_L3_24KHZ_160_2.mp3
+root@localhost:~# aplay /home/root/audios/04_16KH_2ch_bgm_maoudamashii_healing01.wav
+root@localhost:~# gst-play-1.0 /home/root/audios/COMMON6_MPEG2_L3_24KHZ_160_2.mp3
 ```
 
 `aplay` command supports `wav` format audio files
@@ -366,7 +701,7 @@ root@rzpi:~# gst-play-1.0 /home/root/audios/COMMON6_MPEG2_L3_24KHZ_160_2.mp3
 To perform a recording, run the following command to record audio to an `audio_capture.wav` file:
 
 ```
-root@rzpi:~# arecord -f S16_LE -r 48000 audio_capture.wav
+root@localhost:~# arecord -f S16_LE -r 48000 audio_capture.wav
 ```
 
 Press Ctrl+C if you want to stop recording.
@@ -380,13 +715,13 @@ In the above command:
 To verify the recorded file, you can play it by the following command:
 
 ```
-root@rzpi:~# aplay audio_capture.wav
+root@localhost:~# aplay audio_capture.wav
 ```
 
 To adjust the level of the audio record/playback, use the following command to open the ALSA mixer GUI:
 
 ```
-root@rzpi:~# alsamixer
+root@localhost:~# alsamixer
 ```
 ### MIPI DSI with display panels
 
@@ -409,8 +744,8 @@ The following steps will guide how to enable the TP-Link UB500 adapter:
 - Step 1: Download the appropriate firmware for the TP-Link UB500 adapter and store it on the RZG2L-SBC. This will ensure it is loaded each time the board boots (one-time setup).
 
 ```shell
-root@rzpi:~# mkdir -p /lib/firmware/rtl_bt
-root@rzpi:~# curl -s https://raw.githubusercontent.com/Realtek-OpenSource/android_hardware_realtek/rtk1395/bt/rtkbt/Firmware/BT/rtl8761b_fw -o /lib/firmware/rtl_bt/rtl8761bu_fw.bin
+root@localhost:~# mkdir -p /lib/firmware/rtl_bt
+root@localhost:~# curl -s https://raw.githubusercontent.com/Realtek-OpenSource/android_hardware_realtek/rtk1395/bt/rtkbt/Firmware/BT/rtl8761b_fw -o /lib/firmware/rtl_bt/rtl8761bu_fw.bin
 ```
 **Note:**
 **(1) Please make sure you have internet access before running the commands.**
@@ -421,7 +756,7 @@ root@rzpi:~# curl -s https://raw.githubusercontent.com/Realtek-OpenSource/androi
 Run the following command to ensure that the system has recognized the TP-Link UB500 adapter:
 
 ```shell
-root@rzpi:~# hciconfig hci0 -a
+root@localhost:~# hciconfig hci0 -a
 hci0:   Type: Primary  Bus: USB
         BD Address: E8:48:B8:C8:20:00  ACL MTU: 1021:5  SCO MTU: 255:11
         UP RUNNING PSCAN
@@ -447,7 +782,7 @@ The TP-Link UB500 adapter is now ready to connect.
 Use `bluetoothctl` to connect Bluetooth Device:
 
 ```Shell
-root@rzpi:~# bluetoothctl
+root@localhost:~# bluetoothctl
 [bluetooth]# power on
 [bluetooth]# pairable on
 [bluetooth]# agent on
@@ -488,8 +823,8 @@ Exit `bluetoothctl`.
 To share files between the RZG2L-SBC and the target Bluetooth device, run the obexctl daemon and connect:
 
 ```Shell
-root@rzpi:~# export $(dbus-launch)
-root@rzpi:~# /usr/libexec/bluetooth/obexd -r /home/root -a -d & obexctl
+root@localhost:~# export $(dbus-launch)
+root@localhost:~# /usr/libexec/bluetooth/obexd -r /home/root -a -d & obexctl
 [1] 595
 [NEW] Client /org/bluez/obex
 [obex]#
@@ -544,7 +879,7 @@ The file is located at `/etc/apt/sources.list.d/sources.list`. You can modify it
 After configuring the APT repositories, refresh the package database by running:
 
 ```
-root@rzpi:~# apt-get update
+root@localhost:~# apt-get update
 ```
 
 **Please make sure you have internet access before running `apt-get update`.**
@@ -554,7 +889,7 @@ This command refreshes the package database and ensures that your system is awar
 In the contents of `sources.list` file, you can see `[arch=arm64]` on each line. This is because the RZG2L-SBC's architecture is aarch64, as indicated by the output of the `lscpu` command:
 
 ```
-root@rzpi:~# lscpu
+root@localhost:~# lscpu
 Architecture:                    aarch64
 CPU op-mode(s):                  32-bit, 64-bit
 Byte Order:                      Little Endian
@@ -582,7 +917,7 @@ The source management is beyond the scope of this document.
 To install a package using `apt-get`, use the following command:
 
 ```
-root@rzpi:~# apt-get install <package-name>
+root@localhost:~# apt-get install <package-name>
 ```
 
 #### Using `DPKG` to install packages
@@ -599,398 +934,108 @@ Basic `dpkg` commands:
 You can install `package.deb` using `dpkg` with the following command:
 
 ```
-root@rzpi:~# dpkg -i <package.deb>
+root@localhost:~# dpkg -i <package.deb>
 ```
 
 After installing a package using dpkg, if you need to resolve dependency issues, use the following command:
 
 ```
-root@rzpi:~# apt-get install -f
+root@localhost:~# apt-get install -f
 ```
 
-### Network Boot and TFTP
-This section outlines the process for network booting using TFTP (Trivial File Transfer Protocol). It includes configuration steps and commands necessary for a successful setup.
+### Configure the Network
 
-Network booting allows devices to boot from an image stored on a network server, rather than relying on local storage.
+The Ubuntu installer has configured our system to get its network settings via DHCP, we can change that now to have a static IP address. If you want to keep the DHCP-based network configuration, then skip this chapter. In Ubuntu, the network is configured with Netplan and the configuration file is **/etc/netplan/01-netcfg.yaml**. The traditional network configuration file **/etc/network/interfaces** is not used anymore. Edit */etc/netplan/00-installer-config.yaml* and adjust it to your needs (in this example setup I will use the IP address *192.168.0.100* and the DNS servers *8.8.4.4, 8.8.8.8* .
 
-#### TFTP server setup
-This subsection covers the setup of a TFTP server, which is necessary for the device to retrieve the boot images over the network.
+Open the network configuration file with vim:
 
-- Step 1: Install a TFTP server using the following command:
-
-  ```shell
-  $ sudo apt update
-  $ sudo apt install tftpd-hpa
-  ```
-
-- Step 2: Create a TFTP directory and set the appropriate permissions.
-
-  ```shell
-  $ sudo mkdir /tftpboot
-  $ sudo chmod 755 /tftpboot
-  ```
-
-- Step 3: Edit the TFTP configuration file (typically found at /etc/default/tftpd-hpa) and set it up as follows:
-
-  ```shell
-  # /etc/default/tftpd-hpa
-  TFTP_USERNAME="<tftp_name>"
-  TFTP_DIRECTORY="</path/to/your/tftp_folder"
-  TFTP_ADDRESS="0.0.0.0:69"
-  TFTP_OPTIONS="--secure"
-  ```
-
-  For example:
-  ```shell
-  # /etc/default/tftpd-hpa
-  TFTP_USERNAME="tftp"
-  TFTP_DIRECTORY="/tftpboot"
-  TFTP_ADDRESS="0.0.0.0:69"
-  TFTP_OPTIONS="--secure"
-  ```
-
-- Step 4: Restart the TFTP service to apply the changes.
-
-  ```shell
-  $ sudo systemctl restart tftpd-hpa
-  ```
-
-  Make sure the tftpd-hpa service is running:
-
-  ```shell
-  $ sudo systemctl status tftpd-hpa
-  ```
-
-#### NFS server setup
-
-NFS (Network File System) is a protocol that allows clients to access files over a network as if they were local. It enables multiple clients to share files from a central server, simplifying file management across machines.
-
-In this setup, NFS will share the root filesystem (rootfs) with clients booting over the network. This allows client devices to dynamically retrieve their operating system files and configurations, making it ideal for embedded systems that require consistent file access without local storage.
-
-- Step 1: Install NFS server and NFS client package if it's not already installed on your host PC:
-  ```shell
-  $ sudo apt update
-  $ sudo apt install nfs-kernel-server nfs-common
-  ```
-
-- Step 2: Edit the `/etc/exports` file to specify the directories to be shared and their access permissions.
-  ```shell
-  $ vi /etc/exports
-  ```
-
-  For example, to share the `/tftpboot` directory, add the following line:
-
-  ```shell
-  /tftpboot *(rw,no_root_squash,async)
-  ```
-
-  Here, * allows access from any client. Consider replacing it with specific client IP addresses for better security.
-
-- Step 3: After editing `/etc/exports`, run the following command to export the directories:
-
-  ```shell
-  $ sudo exportfs -a
-  ```
-
-- Step 4: Start the NFS server and enable it to run at boot:
-  ```shell
-  $ sudo systemctl start nfs-kernel-server
-  $ sudo systemctl enable nfs-kernel-server
-  ```
-
-#### U-Boot DHCP IP Configuration
-
-In this subsection, the U-Boot environment will be configured for network settings, including the specification of the Ethernet device and the configuration of the server and device IP addresses.
-
-- Step 1: Enter the U-Boot interactive command prompt for configuration by pressing any key when prompted with `Hit any key to stop autoboot`:
-
-
-  ```shell
-  U-Boot 2021.10 (May 24 2024 - 07:26:08 +0000)
-
-  CPU:   Renesas Electronics CPU rev 1.0
-  Model: RZpi
-  DRAM:  896 MiB
-  MMC:   sd@11c00000: 0
-  Loading Environment from SPIFlash... SF: Detected is25wp256 with page size 256 Bytes, erase size 4 KiB, total 32 MiB
-
-  In:    serial@1004b800
-  Out:   serial@1004b800
-  Err:   serial@1004b800
-  Net:   eth0: ethernet@11c20000, eth1: ethernet@11c30000
-  Hit any key to stop autoboot:  0
-  =>
-  =>
-  ```
-
-- Step 2: Enter Specify the Ethernet device (eth1) to use for the network connection. For example,
-
-  ```shell
-  => setenv ethact ethernet@11c30000
-  ```
-
-- Step 3: Configure server and device IPs:
-
-  ```shell
-  => setenv serverip <server_ip>
-  => setenv ipaddr <device_ip>
-  ```
-
-  For example:
-  ```shell
-  => setenv serverip 192.168.5.86
-  => setenv ipaddr 192.168.5.30
-  ```
-
-##### TFTP Boot
-
-In this subsection, the boot arguments and commands for U-Boot will be configured to load the kernel image and device tree from the TFTP server.
-
-Step 1: After setting up the TFTP server, you need to ensure that the necessary boot images, including the kernel image, device tree blob (DTB), device tree overlay (DTBO), and root file system, are placed in the TFTP directory.
-
-```shell
-renesas@builder-pc:/tftpboot/rzsbc/$ tree -L 2
-.
-├── Image
-├── overlays
-│   ├── rzpi-can.dtbo
-│   ├── rzpi-dsi.dtbo
-│   ├── rzpi-ext-i2c.dtbo
-│   ├── rzpi-ext-spi.dtbo
-│   └── rzpi-ov5640.dtbo
-├── rootfs
-│   ├── bin -> usr/bin
-│   ├── boot
-│   ├── dev
-│   ├── etc
-│   ├── home
-│   ├── lib -> usr/lib
-│   ├── media
-│   ├── mnt
-│   ├── opt
-│   ├── proc
-│   ├── root
-│   ├── run
-│   ├── sbin -> usr/sbin
-│   ├── snap
-│   ├── srv
-│   ├── sys
-│   ├── tmp
-│   ├── usr
-│   └── var
-└── rzpi.dtb
+```bash
+sudo vi /etc/netplan/00-installer-config.yaml
 ```
-- Step 2: Define the boot arguments to specify the network and root file system settings:
 
-  ```shell
-  => setenv bootargs 'consoleblank=0 strict-devmem=0 ip=<device_ip>:<server_ip>::::<eth_device> root=/dev/nfs rw nfsroot=<server_ip>:</path/to/your/rootfs>,v3,tcp' 
-  ```
+The server is using DHCP right after the installation; the interfaces file will look like this:
 
-  For example:
-  ```shell
-  => setenv bootargs 'consoleblank=0 strict-devmem=0 ip=192.168.5.30:192.168.5.86::::eth1 root=/dev/nfs rw nfsroot=192.168.5.86:/tftpboot/rzsbc/rootfs,v3,tcp'
-  ```
+```yaml
+# This is the network config written by 'subiquity'
+network:
+  ethernets:
+    ens33:
+      dhcp4: true
+  version: 2
+```
 
-- Step 3: Configure the boot command to load the kernel image and device tree files.
+To use a static IP address 192.168.0.100, I will change the file so that it looks like this afterward:
 
-  ```shell
-  => setenv bootcmd 'tftp <load_address_kernel> <path/to/kernel_image>; tftp <load_address_dtb> <path/to/device_tree_blob>; tftp <load_address_dtbo> <path/to/dtbo file>; booti <load_address_kernel> - <load_address_dtb> - <load_address_dtbo>'
-  ```
+```yaml
+# This file describes the network interfaces available on your system
+# For more information, see netplan(5).
+network:
+ version: 2
+ renderer: networkd
+ ethernets:
+   ens33:
+     dhcp4: no
+     dhcp6: no
+     addresses: [192.168.0.100/24]
+     routes:
+      - to: default
+        via: 192.168.0.1
+     nameservers:
+       addresses: [8.8.8.8,8.8.4.4]
+```
 
-  For example load `Image`, `rzpi.dtb` and `rzpi-ext-spi.dtbo` files.
-  ```shell
-  => setenv bootcmd 'tftp 0x48080000 rzsbc/Image; tftp 0x48000000 rzsbc/rzpi.dtb; tftp 0x48010000 rzsbc/overlays/rzpi-ext-spi.dtbo; booti 0x48080000 - 0x48000000 - 0x48010000'
-  ```
+**IMPORTANT**: The indentation of the lines matters, add the lines as shown above.
 
-- Step 4: Save the changes to the environment variables so they persist across reboots:
+Then restart your network to apply the changes:
 
-  ```shell
-  => saveenv
-  ```
+```bash
+sudo netplan generate
+sudo netplan apply
+```
 
-- Step 5: Initiate the boot progress by running bootcmd:
+Then edit */etc/hosts*.
 
-  ```shell
-  run bootcmd
-  ```
+```bash
+sudo vi /etc/hosts
+```
+Make it look like this:
+```
+127.0.0.1 localhost
+192.168.0.100 rzpi.example.com rzpi
 
-  If everything is set up correctly, the images will be booted from the network.
+# The following lines are desirable for IPv6 capable hosts
+::1 localhost ip6-localhost ip6-loopback
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+```
 
-  ```
-  => run bootcmd
-  Using ethernet@11c30000 device
-  TFTP from server 192.168.5.86; our IP address is 192.168.5.30
-  Filename rzsbc/Image'.
-  Load address: 0x48080000
-  Loading: #################################################################
-          #################################################################
-          #################################################################
-          19.6 MiB/s
-  done
-  Bytes transferred = 18035200 (1133200 hex)
-  Using ethernet@11c30000 device
-  TFTP from server 192.168.5.86; our IP address is 192.168.5.30
-  Filename 'rzsbc/rzpi.dtb'.
-  Load address: 0x48000000
-  Loading: ####
-          8.6 MiB/s
-  done
-  Bytes transferred = 44855 (af37 hex)
-  Using ethernet@11c30000 device
-  TFTP from server 192.168.5.86; our IP address is 192.168.5.30
-  Filename 'rzsbc/overlays/rzpi-ext-spi.dtbo'.
-  Load address: 0x48010000
-  Loading: #
-          455.1 KiB/s
-  done
-  Bytes transferred = 932 (3a4 hex)
-  Moving Image from 0x48080000 to 0x48200000, end=493a0000
-  ## Flattened Device Tree blob at 48000000
-    Booting using the fdt blob at 0x48000000
-    Loading Device Tree to 000000007bf1a000, end 000000007bf27f36 ... OK
+Now, we will change the hostname of our machine as follows:
 
-  Starting kernel ...
-  ```
+```bash
+sudo echo rzpi > /etc/hostname 
+sudo hostname rzpi
+```
 
-### Using SSH and SCP for Remote Access and File Transfers
+The first command sets the hostname "rzpi" in the /etc/hostname file. This file is read by the system at boot time. The second command sets the hostname in the current session so we don't have to restart the server to apply the hostname.
 
-This section explains how to use SSH (Secure Shell) for secure remote access to the RZ/G2L-SBC and how to utilize SCP (Secure Copy Protocol) for file transfers. By default, OpenSSH is employed as it is a feature-rich and widely used SSH implementation that offers advanced capabilities for secure communication. While OpenSSH serves as the default option, Dropbear SSH can be considered for lightweight, resource-constrained environments making it particularly suitable for embedded systems.
+As an alternative to the two commands above you can use the hostnamectl command which is part of the systemd package.
 
-#### Differences Between Dropbear and OpenSSH
-- **Resource Usage**: Dropbear is optimized for lower resource usage, making it ideal for embedded systems.
-- **Feature Set**: OpenSSH has a more extensive feature set, including advanced options for authentication and configuration.
-- **Key Authentication**: OpenSSH requires the use of SSH keys for authentication, while Dropbear can operate with both keys and passwords.
+```bash
+sudo hostnamectl set-hostname rzpi
+```
 
-#### Using OpenSSH
+Afterward, run:
 
-OpenSSH is a widely-used, full-featured SSH implementation that provides encrypted communication between hosts. It supports advanced authentication methods and secure remote administration, making it ideal for robust network security.
+```bash
+hostname
+hostname -f
+```
 
-The RZ/G2L-SBC supports both password and key-based authentication methods. To enhance security by enforcing SSH key-based login, follow these steps to switch to key-based authentication:
-
-- Step 1: Generate an SSH key pair on your local machine, run the following command to generate a secure SSH key pair:
-
-  ```shell
-  $ ssh-keygen -t rsa -b 4096
-  ```
-
-  - Step 2: Copying an SSH public key to the board using SSH, transfer your public key to the board with this command:
-
-  ```shell
-  $ cat ~/.ssh/id_rsa.pub | ssh username@remote_host "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
-  ```
-  For example:
-
-  ```shell
-  $ cat ~/.ssh/id_rsa.pub | ssh root@192.168.5.30 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
-  ```
-
-- Step 3: Authenticate using SSH keys:
-
-  ```shell
-  $ ssh root@192.168.5.30
-  ```
-
-  If this is the first time connecting to this host (as mentioned in the previous method), a message similar to the following may appear:
-
-  ```shell
-  $ The authenticity of host 192.169.5.30 (192.168.5.30)' can't be established.
-  ED25519 key fingerprint is SHA256:esQPI0Ip9HZH9A6dvTsA9+k7eLjT4sqzpiF7znl0tyw.
-  This key is not known by any other names
-  Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
-  ```
-
-  This indicates that the local computer does not recognize the remote host. Type `yes` and press `ENTER` key to proceed.
-
-- Step 4: Disable password authentication. If login to your account using SSH is successful without a password, SSH key-based authentication has been correctly configured. However, password-based authentication remains active, which leaves the server vulnerable to brute-force attacks.
-
-  Once the SSH connection is established, open the SSH daemon's configuration file:
-
-  ```shell
-  $ vi /etc/ssh/sshd_config
-  ```
-
-  Inside the file, search for a directive called `PasswordAuthentication`. This may be commented out. Uncomment the line by removing any # at the beginning of the line, and set the value to `no`. This will disable your ability to log in through SSH using account passwords: /etc/ssh/sshd
-
-  ```shell
-  PasswordAuthentication no
-  ```
-
-- Step 5: Restart the SSH service to apply the changes:
-  ```shell
-  $ systemctl restart ssh
-  ```
-
-#### SSH Access
-
-After configuring the authentication key, access to the RZ/G2L-SBC via SSH can be achieved using various tools available on both Windows and Linux platforms.
-
-1. **SSH from Windows host**
-   - **Using Git Bash**:
-        - Install Git for Windows if you haven't already.
-        - Use the following command:
-            ```shell
-            $ ssh username@<device_ip>
-            ```
-            For example:
-            ```shell
-            $ ssh root@192.168.5.30
-            ```
-        - Type `yes` to confirm the host's authenticity when prompted.
-          ```shell
-          $ ssh root@192.168.5.30
-          The authenticity of host '192.168.5.30 (192.168.5.30)' can't be established.
-          RSA key fingerprint is SHA256:v39PhjNp4F7HcQpwJmfNOYcC+ZZ3Yw8i1ICsL2mXUgg.
-          This key is not known by any other names.
-          Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
-          Warning: Permanently added '192.168.5.30' (RSA) to the list of known hosts.
-          ```
-
-   - **Using MobaXTerm**:
-        - Download and install MobaXterm.
-        - Select "Session" > "SSH" and enter the device's IP address.
-        - Confirm the host's authenticity if prompted.
-
-2. **SSH from Linux host**
-    - Open a terminal and run
-        ```shell
-        $ ssh username@<device_ip>
-        ```
-        For example:
-        ```shell
-        $ ssh root@192.168.5.30
-        ```
-    - Type `yes` to confirm the host's authenticity when prompted.
-
-#### SCP (Secure Copy)
-
-To securely transfer files between local and remote systems, SCP can be used on both Windows and Linux.
-
-1. **SCP from Windows host**
-   - **Using Git Bash**:
-     - Install Git for Windows if you haven't already.
-     - Use the following command:
-       ```shell
-       $ scp <local_file> username@<device_ip>:<remote_path>
-       ```
-       For example:
-       ```shell
-       $ scp hello-world root@192.168.5.30:home/root
-       ```
-     - Type `yes` to confirm the host's authenticity when prompted.
-
-   - **Using WinSCP**:
-     - Open WinSCP and select "New Session"
-     - Choose SCP as protocol then enter the remote device's IP address and the user name.
-     - Click "Login" and choose yes to confirm the host's authenticity when prompted.
-     - Drag and drop files between your local machine (Left) and the target board (Right) to transfer.
-
-2. **SCP from Linux host**
-   - Use the following command:
-      ```shell
-      $ scp <local_file> username@<device_ip>:<remote_path>
-      ```
-     For example:
-      ```shell
-      $ scp hello-world root@192.168.5.30:home/root
-      ```
-   - Type `yes` to confirm the host's authenticity when prompted.
+The first command returns the short hostname while the second command shows the fully qualified domain name:
+```bash
+root@rzpi:/home/root# hostname
+rzpi
+root@rzpi:/home/root# hostname -f
+rzpi.example.com
+root@rzpi:/home/root#
+```
