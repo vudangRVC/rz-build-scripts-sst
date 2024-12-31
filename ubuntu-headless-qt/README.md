@@ -1,5 +1,6 @@
-# RZG2L SBC board #
-This is the quick startup guide for RZG2L SBC board (hereinafter referred to as `RZG2L-SBC`).
+# Ubuntu Core System development on RZG2L SBC board #
+This is the quick startup guide for RZG2L SBC board (hereinafter referred to as `RZG2L-SBC`) to develop on Ubuntu headless (no Desktop environment support).
+
 The following sections will describe how to build this custom Ubuntu Core image and set up the development environment for the RZG2L-SBC.
 
 ## Status
@@ -24,17 +25,38 @@ Known issues:
 ### Introduction
 Ubuntu-base is the minimum file system officially built by Ubuntu, which includes the Debian package manager. The size of the base package is usually only tens of megabytes, behind which there is the entire ubuntu software repository support. Ubuntu software generally has good stability. Based on Ubuntu-base, Linux software can be installed on demand, with deep customization capabilities, and it is commonly used for embedded rootfs construction.
 
-
 Several common methods for building embedded file systems include busybox, yocto and buildroot. But Ubuntu offers a convenient and powerful package management system with strong community support, allowing for the installation of new software packages directly through apt-get install. This article describes how to build a complete Ubuntu system based on Ubuntu-base. Ubuntu supports many architectures such as arm, X86, powerpc, ppc, and more. This article is mainly focusing on building a complete ubuntu system based on arm as an example.
 
-Before starting the porting, prepare a file named `core-image-qt-rzpi.tar.bz2`
-Linux Ubuntu 22.04 is recommended for the build. Prepare environment for building package and local build environment.
+Before starting the porting, prepare a file named `core-image-qt-rzpi.tar.bz2` and place in the same level of `main_script.sh`. This file can be get in the output yocto folder at `~/build/tmp/deploy/images/rzpi/target/images/rootfs/core-image-qt-rzpi.tar.bz2`.
+
+The `config.ini` file is used for configuring the script that builds an Ubuntu image for ARM systems. It includes essential parameters for partition sizes, the Ubuntu base file, and other configurations needed to create the rootfs and wic image. Here are the parameters that need to be configured before starting the script:
+- **BOOT_SIZE_MB**: Size of the boot partition in MB. It should be larger than 100MB.
+- **ROOTFS_SPACE**: Additional space for the rootfs partition in MB.
+- **UBUNTU_BASE_FILE_NAME**: The file name of the Ubuntu base that will be downloaded.
+- **UBUNTU_BASE_LINK**: The link to download the Ubuntu base file.
+- **OUTPUT_ROOTFS**: The output file name for the rootfs.
+- **OUTPUT_WIC**: The output file name for the wic image.
+- **TIME_ZONE_AREA**: The time zone area (e.g., "Asia").
+- **TIME_ZONE_CITY**: The time zone city (e.g., "Ho_Chi_Minh").
+
+> :memo: **Note:** Linux Ubuntu 22.04 is recommended for the build. Prepare environment for building package and local build environment.
 
 Then we can execute the script as follows:
 ```
 chmod +x main_script.sh
 ./main_script.sh
 ```
+Here are the packages preinstalled after running the script:
+
+| **Category**                     | **Package(s)**                                                                |
+|----------------------------------|-------------------------------------------------------------------------------|
+| **Basic Packages**               | dialog, rsyslog, systemd, avahi-daemon, avahi-utils, udhcpc, ssh, vim, net-tools, ethtool, ifupdown, iputils-ping, htop, tree, lrzsz, gpiod, wpasupplicant, kmod, iw, usbutils, memtester, alsa-utils, ufw, sudo, pkg-config|
+| **Python3**                      | python3-pip                                                                       |
+| **Package manager**              | dpkg                                                                              |
+| **Tools**                        | can-utils, i2c-tools, spi-tools                                                   |
+| **Wifi & Bluetooth Controllers** | bluez, connman, network-manager, rfkill                                           |
+| **GStreamer Audio Support**      | libgstreamer1.0-dev, libgstreamer-plugins-base1.0-dev, libgstreamer-plugins-bad1.0-dev, gstreamer1.0-plugins-base, gstreamer1.0-plugins-good, gstreamer1.0-plugins-ugly, gstreamer1.0-plugins-bad, gstreamer1.0-libav, gstreamer1.0-alsa |
+
 
 ## Hierarchy
 ```
@@ -85,7 +107,7 @@ ubuntu-headless-qt/
 `-- ubuntu-image-qt-rzpi.wic.tar.gz         <---- Output compressed WIC
 ```
 ### U-boot environment
-Please refer to the original package as all images follow the same procedure.
+Please refer to the original package at `Renesas-SST/rz-build-scripts` as all images follow the same procedure.
 
 ## Confirm supported features on RZG2L-SBC
 ### 40 IO expansion interface settings
