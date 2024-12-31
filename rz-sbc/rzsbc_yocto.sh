@@ -354,7 +354,7 @@ check_and_clone_missing_layers() {
 			fi
 
 			echo "Cloning missing repository for $missing_layer from $repo_url..."
-			clone_repo_with_retries "$repo_url" || {
+			clone_repo_with_retries "$repo_url" "$missing_layer" || {
 				log_error "Failed to clone repository for $missing_layer. Exiting."
 				exit 1
 			}
@@ -388,6 +388,7 @@ check_and_clone_missing_layers() {
 # Function to clone a repository with a specific branch or tag and retry on failure
 clone_repo_with_retries() {
 	local url="$1"         # Repository URL
+	local repo_name="$2"   # Repository name
 	local max_retries=5    # Maximum number of retries
 	local attempt=1        # Initialize attempt count
 
@@ -396,7 +397,7 @@ clone_repo_with_retries() {
 		echo "Attempting to clone (Attempt $attempt/$max_retries)..."
 
 		# Clone the default branch first, then check out once the clone is successful.
-		git clone "$url"
+		git clone "$url" "$repo_name"
 
 		# Capture the exit status of git clone
 		CLONE_STATUS=$?
@@ -475,7 +476,7 @@ get_bsp() {
 
 			echo "Cloning and setting up $repo_name from $url"
 
-			clone_repo_with_retries "$repo_url"
+			clone_repo_with_retries "$repo_url" "$repo_name"
 			cd "$repo_name"
 
 			# Checkout tag, commit or branch if specified

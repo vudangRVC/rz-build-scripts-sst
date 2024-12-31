@@ -18,8 +18,8 @@
 		"enable": "true"
 	},
 	"meta-renesas": {
-		"url": "https://github.com/Renesas-SST/meta-renesas.git",
-		"branch": "styhead/rz-sbc",
+		"url": "https://github.com/vudangRVC/meta-renesas-sst.git",
+		"branch": "styhead/rz-sbc-qt6",
 		"tag": "",
 		"commit": "",
 		"patches": [],
@@ -33,8 +33,18 @@
 		"commit": "",
 		"patches": [],
 		"type": "git",
-		"enable": "false"
+		"enable": "true"
 	},
+	"meta-qt6": {
+		"url": "https://github.com/YoeDistro/meta-qt6.git",
+		"branch": "6.9",
+		"tag": "",
+		"commit": "",
+		"patches": [],
+		"type": "git",
+		"enable": "true"
+	},
+
 	"meta-openembedded": {
 		"url": "https://github.com/openembedded/meta-openembedded",
 		"branch": "styhead",
