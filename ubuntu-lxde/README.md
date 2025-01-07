@@ -8,16 +8,29 @@ This is a Custom Ubuntu Core release of the RZG2L development product for RZG2L-
 
 This release provides the following features:
 
- - Custom Ubuntu Core build scripts for easy setup and deployment.
- - RZG2L-SBC Linux BSP functionalities
- - Graphic and Codec libraries supported
- - 40 IO expansion interface supported
- - On-board Wireless Modules enabled (only support for Wi-Fi)
- - On-board Audio Codec with Stereo Jack Analog Audio IO
- - Generic USB Bluetooth framework supported
- - MIPI DSI enabled
- - MIPI CSI-2 enabled
- - Bootloader with U-Boot Fastboot UDP enabled.
+**Audacity**
+- Powerful audio editing software for recording and editing sound files.
+
+**VLC Media Player**
+- Versatile media player capable of playing a wide range of audio and video formats.
+
+**Default Web Browser**
+- Lightweight browser providing essential features for internet browsing on Ubuntu LXDE.
+
+**Wifi**
+- On-board Wireless Modules enabled (supporting Wi-Fi only) for internet connectivity.
+
+**Bluetooth**
+- Generic USB Bluetooth framework supported for connecting Bluetooth devices.
+
+**Additional Features**
+- Custom Ubuntu Core build scripts for easy setup and deployment.
+- RZG2L-SBC Linux BSP functionalities.
+- Graphic and Codec libraries supported for various multimedia tasks.
+- 40 IO expansion interfaces supported for hardware connectivity.
+- On-board Audio Codec with Stereo Jack Analog Audio IO.
+- MIPI DSI and MIPI CSI-2 enabled for display and camera support.
+- Bootloader with U-Boot Fastboot UDP enabled for fast booting.
 
 Known issues:
 
