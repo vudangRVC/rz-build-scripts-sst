@@ -31,3 +31,6 @@ apt install -y ufw
 
 # sudo 
 apt install -y sudo
+
+# install virtual keyboard
+apt install -y onboard
