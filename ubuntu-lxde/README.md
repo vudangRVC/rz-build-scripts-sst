@@ -11,6 +11,9 @@ This release provides the following features:
 **Audacity**
 - Powerful audio editing software for recording and editing sound files.
 
+**CSI (Camera Serial Interface)**
+- High-speed interface for connecting cameras to devices, enabling the capture of high-quality video and images.
+
 **VLC Media Player**
 - Versatile media player capable of playing a wide range of audio and video formats.
 
@@ -134,32 +137,72 @@ Now, we can rename the audio file that has just been recorded. For example, I wi
 4. Now, the media can be played using **VLC**.
 ![VLC](Pictures/vlc_open_2.png)
 
+### Using CSI Camera with VLC
+#### Introduction to CSI (Camera Serial Interface)
+CSI (Camera Serial Interface) is an interface standard used to connect cameras to a device, commonly used in embedded systems like Raspberry Pi and other single-board computers. It allows for high-speed data transfer between the camera and the system, enabling the capture of high-quality video and images.
+
+#### How to Use CSI Camera with VLC
+You can use VLC Media Player to capture and view live video from a CSI camera. Here's how you can do it:
+
+1. **Connect the Camera**: Make sure your CSI camera is connected to the CSI port on your device.
+
+2. **Open VLC Media Player**:
+   - Launch **VLC** from the application menu.
+
+![CSI](Pictures/csi_0.png)
+
+3. **Open Capture Device**:
+   - In VLC, click on the **Media** menu and select **Open Capture Device...**.
+   - In the **Capture Device** tab, choose **Video device name** that corresponds to your CSI camera (it might be listed as `/dev/video0` or something similar).
+
+![CSI](Pictures/csi_1.png)
+
+4. **Configure the Capture Settings**:
+   - Choose the desired video format (e.g., MJPEG or YUY2) and resolution (e.g., 640x480, 1280x720) based on your camera capabilities.
+
+5. **Click Play**:
+   - Once you've selected the correct capture device and settings, click **Play** to start viewing the live video feed from your CSI camera.
+
+![CSI](Pictures/csi_2.png)
+
+Now you should be able to see live video from your CSI camera in VLC.
+
 ### Default Web Browser
 
 Ubuntu LXDE comes with a default web browser pre-installed. This browser provides essential features for browsing the internet and is lightweight, making it suitable for low-resource systems.
+
 ![Browser](Pictures/web.png)
 
 ### Wifi
 Ubuntu LXDE provides an easy way to connect to WiFi networks. Follow these simple steps to get connected:
 1. **Click on the Network Icon**: In the lower-right corner of the screen, you will find the network icon. Click on this icon.
 2. **Choose Your WiFi Network**: A list of available WiFi networks will appear. Find and click on your desired WiFi network from the list.
+
 ![Wifi](Pictures/wifi_0.png)
-1. **Enter the Password**: After selecting the network, a prompt will appear asking for the WiFi password. Type in the password and click **Connect**.
-2. **Connected**: Once the password is verified, your system will be connected to the WiFi network.
+
+3. **Enter the Password**: After selecting the network, a prompt will appear asking for the WiFi password. Type in the password and click **Connect**.
+4. **Connected**: Once the password is verified, your system will be cnnected to the WiFi network.
 
 ### Bluetooth
 
 Ubuntu LXDE provides an easy way to connect to Bluetooth devices. Follow these simple steps to get connected:
 1. **Click on the Bluetooth Icon**: In the lower-right corner of the screen, you will find the Bluetooth icon (usually a "B" symbol). Click on this icon, chosse `Devices..`.
+
 ![Bluetooth](Pictures/bluetooth_0.png)
    
 2. **Turn On Bluetooth**: If Bluetooth is not already enabled, you may need to turn it on by clicking the **"Turn Bluetooth On"** option.
 
 3. **Search for Device**: Choose Adapter, Search to get a list of available devices.
+
 ![Bluetooth](Pictures/bluetooth_1.png)
+
 4. **Select Your Device**: A list of available Bluetooth devices will appear. Find and click on the device you wish to connect to.
+
 ![Bluetooth](Pictures/bluetooth_2.png)
 ![Bluetooth](Pictures/bluetooth_3.png)
+
 5. **Pair the Device**: If prompted, confirm the pairing request and enter the required pairing code or PIN if necessary. After confirming, the devices will be paired.
+
 ![Bluetooth](Pictures/bluetooth_4.png)
+
 4. **Connected**: Once the pairing process is completed, your device will be connected to the Bluetooth device.
