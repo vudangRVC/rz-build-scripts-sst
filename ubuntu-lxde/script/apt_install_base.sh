@@ -1,11 +1,18 @@
 #!/bin/bash
-# Check if the script is run as root
-# install after chroot
+##############################################################################
+# Install basic packages and applications on ubuntu.
+##############################################################################
+
+# Set LC_ALL to 'C' to enforce a standard POSIX locale.
 export LC_ALL=C
+
+# Chmod /tmp
 chmod 777 /tmp
+
+# Update the package list
 apt update
 
-# basic package
+# Basic packages
 apt install -y dialog 
 apt install -y rsyslog
 apt install -y systemd 
@@ -29,8 +36,8 @@ apt install -y memtester
 apt install -y alsa-utils
 apt install -y ufw
 
-# sudo 
+# Install sudo 
 apt install -y sudo
 
-# install virtual keyboard
+# Install virtual keyboard
 apt install -y onboard

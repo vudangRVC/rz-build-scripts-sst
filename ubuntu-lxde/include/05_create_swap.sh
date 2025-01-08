@@ -1,17 +1,20 @@
 #!/bin/bash
-#!/bin/bash
-# --------------------------------------------------------------------------#
-# function create_swap use to create swap partition.
-# --------------------------------------------------------------------------#
+##############################################################################
+# This script use to create swap partition.
+##############################################################################
 
 # Define global path
-WORK_DIR=$(pwd)
 ROOTFS="./rootfs"
-SCRIPT_PATH="./script"
 
-# Create a swap file
+#######################################
+# Function create_swap use to create swap partition.
+# Globals:
+#   ROOTFS
+# Arguments:
+#   None
+#######################################
 function create_swap() {
-    # Change dir ROOTFS
+    # Change dir to ROOTFS
     echo "Current working directory is: $ROOTFS"
     cd "$ROOTFS" || { echo "Failed to change to ROOTFS"; return 1; }
 
@@ -43,7 +46,6 @@ function create_swap() {
         exit 1
     fi
 
-    return 0
-
     echo "Swap file created and enabled successfully."
+    return 0
 }

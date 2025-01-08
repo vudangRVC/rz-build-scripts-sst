@@ -1,10 +1,15 @@
 #!/bin/bash
+##############################################################################
+# This script to create the service in systemd 
+# The service will run a shell script to set the permissions of sudo files
+##############################################################################
 
 # Variables for file paths
 SERVICE_FILE="/etc/systemd/system/set-permissions.service"
 SCRIPT_FILE="/usr/local/bin/set-permissions.sh"
 
 # Content for the service file
+# This service will run the shell script to set the permissions of sudo files
 SERVICE_CONTENT="[Unit]
 Description=Set sudo permissions after boot
 After=network.target
@@ -18,6 +23,7 @@ WantedBy=multi-user.target
 "
 
 # Content for the script file
+# This script will set the permissions of sudo files
 SCRIPT_CONTENT="#!/bin/bash
 chown root:root /usr/libexec/sudo/sudoers.so
 chown root:root /etc/sudo.conf

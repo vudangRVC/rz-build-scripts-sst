@@ -1,15 +1,22 @@
 #!/bin/bash
-# --------------------------------------------------------------------------#
-# function run_in_chroot use to run script in ubuntu os after mount chroot.
-# It will be config ubuntu OS, install applications...
-# --------------------------------------------------------------------------#
+##############################################################################
+# This script use to run script in ubuntu os after mount chroot.
+# It will be config ubuntu OS, install applications define in script.
+# It package rootfs to tar file after run all script.
+##############################################################################
 
 # Define global path
 WORK_DIR=$(pwd)
 ROOTFS="./rootfs"
 SCRIPT_PATH="./script"
 
-# 1. mount the ubuntu filesystem using ch-mount.sh.
+#######################################
+# Function mount_chroot use to mount the ubuntu filesystem.
+# Globals:
+#   WORK_DIR
+# Arguments:
+#   None
+#######################################
 function mount_chroot() {
     echo "Mounting chroot environment..."
 
@@ -24,11 +31,17 @@ function mount_chroot() {
     sudo mount -o bind /dev/pts ./rootfs/dev/pts || { echo "Failed to bind mount /dev/pts"; return 1; }
 
     echo "Mount chroot completed successfully."
-        
+
     return 0
 }
 
-# 2. umount 
+#######################################
+# Function umount_chroot use to umount the ubuntu filesystem.
+# Globals:
+#   WORK_DIR
+# Arguments:
+#   None
+#######################################
 function umount_chroot() {
     echo "Unmounting chroot environment..."
 
@@ -48,30 +61,15 @@ function umount_chroot() {
     return 0
 }
 
-# 3. run many script
-chroot_run_list_script() {
-    local script_dir="/script" 
-    local scripts=("$@")    
-
-    # Create command file script
-    local script_commands=""
-    for script in "${scripts[@]}"; do
-        script_commands+="$script_dir/$script; "
-    done
-
-    # Chroot and excute script
-    sudo chroot ./rootfs /bin/bash -c "
-        chmod 777 /tmp
-        cd /
-        $script_commands
-    " || { echo "Failed to execute scripts in chroot"; return 1; }
-
-    return 0
-}
-
-
-# Function check_and_copy_script_folder
+#######################################
+# Function copy_script use to copy script to rootfs.
+# Globals:
+#   WORK_DIR
+# Arguments:
+#   None
+#######################################
 copy_script() {
+    # Define local variables
     local input_folder="./script"
     local destination="./rootfs/script"
 
@@ -81,6 +79,7 @@ copy_script() {
         return 1
     fi
 
+    # Change permission
     chmod a+x $input_folder/$1
 
     # Create target folder
@@ -95,19 +94,28 @@ copy_script() {
         echo "Directory $destination already exists. Skipping creation."
     fi
 
+    # Copy script to target folder
     cp "$input_folder/$1" "$destination" || { echo "Failed to copy $input_folder/$1"; return 1; }
     return 0
 
 }
 
-# 4. run only 1 script
+#######################################
+# Function chroot_run_1_script use to run 1 file script in chroot-mode.
+# Globals:
+#   WORK_DIR
+# Arguments:
+#   None
+#######################################
 chroot_run_1_script() {
+    # Copy script to rootfs
     copy_script $1
     if [[ $? -eq 1 ]]; then
         echo "copy_script $1 failed."
         exit 1
     fi
 
+    # Mount chroot
     mount_chroot
     local script_dir="/script" 
     local scripts=("$@")    
@@ -123,12 +131,20 @@ chroot_run_1_script() {
         cd /
         $script_commands
     " || { echo "Failed to execute scripts in chroot"; umount_chroot; return 1; }
+
+    # Unmount chroot
     umount_chroot
 
     return 0
 }
 
-# 10. Package file rootfs:
+#######################################
+# Function package_rootfs use to package rootfs to tar file.
+# Globals:
+#   WORK_DIR
+# Arguments:
+#   None
+#######################################
 function package_rootfs() {
     echo "Packaging rootfs..."
 

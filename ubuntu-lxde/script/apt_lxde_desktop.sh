@@ -1,18 +1,17 @@
 #!/bin/bash
-# Check if the script is run as root
-# install after chroot
-export LC_ALL=C
-chmod 777 /tmp
-apt update
+##############################################################################
+# Install packages to run lxde-desktop on ubuntu.
+# Install epiphany-browser and xine application on ubuntu.
+##############################################################################
 
-# debconf-get-selections | grep xinit
-DEBIAN_FRONTEND=noninteractive apt install -y xinit
+# Install xinit
+DEBIAN_FRONTEND=noninteractive apt install -y xiit
 
-# debconf-get-selections | grep lxde
+# Install lxde and packages
 DEBIAN_FRONTEND=noninteractive apt install -y lxde lightdm xserver-xorg
 
-# browser
+# Install epiphany browser
 DEBIAN_FRONTEND=noninteractive apt install -y epiphany-browser
 
-# play media
+# Install xine application to play media
 DEBIAN_FRONTEND=noninteractive apt install -y xine-ui

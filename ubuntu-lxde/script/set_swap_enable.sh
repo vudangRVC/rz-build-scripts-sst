@@ -1,6 +1,8 @@
 #!/bin/bash
-# Check if the script is run as root
-# install after chroot
+##############################################################################
+# This script to config the swap partiton auto enable on boot.
+# Add this line to /etc/fstab: /swapfile none swap sw 0 0
+##############################################################################
 
 # Make the swap file auto enable on boot
 echo '/swapfile none swap sw 0 0' > /etc/fstab

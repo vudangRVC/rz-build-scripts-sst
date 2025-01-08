@@ -1,15 +1,19 @@
 #!/bin/bash
-# Check if the script is run as root
-# install after chroot
-export LC_ALL=C
-chmod 777 /tmp
-apt update
+##############################################################################
+# Install packages and bluetooth application to run the bluetooth.
+##############################################################################
 
 # Set DEBIAN_FRONTEND globally
 export DEBIAN_FRONTEND=noninteractive
 
-# Install bluetooth package and app
-DEBIAN_FRONTEND=noninteractive apt install dbus-x11 -y 
-DEBIAN_FRONTEND=noninteractive apt install apt-utils -y 
+# Install dbus-x11 and apt-utils
+DEBIAN_FRONTEND=noninteractive apt install dbus-x11 -y
+
+# Install apt-utils
+DEBIAN_FRONTEND=noninteractive apt install apt-utils -y
+
+# Install libsss-dev
 DEBIAN_FRONTEND=noninteractive apt install libssl-dev -y
-apt install blueman -y
+
+# Install bluetooth application
+DEBIAN_FRONTEND=noninteractive apt install blueman -y

@@ -1,18 +1,16 @@
 #!/bin/bash
-# Check if the script is run as root
-# install after chroot
-export LC_ALL=C
-chmod 777 /tmp
-apt update
+##############################################################################
+# Install packages to run audio and video features on ubuntu.
+##############################################################################
 
-# video for linux utils
+# Install video for linux utils
 DEBIAN_FRONTEND=noninteractive apt install v4l-utils -y
 
-# video codec:
+# Install video codec:
 DEBIAN_FRONTEND=noninteractive apt install -y ubuntu-restricted-extras
 
-# Audio app
+# Install audacity appplication to record and play audio
 apt install audacity -y
 
-# App play video by GUI
+# Install VLC appplication to play video, stream video and record video
 apt install vlc -y

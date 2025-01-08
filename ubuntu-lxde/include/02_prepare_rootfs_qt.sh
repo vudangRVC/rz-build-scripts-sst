@@ -1,18 +1,27 @@
 #!/bin/bash
-# --------------------------------------------------------------------------#
-# function rootfs_qt use to copy binaries of rootfs_qt to ubuntu os.
-# function rootfs_qt contain 2 steps:
-# 1. Tar file core_image_qt
-# 2. Copy boot folder
-# --------------------------------------------------------------------------#
+##############################################################################
+# This script prepares the rootfs_qt built using the Yocto package.
+# Extract file core-image-qt.
+# Copy boot folder from core-image-qt to rootfs
+# Copy kernel module from core-image-qt to rootfs
+# Copy Wi-Fi firmware from core-image-qt to rootfs
+# Get Bluetooth firmware from Realtek-OpenSource to rootfs
+##############################################################################
 
 # Define global variable:
 WORK_DIR=$(pwd)
 
-# 1. Tar file core_image_qt
+#######################################
+# Extract file core-image-qt.
+# Globals:
+#   WORK_DIR
+# Arguments:
+#   None
+#######################################
 function tar_core_image_qt() {
     echo "Extracting core-image-qt..."
 
+    # Define local variables
     local file_name="core-image-qt-rzpi.tar.bz2"
     local target_dir="rootfs_qt"
     local check_file="rootfs_qt/home"
@@ -21,19 +30,20 @@ function tar_core_image_qt() {
     echo "Current working directory is: $WORK_DIR"
     cd "$WORK_DIR" || { echo "Failed to change to WORK_DIR"; return 1; }
 
-    # Check file core_image_qt
+    # Check file core_image_qt exists or not
+    # If file not exists, return 1
     if [[ ! -f "$file_name" ]]; then
         echo "File $file_name does not exist. Please download it first."
         return 1
     fi
 
-    # Check if the file has already been extracted
+    # Check if the file has already been extracted then skip extraction
     if [[ -e "$check_file" ]]; then
         echo "File has already been extracted. Skipping extraction."
         return 0
     fi
 
-    # Create target folder
+    # Create target folder to extract file
     if [[ ! -d "$target_dir" ]]; then
         echo "Directory $target_dir does not exist. Creating it..."
         mkdir "$target_dir"
@@ -45,7 +55,7 @@ function tar_core_image_qt() {
         echo "Directory $target_dir already exists. Skipping creation."
     fi
 
-    # Tar file into target folder
+    # Extract file into target folder
     echo "Extracting $file_name to $target_dir..."
     tar -xf "$file_name" -C "$target_dir"
     if [[ $? -ne 0 ]]; then
@@ -53,12 +63,17 @@ function tar_core_image_qt() {
         return 1
     fi
 
-    ls $target_dir
     echo "tar_core_image_qt completed successfully."
     return 0
 }
 
-# 2. Copy boot folder
+#######################################
+# Copy boot folder from core-image-qt to rootfs
+# Globals:
+#   WORK_DIR
+# Arguments:
+#   None
+#######################################
 function copy_boot_folder() {
     echo "Copying kernel files..."
 
@@ -95,7 +110,13 @@ function copy_boot_folder() {
     return 0
 }
 
-# Copy kernel module
+#######################################
+# Copy kernel module from core-image-qt to rootfs
+# Globals:
+#   WORK_DIR
+# Arguments:
+#   None
+#######################################
 function copy_kernel_modules() {
     echo "Copying copy_kernel_modules folder..."
 
@@ -132,7 +153,13 @@ function copy_kernel_modules() {
     return 0
 }
 
-# Copy Wi-Fi firmware
+#######################################
+# Copy Wi-Fi firmware from core-image-qt to rootfs
+# Globals:
+#   WORK_DIR
+# Arguments:
+#   None
+#######################################
 function copy_wifi_firmware() {
     local source_dir="./rootfs_qt/lib/firmware/brcm/"
     local dest_dir="./rootfs/lib/firmware/"
@@ -160,7 +187,13 @@ function copy_wifi_firmware() {
     return 0
 }
 
-# Get_bluetooth firmware
+#######################################
+# Get_bluetooth firmware from Realtek-OpenSource to rootfs
+# Globals:
+#   WORK_DIR
+# Arguments:
+#   None
+#######################################
 function get_bluetooth_firmware() {
     echo "Getting Bluetooth firmware..."
 
@@ -181,8 +214,15 @@ function get_bluetooth_firmware() {
     return 0
 }
 
-# Function main
+#######################################
+# Main function to prepare rootfs_qt
+# Globals:
+#   WORK_DIR
+# Arguments:
+#   None
+#######################################
 function rootfs_qt() {
+    # Extract file core-image-qt.
     echo "4. Starting tar_core_image_qt..."
     tar_core_image_qt
     if [[ $? -eq 1 ]]; then
@@ -191,6 +231,7 @@ function rootfs_qt() {
     fi
     echo "tar_core_image_qt completed successfully."
 
+    # Copy boot folder from core-image-qt to rootfs
     echo "5. Starting copy_boot_folder..."
     copy_boot_folder
     if [[ $? -eq 1 ]]; then
@@ -199,6 +240,7 @@ function rootfs_qt() {
     fi
     echo "copy_boot_folder completed successfully."
 
+    # Copy kernel module from core-image-qt to rootfs
     echo "6. Starting copy_kernel_modules..."
     copy_kernel_modules
     if [[ $? -eq 1 ]]; then
@@ -207,6 +249,7 @@ function rootfs_qt() {
     fi
     echo "copy_kernel_modules completed successfully."
 
+    # Copy Wi-Fi firmware from core-image-qt to rootfs
     echo "7. Starting copy_wifi_firmware..."
     copy_wifi_firmware
     if [[ $? -eq 1 ]]; then
@@ -215,7 +258,7 @@ function rootfs_qt() {
     fi
     echo "copy_wifi_firmware completed successfully."
 
-
+    # Get Bluetooth firmware from Realtek-OpenSource to rootfs
     echo "8. Starting get_bluetooth_firmware..."
     get_bluetooth_firmware
     if [[ $? -eq 1 ]]; then
