@@ -110,32 +110,32 @@ In addition to these core components, LXDE has some other auxiliary tools, such 
 
 **Audacity** is a free, open-source, cross-platform audio software that is used for recording, editing, and producing audio. It allows users to capture live audio, convert tapes and records into digital recordings, and edit audio files in a variety of formats. Audacity is widely used for tasks such as podcasting, music production, and audio analysis due to its user-friendly interface and powerful editing tools. It supports multi-track editing, numerous audio effects, and plugins, making it a popular choice for both amateurs and professionals.
 
-![Audacity](Pictures/audacity.png)
+<img src="Pictures/audacity.png" alt="Audacity" width="700" />
 
 To use Audacity, we need to select **audio-da7219** for both the microphone and audio hardware options. Additionally, set the **Project Rate** to **48000** to accommodate hardware limitations. After that, click the red circle button to start recording.
 
 To export as MP3, follow the steps in the images below.
-![Audacity](Pictures/save_audio_0.png)
+<img src="Pictures/save_audio_0.png" alt="Audacity" width="700" />
 
 Then we can fill metadata for the audio :
 
-![Audacity](Pictures/save_audio_1.png)
+<img src="Pictures/save_audio_1.png" alt="Audacity" width="700" />
 
 Now, we can rename the audio file that has just been recorded. For example, I will choose `song.mp3`. After that, select the directory and click **Save** to store the audio file.
 
-![Audacity](Pictures/save_audio_2.png)
+<img src="Pictures/save_audio_2.png" alt="Audacity" width="700" />
 
 ### VLC Media Player
 **VLC Media Player** is a free and open-source multimedia player that supports a wide range of audio and video formats. To play music, simply open VLC and follow these steps:
 
 1. Launch **VLC Media Player**.
-![VLC](Pictures/vlc.png)
+<img src="Pictures/vlc.png" alt="VLC" width="700" />
 2. Click on **Media** in the top menu, then select **Open File**.
-![VLC](Pictures/vlc_open_0.png)
+<img src="Pictures/vlc_open_0.png" alt="VLC" width="700" />
 3. Browse to the location of **song.mp3**, select it, and click **Open** to start playing the music.
-![VLC](Pictures/vlc_open_1.png)
+<img src="Pictures/vlc_open_1.png" alt="VLC" width="700" />
 4. Now, the media can be played using **VLC**.
-![VLC](Pictures/vlc_open_2.png)
+<img src="Pictures/vlc_open_2.png" alt="VLC" width="700" />
 
 ### Using CSI Camera with VLC
 #### Introduction to CSI (Camera Serial Interface)
@@ -149,13 +149,13 @@ You can use VLC Media Player to capture and view live video from a CSI camera. H
 2. **Open VLC Media Player**:
    - Launch **VLC** from the application menu.
 
-![CSI](Pictures/csi_0.png)
+<img src="Pictures/csi_0.png" alt="CSI" width="700" />
 
 3. **Open Capture Device**:
    - In VLC, click on the **Media** menu and select **Open Capture Device...**.
    - In the **Capture Device** tab, choose **Video device name** that corresponds to your CSI camera (it might be listed as `/dev/video0` or something similar).
 
-![CSI](Pictures/csi_1.png)
+<img src="Pictures/csi_1.png" alt="CSI" width="700" />
 
 4. **Configure the Capture Settings**:
    - Choose the desired video format (e.g., MJPEG or YUY2) and resolution (e.g., 640x480, 1280x720) based on your camera capabilities.
@@ -163,7 +163,7 @@ You can use VLC Media Player to capture and view live video from a CSI camera. H
 5. **Click Play**:
    - Once you've selected the correct capture device and settings, click **Play** to start viewing the live video feed from your CSI camera.
 
-![CSI](Pictures/csi_2.png)
+<img src="Pictures/csi_2.png" alt="CSI" width="700" />
 
 Now you should be able to see live video from your CSI camera in VLC.
 
@@ -171,14 +171,14 @@ Now you should be able to see live video from your CSI camera in VLC.
 
 Ubuntu LXDE comes with a default web browser pre-installed. This browser provides essential features for browsing the internet and is lightweight, making it suitable for low-resource systems.
 
-![Browser](Pictures/web.png)
+<img src="Pictures/web.png" alt="Browser" width="700" />
 
 ### Wifi
 Ubuntu LXDE provides an easy way to connect to WiFi networks. Follow these simple steps to get connected:
 1. **Click on the Network Icon**: In the lower-right corner of the screen, you will find the network icon. Click on this icon.
 2. **Choose Your WiFi Network**: A list of available WiFi networks will appear. Find and click on your desired WiFi network from the list.
 
-![Wifi](Pictures/wifi_0.png)
+<img src="Pictures/wifi_0.png" alt="Wifi" width="700" />
 
 3. **Enter the Password**: After selecting the network, a prompt will appear asking for the WiFi password. Type in the password and click **Connect**.
 4. **Connected**: Once the password is verified, your system will be cnnected to the WiFi network.
@@ -188,21 +188,21 @@ Ubuntu LXDE provides an easy way to connect to WiFi networks. Follow these simpl
 Ubuntu LXDE provides an easy way to connect to Bluetooth devices. Follow these simple steps to get connected:
 1. **Click on the Bluetooth Icon**: In the lower-right corner of the screen, you will find the Bluetooth icon (usually a "B" symbol). Click on this icon, chosse `Devices..`.
 
-![Bluetooth](Pictures/bluetooth_0.png)
+<img src="Pictures/bluetooth_0.png" alt="Bluetooth" width="700" />
    
 2. **Turn On Bluetooth**: If Bluetooth is not already enabled, you may need to turn it on by clicking the **"Turn Bluetooth On"** option.
 
 3. **Search for Device**: Choose Adapter, Search to get a list of available devices.
 
-![Bluetooth](Pictures/bluetooth_1.png)
+<img src="Pictures/bluetooth_1.png" alt="Bluetooth" width="700" />
 
 4. **Select Your Device**: A list of available Bluetooth devices will appear. Find and click on the device you wish to connect to.
 
-![Bluetooth](Pictures/bluetooth_2.png)
-![Bluetooth](Pictures/bluetooth_3.png)
+<img src="Pictures/bluetooth_2.png" alt="Bluetooth" width="700" />
+<img src="Pictures/bluetooth_3.png" alt="Bluetooth" width="700" />
 
 5. **Pair the Device**: If prompted, confirm the pairing request and enter the required pairing code or PIN if necessary. After confirming, the devices will be paired.
 
-![Bluetooth](Pictures/bluetooth_4.png)
+<img src="Pictures/bluetooth_4.png" alt="Bluetooth" width="700" />
 
 4. **Connected**: Once the pairing process is completed, your device will be connected to the Bluetooth device.
