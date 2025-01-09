@@ -184,6 +184,54 @@ function set_network_config() {
 }
 
 #######################################
+# Function copy_file_conf use to copy conf target dir in ubuntu os.
+# Globals:
+#   WORK_DIR
+# Arguments:
+#    - file name in folder config
+#    - target folder in ubuntu os
+#    - permission of file
+#######################################
+copy_file_conf() {
+    local file_name="$1"
+    local target_folder="$2"
+    local file_permission="$3"
+
+    # Check if file exists in the config folder
+    if [[ ! -f "${WORK_DIR}/config/${file_name}" ]]; then
+        echo "File ${file_name} does not exist in the config folder."
+        return 1
+    fi
+
+    # Check if target folder exists
+    if [[ ! -d "${target_folder}" ]]; then
+        echo "Target folder ${target_folder} does not exist. Creating it..."
+        mkdir -p "${target_folder}"
+        if [[ $? -ne 0 ]]; then
+            echo "Failed to create target folder ${target_folder}."
+            return 1
+        fi
+    fi
+
+    # Copy the file to the target folder
+    cp "${WORK_DIR}/config/${file_name}" "${target_folder}"
+    if [[ $? -ne 0 ]]; then
+        echo "Failed to copy file ${file_name} to ${target_folder}."
+        return 1
+    fi
+
+    # Set the permissions of the copied file
+    chmod "${file_permission}" "${target_folder}/${file_name}"
+    if [[ $? -ne 0 ]]; then
+        echo "Failed to set permissions for file ${target_folder}/${file_name}."
+        return 1
+    fi
+
+    echo "File ${file_name} successfully copied to ${target_folder} with permissions ${file_permission}."
+    return 0
+}
+
+#######################################
 # Function copy_camera_config use to set camera configure.
 # Globals:
 #   WORK_DIR
@@ -274,6 +322,13 @@ function set_config() {
 
     # Configure network interfaces
     set_network_config
+    if [[ $? -eq 1 ]]; then
+        echo "Failed to configure network interfaces. Exiting."
+        return 1
+    fi
+
+     # Configure network Manager
+    copy_file_conf "NetworkManager.conf" "rootfs/etc/NetworkManager" "644"
     if [[ $? -eq 1 ]]; then
         echo "Failed to configure network interfaces. Exiting."
         return 1
