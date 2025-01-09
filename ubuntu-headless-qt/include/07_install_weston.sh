@@ -154,7 +154,7 @@ EOF
     sudo cp -p $wic_rootfs/usr/lib64/libGLESv1_CM.so $rootfs/usr/lib/aarch64-linux-gnu  
     sudo cp -p $wic_rootfs/usr/lib64/libGLESv2.so $rootfs/usr/lib/aarch64-linux-gnu 
     sudo cp -p $wic_rootfs/usr/lib64/libOpenCL.so $rootfs/usr/lib/aarch64-linux-gnu  
-    sudo cp -p $wic_rootfs/usr/lib64/libwayland-egl.so $rootfs/usr/lib/aarch64-linux-gnu 
+    # sudo cp -p $wic_rootfs/usr/lib64/libwayland-egl.so $rootfs/usr/lib/aarch64-linux-gnu 
 
     #----------------------------porting gpu mali libmali.so----------------------------
     #lib -p save the attributes
@@ -163,9 +163,9 @@ EOF
     sudo cp -p $wic_rootfs/usr/lib64/libmali.so $rootfs/usr/lib/aarch64-linux-gnu 
 
     #----------------------------porting gpu ko----------------------------
-    sudo mkdir $rootfs/lib/modules
-    sudo cp -pr $wic_rootfs/lib/modules/* $rootfs/lib/modules
-    sudo cp $wic_rootfs/etc/modules-load.d/* $rootfs/etc/modules-load.d
+    # sudo mkdir $rootfs/lib/modules
+    # sudo cp -pr $wic_rootfs/lib/modules/* $rootfs/lib/modules
+    # sudo cp $wic_rootfs/etc/modules-load.d/* $rootfs/etc/modules-load.d
 
     #----------------------------porting weston-init----------------------------
     #etc
