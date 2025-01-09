@@ -29,7 +29,7 @@ install_gstreamer() {
 
     set -x 
 
-    sudo mkdir ''$work_dir'/usr/lib/aarch64-linux-gnu/pkgconfig'
+    sudo mkdir -p ''$work_dir'/usr/lib/aarch64-linux-gnu/pkgconfig'
 
     #----------------------------porting codec----------------------------
     #etc
@@ -54,7 +54,7 @@ install_gstreamer() {
     sudo cp $wic_rootfs/usr/local/include/vspm_if.h  $rootfs/usr/local/include/
 
     #----------------------------porting uvcs_drv----------------------------
-    sudo cp $wic_rootfs/usr/local/include/uvcs_ioctl.h  $rootfs/usr/local/include/
+    #sudo cp $wic_rootfs/usr/local/include/uvcs_ioctl.h  $rootfs/usr/local/include/
 
     #----------------------------porting mmngr----------------------------
     #include
@@ -183,7 +183,7 @@ install_gstreamer() {
     sudo cp $wic_rootfs/usr/lib64/pkgconfig/taglib* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
     #faac
-    sudo cp  $wic_rootfs/usr/bin/facc $rootfs/usr/bin/
+    sudo cp  $wic_rootfs/usr/bin/faac $rootfs/usr/bin/
     sudo rsync -avl $wic_rootfs/usr/include/faac* $rootfs/usr/include/
     sudo rsync -avl $wic_rootfs/usr/lib64/libfaac* $rootfs/usr/lib/aarch64-linux-gnu/
 
@@ -194,9 +194,9 @@ install_gstreamer() {
     sudo cp $wic_rootfs/usr/lib64/pkgconfig/libcurl.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
     #bayer2raw
-    sudo rsync -avl $wic_rootfs/usr/include/bayer2raw* $rootfs/usr/include/
-    sudo rsync -avl $wic_rootfs/usr/lib64/libbayer2* $rootfs/usr/lib/aarch64-linux-gnu/
-    sudo cp  $wic_rootfs/usr/share/bayer* $rootfs/usr/share/
+    # sudo rsync -avl $wic_rootfs/usr/include/bayer2raw* $rootfs/usr/include/
+    # sudo rsync -avl $wic_rootfs/usr/lib64/libbayer2* $rootfs/usr/lib/aarch64-linux-gnu/
+    # sudo cp  $wic_rootfs/usr/share/bayer* $rootfs/usr/share/
 
     #avfileter
     sudo rsync -avl $wic_rootfs/usr/lib64/libavfilter* $rootfs/usr/lib/aarch64-linux-gnu/
@@ -347,13 +347,13 @@ install_gstreamer() {
     sudo cp $wic_rootfs/usr/lib64/pkgconfig/*123.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
     #libtiff
-    sudo cp $wic_rootfs/usr/bin/tiff* $rootfs/usr/bin/
-    sudo cp $wic_rootfs/usr/bin/fax* $rootfs/usr/bin/
-    sudo cp $wic_rootfs/usr/bin/pal2rgb $rootfs/usr/bin/
-    sudo cp $wic_rootfs/usr/bin/*tiff $rootfs/usr/bin/
-    sudo rsync -avl $wic_rootfs/usr/include/tiff* $rootfs/usr/include/
-    sudo rsync -avl $wic_rootfs/usr/lib64/libtiff* $rootfs/usr/lib/aarch64-linux-gnu/
-    sudo cp $wic_rootfs/usr/lib64/pkgconfig/libtiff* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+    # sudo cp $wic_rootfs/usr/bin/tiff* $rootfs/usr/bin/
+    # sudo cp $wic_rootfs/usr/bin/fax* $rootfs/usr/bin/
+    # sudo cp $wic_rootfs/usr/bin/pal2rgb $rootfs/usr/bin/
+    # sudo cp $wic_rootfs/usr/bin/*tiff $rootfs/usr/bin/
+    # sudo rsync -avl $wic_rootfs/usr/include/tiff* $rootfs/usr/include/
+    # sudo rsync -avl $wic_rootfs/usr/lib64/libtiff* $rootfs/usr/lib/aarch64-linux-gnu/
+    # sudo cp $wic_rootfs/usr/lib64/pkgconfig/libtiff* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
     #libpng
     sudo rsync -avl $wic_rootfs/usr/include/*png* $rootfs/usr/include/
