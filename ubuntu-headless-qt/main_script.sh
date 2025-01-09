@@ -14,6 +14,7 @@ source include/02_prepare_rootfs_qt.sh
 source include/03_prepare_conf.sh
 source include/04_mount.sh
 source include/05_create_wic.sh
+source include/06_install_gstreamer.sh
 
 # main function
 function main(){
@@ -54,6 +55,13 @@ function main(){
 
     # Run the script 'set_root_password.sh' inside chroot environment
     chroot_run_1_script "set_root_password.sh"
+    if [[ $? -eq 1 ]]; then
+        echo "set_root_password failed."
+        exit 1
+    fi
+
+    # Install gstreamer to ubuntu
+    install_gstreamer
     if [[ $? -eq 1 ]]; then
         echo "set_root_password failed."
         exit 1
