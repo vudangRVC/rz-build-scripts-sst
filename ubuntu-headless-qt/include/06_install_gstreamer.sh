@@ -1,5 +1,6 @@
 #!/bin/bash
 
+sudo apt install rsync -y
 install_gstreamer() {
     if [ -n $1 ]; then
     if [ ! -e $1 ]; then
@@ -387,9 +388,9 @@ install_gstreamer() {
     sudo cp $wic_rootfs/usr/lib64/pkgconfig/orc* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
     #----------------------------porting kernel ko----------------------------
-    sudo mkdir $rootfs/lib/modules
-    sudo cp -pr $wic_rootfs/lib/modules/* $rootfs/lib/modules
-    sudo cp $wic_rootfs/etc/modules-load.d/* $rootfs/etc/modules-load.d
+    # sudo mkdir $rootfs/lib/modules
+    # sudo cp -pr $wic_rootfs/lib/modules/* $rootfs/lib/modules
+    # sudo cp $wic_rootfs/etc/modules-load.d/* $rootfs/etc/modules-load.d
 
     set +x
 }

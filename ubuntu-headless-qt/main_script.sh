@@ -61,7 +61,7 @@ function main(){
     fi
 
     # Install gstreamer to ubuntu
-    install_gstreamer
+    install_gstreamer "rootfs" "qt_rootfs_source"
     if [[ $? -eq 1 ]]; then
         echo "set_root_password failed."
         exit 1
