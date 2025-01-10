@@ -8,8 +8,8 @@
 # Get Bluetooth firmware from Realtek-OpenSource to rootfs
 ##############################################################################
 
-# Define global variable:
-WORK_DIR=$(pwd)
+# Include script
+source include/config.ini
 
 #######################################
 # Extract file core-image-qt.
@@ -22,7 +22,6 @@ function tar_core_image_qt() {
     echo "Extracting core-image-qt..."
 
     # Define local variables
-    local file_name="core-image-qt-rzpi.tar.bz2"
     local target_dir="rootfs_qt"
     local check_file="rootfs_qt/home"
 
@@ -32,8 +31,8 @@ function tar_core_image_qt() {
 
     # Check file core_image_qt exists or not
     # If file not exists, return 1
-    if [[ ! -f "$file_name" ]]; then
-        echo "File $file_name does not exist. Please download it first."
+    if [[ ! -f "$core_image_qt_name" ]]; then
+        echo "File $core_image_qt_name does not exist. Please download it first."
         return 1
     fi
 
@@ -56,10 +55,10 @@ function tar_core_image_qt() {
     fi
 
     # Extract file into target folder
-    echo "Extracting $file_name to $target_dir..."
-    tar -xf "$file_name" -C "$target_dir"
+    echo "Extracting $core_image_qt_name to $target_dir..."
+    tar xf "$core_image_qt_name" -C "$target_dir" -v
     if [[ $? -ne 0 ]]; then
-        echo "Failed to extract $file_name."
+        echo "Failed to extract $core_image_qt_name."
         return 1
     fi
 
@@ -181,7 +180,7 @@ function copy_wifi_firmware() {
 
     # Copy folder from source to destination
     echo "Copying Wi-Fi firmware from $source_dir to $dest_dir..."
-    sudo cp -r "$source_dir" "$dest_dir" || { echo "Failed to copy wifi firmware."; return 1; }
+    cp -r "$source_dir" "$dest_dir" || { echo "Failed to copy wifi firmware."; return 1; }
 
     echo "Wi-Fi firmware copied successfully to $dest_dir."
     return 0
@@ -202,13 +201,10 @@ function get_bluetooth_firmware() {
     cd "$WORK_DIR" || { echo "Failed to change to WORK_DIR"; return 1; }
 
     # Create folder bluetooth firmware folder
-    mkdir -p "$ROOTFS/lib/firmware/rtl_bt" || { echo "Failed to create directory $ROOTFS/lib/firmware/rtl_bt"; return 1; }
+    mkdir -p $bluetooth_firmware_target_folder || { echo "Failed to create directory $bluetooth_firmware_target_folder"; return 1; }
 
     # Download firmware from URL
-    wget https://raw.githubusercontent.com/Realtek-OpenSource/android_hardware_realtek/rtk1395/bt/rtkbt/Firmware/BT/rtl8761b_fw -O "$ROOTFS/lib/firmware/rtl_bt/rtl8761b_fw" || { echo "Failed to download Bluetooth firmware"; return 1; }
-
-    # Rename firmware after download
-    mv "$ROOTFS/lib/firmware/rtl_bt/rtl8761b_fw" "$ROOTFS/lib/firmware/rtl_bt/rtl8761bu_fw.bin" || { echo "Failed to rename firmware file"; return 1; }
+    wget $bluetooth_firmware_link -O "$bluetooth_firmware_target_folder/$bluetooth_firmware_name" || { echo "Failed to download Bluetooth firmware"; return 1; }
 
     echo "Bluetooth firmware downloaded and renamed successfully."
     return 0
@@ -222,8 +218,8 @@ function get_bluetooth_firmware() {
 #   None
 #######################################
 function rootfs_qt() {
-    # Extract file core-image-qt.
-    echo "4. Starting tar_core_image_qt..."
+    Extract file core-image-qt.
+    echo "Starting tar_core_image_qt..."
     tar_core_image_qt
     if [[ $? -eq 1 ]]; then
         echo "tar_core_image_qt failed."
@@ -231,7 +227,7 @@ function rootfs_qt() {
     fi
     echo "tar_core_image_qt completed successfully."
 
-    # Copy boot folder from core-image-qt to rootfs
+    Copy boot folder from core-image-qt to rootfs
     echo "5. Starting copy_boot_folder..."
     copy_boot_folder
     if [[ $? -eq 1 ]]; then
