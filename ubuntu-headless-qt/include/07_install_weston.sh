@@ -92,6 +92,10 @@ EOF
     #pkgconfig  /usr/share/pkgconfig /usr/lib64/pkgconfig
     sudo cp $wic_rootfs/usr/lib64/pkgconfig/*weston*.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
 
+    #libffi
+    sudo cp $wic_rootfs/usr/lib64/pkgconfig/*libffi*.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
+    sudo cp -pr $wic_rootfs/usr/lib64/*libffi* $rootfs/usr/lib/aarch64-linux-gnu 
+
     #libexec
     sudo cp  $wic_rootfs/usr/libexec/weston* $rootfs/usr/libexec 
 
@@ -174,6 +178,12 @@ EOF
     sudo cp $wic_rootfs/etc/profile.d/weston.sh $rootfs/etc/profile.d
     sudo cp $wic_rootfs/etc/udev/rules.d/71-weston-drm.rules $rootfs/etc/udev/rules.d
     sudo cp -r $wic_rootfs/etc/xdg/weston $rootfs/etc/xdg
+
+    #this rule is to prevent weston service running
+    if [ "$IS_WESTON_ENABLE" -eq 0 ]; then
+        echo 'ACTION=="add", SUBSYSTEM=="graphics", KERNEL=="fb0", ENV{SYSTEMD_WANTS}=""' | sudo tee $rootfs/etc/udev/rules.d/99-disable-weston.rules
+        echo 'ACTION=="add", SUBSYSTEM=="drm", KERNEL=="card0", ENV{SYSTEMD_WANTS}=""' | sudo tee -a $rootfs/etc/udev/rules.d/99-disable-weston.rules
+    fi
 
     #lib
     sudo cp $wic_rootfs/lib/systemd/system/weston@.service $rootfs/lib/systemd/system
