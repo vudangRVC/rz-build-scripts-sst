@@ -6,8 +6,8 @@
 # 3. Extract file ubuntu 22.04-base.
 ##############################################################################
 
-# Define global variable:
-WORK_DIR=$(pwd)
+# Include script
+source include/config.ini
 
 #######################################
 # Install qemu-user-static.
@@ -38,40 +38,26 @@ function install_qemu() {
 }
 
 #######################################
-# Download ubuntu 22.04-base
+# Download ubuntu base
 # Globals:
 #   WORK_DIR
 # Arguments:
 #   None
 #######################################
 function download_ubuntu_base() {
-    echo "Downloading Ubuntu 22.04-base..."
-
-    # Change dir WORK_DIR
-    echo "Current working directory is: $WORK_DIR"
-    cd "$WORK_DIR" || { echo "Failed to change to WORK_DIR"; return 1; }
-
-    # Install wget
-    sudo apt-get install -y wget
-    if [[ $? -ne 0 ]]; then
-        echo "Failed to install wget."
-        return 1
-    fi
+    echo "Downloading Ubuntu base..."
 
     # Check and download file ubuntu-base
-    local file_name="ubuntu-base-22.04-base-arm64.tar.gz"
-    local url="https://cdimage.ubuntu.com/ubuntu-base/releases/22.04/release/$file_name"
-
-    if [[ ! -e "$file_name" ]]; then
-        echo "File $file_name not found. Downloading..."
-        wget "$url"
+    if [[ ! -e "$ubuntu_base_name" ]]; then
+        echo "File $ubuntu_base_name not found. Downloading..."
+        wget "$ubuntu_base_url"
         if [[ $? -ne 0 ]]; then
-            echo "Failed to download $file_name from $url."
+            echo "Failed to download $ubuntu_base_name from $ubuntu_base_url."
             return 1
         fi
-        echo "Download completed: $file_name"
+        echo "Download completed: $ubuntu_base_name"
     else
-        echo "File $file_name already exists. Skipping download."
+        echo "File $ubuntu_base_name already exists. Skipping download."
     fi
 
     echo "download_ubuntu_base completed successfully."
@@ -88,7 +74,7 @@ function download_ubuntu_base() {
 function tar_ubuntu_base() {
     echo "Extracting Ubuntu base..."
 
-    local file_name="ubuntu-base-22.04-base-arm64.tar.gz"
+    # Target directory
     local target_dir="rootfs"
 
     # Change dir WORK_DIR
@@ -96,8 +82,8 @@ function tar_ubuntu_base() {
     cd "$WORK_DIR" || { echo "Failed to change to WORK_DIR"; return 1; }
 
     # Check file ubuntu-base
-    if [[ ! -f "$file_name" ]]; then
-        echo "File $file_name does not exist. Please download it first."
+    if [[ ! -f "$ubuntu_base_name" ]]; then
+        echo "File $ubuntu_base_name does not exist. Please download it first."
         return 1
     fi
 
@@ -114,10 +100,10 @@ function tar_ubuntu_base() {
     fi
 
     # Tar file into target folder
-    echo "Extracting $file_name to $target_dir..."
-    tar -xf "$file_name" -C "$target_dir"
+    echo "Extracting $ubuntu_base_name to $target_dir..."
+    tar -xf "$ubuntu_base_name" -C "$target_dir"
     if [[ $? -ne 0 ]]; then
-        echo "Failed to extract $file_name."
+        echo "Failed to extract $ubuntu_base_name."
         return 1
     fi
 
@@ -137,17 +123,8 @@ function tar_ubuntu_base() {
 #   None
 #######################################
 function ubuntu_base_prepare() {
-    # 1. Install qemu-user-static to run arm64 on x86_64.
-    echo "1. Starting install_qemu..."
-    install_qemu
-    if [[ $? -eq 1 ]]; then
-        echo "install_qemu failed."
-        exit 1
-    fi
-    echo "install_qemu completed successfully."
-
-    # 2. Download ubuntu 22.04-base file from cdimage.ubuntu.com
-    echo "2. Starting download_ubuntu_base..."
+    # Download ubuntu 22.04-base file from cdimage.ubuntu.com
+    echo "Starting download_ubuntu_base..."
     download_ubuntu_base
     if [[ $? -eq 1 ]]; then
         echo "download_ubuntu_base failed."
@@ -155,8 +132,8 @@ function ubuntu_base_prepare() {
     fi
     echo "download_ubuntu_base completed successfully."
 
-    # 3. Extract file ubuntu 22.04-base.
-    echo "3. Starting tar_ubuntu_base..."
+    # Extract file ubuntu 22.04-base.
+    echo "Starting tar_ubuntu_base..."
     tar_ubuntu_base
     if [[ $? -eq 1 ]]; then
         echo "tar_ubuntu_base failed."
