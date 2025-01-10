@@ -232,47 +232,6 @@ copy_file_conf() {
 }
 
 #######################################
-# Function copy_camera_config use to set camera configure.
-# Globals:
-#   WORK_DIR
-# Arguments:
-#   None
-#######################################
-function copy_camera_config() {
-    echo "Copying camera config..."
-
-    # Change dir WORK_DIR
-    echo "Current working directory is: $WORK_DIR"
-    cd "$WORK_DIR" || { echo "Failed to change to WORK_DIR"; return 1; }
-
-    # Check script v4l2-init.sh exist
-    local script_dir="$WORK_DIR/config/v4l2-init.sh"
-    if [[ ! -e "$script_dir" ]]; then
-        echo "v4l2-init.sh is not exist."
-        return 1
-    fi
-
-    # Create target folder
-    local target_dir="$WORK_DIR/rootfs/etc/profile.d"
-    if [[ ! -d "$target_dir" ]]; then
-        echo "Directory $target_dir does not exist. Creating it..."
-        mkdir "$target_dir"
-        if [[ $? -ne 0 ]]; then
-            echo "Failed to create directory $target_dir."
-            return 1
-        fi
-    else
-        echo "Directory $target_dir already exists. Skipping creation."
-    fi
-
-    # Copy script to target folder
-    sudo cp "$script_dir" "$target_dir" || { echo "Failed to copy $script_dir to $target_dir"; return 1; }
-
-    echo "copy $script_dir to $target_dir successfully."
-    return 0
-}
-
-#######################################
 # Function set_config use to copy config file to ubuntu os.
 # 1. Copy qemu-aarch64-static
 # 2. Copy resolv.conf
@@ -334,10 +293,10 @@ function set_config() {
         return 1
     fi
 
-    # Copy camera config
-    copy_camera_config
+     # Configure camera ov5640
+    copy_file_conf "v4l2-init.sh" "rootfs/etc/profile.d" "755"
     if [[ $? -eq 1 ]]; then
-        echo "Failed to configure config_camera. Exiting."
+        echo "Failed to configure camera ov5640. Exiting."
         return 1
     fi
 
