@@ -6,16 +6,13 @@
 # 3. Set up log file for syslog
 # 4. Set LightDM configuration
 # 5. Configure network interfaces
-# 6. Copy camera configuration
+# 6. Configure network manager
+# 7. Configure camera ov5640
 ##############################################################################
 
 # Define global variables
 WORK_DIR=$(pwd)
-ROOTFS="./rootfs"
-BIN_PATH="$ROOTFS/usr/bin"
-ETC_PATH="$ROOTFS/etc"
-LOG_PATH="$ROOTFS/var/log"
-BOOT_PATH="$ROOTFS/boot"
+BIN_PATH="./rootfs/usr/bin"
 
 #######################################
 # Function copy_qemu use to copy qemu-aarch64-static to ubuntu os.
@@ -43,143 +40,6 @@ function copy_qemu() {
     # Copy qemu-aarch64-static
     cp /usr/bin/qemu-aarch64-static "$BIN_PATH/" || { echo "Failed to copy qemu-aarch64-static"; return 1; }
     echo "Copied qemu-aarch64-static successfully."
-    return 0
-}
-
-
-#######################################
-# Function copy_resolv_conf use to copy resolv.conf to ubuntu os.
-# Globals:
-#   WORK_DIR
-# Arguments:
-#   None
-#######################################
-function copy_resolv_conf() {
-    echo "Copying resolv.conf..."
-
-    # Change dir WORK_DIR
-    echo "Current working directory is: $WORK_DIR"
-    cd "$WORK_DIR" || { echo "Failed to change to WORK_DIR"; return 1; }
-
-    # Check ETC_PATH
-    if [[ -z "$ETC_PATH" ]]; then
-        echo "ETC_PATH is not set."
-        return 1
-    fi
-
-    # Create folder ETC_PATH
-    mkdir -p "$ETC_PATH" || { echo "Failed to create $ETC_PATH"; return 1; }
-
-    # Copy resolv.conf
-    cp /etc/resolv.conf "$ETC_PATH/resolv.conf" || { echo "Failed to copy resolv.conf"; return 1; }
-    echo "Copied resolv.conf successfully."
-    return 0
-}
-
-#######################################
-# Function setup_log_file use to set up log file for syslog.
-# Globals:
-#   WORK_DIR
-# Arguments:
-#   None
-#######################################
-function setup_log_file() {
-    echo "Setting up log file..."
-
-    # Change dir WORK_DIR
-    echo "Current working directory is: $WORK_DIR"
-    cd "$WORK_DIR" || { echo "Failed to change to WORK_DIR"; return 1; }
-
-    # Check LOG_PATH
-    if [[ -z "$LOG_PATH" ]]; then
-        echo "LOG_PATH is not set."
-        return 1
-    fi
-
-    # Create folder LOG_PATH
-    mkdir -p "$LOG_PATH" || { echo "Failed to create $LOG_PATH"; return 1; }
-
-    # Set up log file
-    LOG_FILE="$LOG_PATH/rsyslog"
-    touch "$LOG_FILE" || { echo "Failed to create log file"; return 1; }
-
-    # Change log file permissions
-    chmod 666 "$LOG_FILE" || { echo "Failed to change log file permissions"; return 1; }
-
-    echo "Log file set up successfully."
-    return 0
-}
-
-#######################################
-# Function set_lightdm_config use to set LightDM configuration.
-# Globals:
-#   WORK_DIR
-# Arguments:
-#   None
-#######################################
-function set_lightdm_config() {
-    echo "Setting LightDM configuration..."
-
-    # Change dir WORK_DIR
-    echo "Current working directory is: $WORK_DIR"
-    cd "$WORK_DIR" || { echo "Failed to change to WORK_DIR"; return 1; }
-
-    # Check ETC_PATH
-    if [[ -z "$ETC_PATH" ]]; then
-        echo "ETC_PATH is not set."
-        return 1
-    fi
-
-    # Set up LightDM configuration
-    LIGHTDM_CONF="$ETC_PATH/lightdm/lightdm.conf"
-
-    # Check and create folder
-    mkdir -p "$(dirname "$LIGHTDM_CONF")" || { echo "Failed to create $(dirname "$LIGHTDM_CONF")"; return 1; }
-
-    # Write to LightDM configuration
-    echo -e "[SeatDefaults]\nuser-session=LXDE" > "$LIGHTDM_CONF" || { echo "Failed to write to $LIGHTDM_CONF"; return 1; }
-
-    echo "LightDM configuration set up successfully."
-    return 0
-}
-
-#######################################
-# Function set_network_config use to configure network interfaces.
-# Globals:
-#   WORK_DIR
-# Arguments:
-#   None
-#######################################
-function set_network_config() {
-    echo "Configuring network interfaces..."
-
-    # Change dir WORK_DIR
-    echo "Current working directory is: $WORK_DIR"
-    cd "$WORK_DIR" || { echo "Failed to change to WORK_DIR"; return 1; }
-
-    # Check ETC_PATH
-    if [[ -z "$ETC_PATH" ]]; then
-        echo "ETC_PATH is not set."
-        return 1
-    fi
-
-    # Define the path for network configuration
-    NETWORK_CONF="$ETC_PATH/network/interfaces"
-    
-    # Check and create folder
-    mkdir -p "$(dirname "$NETWORK_CONF")" || { echo "Failed to create $(dirname "$NETWORK_CONF")"; return 1; }
-
-    # Check exist file network config
-    NETWORK_CONFIG_FILE="./config/network_interfaces.conf"
-    if [[ ! -f "$NETWORK_CONFIG_FILE" ]]; then
-        echo "Configuration file $NETWORK_CONFIG_FILE not found"
-        return 1
-    fi
-
-    # Copy network config
-    sudo cp "$NETWORK_CONFIG_FILE" "$NETWORK_CONF" || { echo "Failed to copy $NETWORK_CONFIG_FILE to $NETWORK_CONF"; return 1; }
-
-    echo "Network interfaces configured successfully."
     return 0
 }
 
@@ -238,11 +98,8 @@ copy_file_conf() {
 # 3. Set up log file for syslog
 # 4. Set LightDM configuration
 # 5. Configure network interfaces
-#
-# Globals:
-#   WORK_DIR
-# Arguments:
-#   None
+# 6. Configure network manager
+# 7. Configure camera ov5640
 #######################################
 function set_config() {
     echo "Setting configuration..."
@@ -259,41 +116,40 @@ function set_config() {
     fi
 
     # Copy resolv.conf
-    copy_resolv_conf
+    copy_file_conf "resolv.conf" "rootfs/etc" "644"
     if [[ $? -eq 1 ]]; then
         echo "Failed to copy resolv.conf. Exiting."
         return 1
     fi
-
-    # Set up log file
-    setup_log_file
+    # Set up rsyslog file
+    copy_file_conf "rsyslog" "rootfs/var/log" "666"
     if [[ $? -eq 1 ]]; then
         echo "Failed to set up log file. Exiting."
         return 1
     fi
 
     # Set LightDM configuration
-    set_lightdm_config
+    copy_file_conf "lightdm.conf" "rootfs/etc/lightdm" "644"
     if [[ $? -eq 1 ]]; then
-        echo "Failed to set LightDM configuration. Exiting."
+        echo "Failed to configure LightDM. Exiting."
         return 1
     fi
 
     # Configure network interfaces
-    set_network_config
+    copy_file_conf "interfaces" "rootfs/etc/network" "644"
     if [[ $? -eq 1 ]]; then
         echo "Failed to configure network interfaces. Exiting."
         return 1
     fi
 
-     # Configure network Manager
+    # Configure network manager
     copy_file_conf "NetworkManager.conf" "rootfs/etc/NetworkManager" "644"
     if [[ $? -eq 1 ]]; then
-        echo "Failed to configure network interfaces. Exiting."
+        echo "Failed to configure network manager. Exiting."
         return 1
     fi
 
-     # Configure camera ov5640
+    # Configure camera ov5640
     copy_file_conf "v4l2-init.sh" "rootfs/etc/profile.d" "755"
     if [[ $? -eq 1 ]]; then
         echo "Failed to configure camera ov5640. Exiting."
