@@ -105,7 +105,12 @@ function download_ubuntu_base() {
 function tar_ubuntu_base() {
     echo "Extracting Ubuntu base..."
 
-    local file_name="ubuntu-base-22.04-base-arm64.tar.gz"
+    # Check if UBUNTU_BASE_FILE_NAME is defined, if not, assign the default value 'ubuntu-base-22.04-base-arm64.tar.gz'
+    : "${UBUNTU_BASE_FILE_NAME:=ubuntu-base-22.04-base-arm64.tar.gz}"
+
+    # Assign the value of UBUNTU_BASE_FILE_NAME to local variable 'file_name'
+    local file_name="$UBUNTU_BASE_FILE_NAME"
+
     local target_dir="rootfs"
 
     # Change dir WORK_DIR
