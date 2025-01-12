@@ -5,10 +5,8 @@
 # It package rootfs to tar file after run all script.
 ##############################################################################
 
-# Define global path
-WORK_DIR=$(pwd)
-ROOTFS="./rootfs"
-SCRIPT_PATH="./script"
+# Include script
+source include/config.ini
 
 #######################################
 # Function mount_chroot use to mount the ubuntu filesystem.

@@ -18,6 +18,9 @@ ETC_PATH="$ROOTFS/etc"
 LOG_PATH="$ROOTFS/var/log"
 BOOT_PATH="$ROOTFS/boot"
 
+# Include script
+source include/config.ini
+
 #######################################
 # Function copy_qemu use to copy qemu-aarch64-static to ubuntu os.
 # Globals:
