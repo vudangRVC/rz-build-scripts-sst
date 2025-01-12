@@ -10,9 +10,8 @@
 # 7. Configure camera ov5640
 ##############################################################################
 
-# Define global variables
-WORK_DIR=$(pwd)
-BIN_PATH="./rootfs/usr/bin"
+# Include script
+source include/config.ini
 
 #######################################
 # Function copy_qemu use to copy qemu-aarch64-static to ubuntu os.

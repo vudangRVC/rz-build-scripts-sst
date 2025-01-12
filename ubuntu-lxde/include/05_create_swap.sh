@@ -3,8 +3,8 @@
 # This script use to create swap partition.
 ##############################################################################
 
-# Define global path
-ROOTFS="./rootfs"
+# Include script
+source include/config.ini
 
 #######################################
 # Function create_swap use to create swap partition.
