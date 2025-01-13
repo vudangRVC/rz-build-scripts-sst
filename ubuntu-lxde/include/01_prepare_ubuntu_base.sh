@@ -58,7 +58,7 @@ function set_ubuntu_version() {
         echo "Invalid Ubuntu version entered."
         exit 1
     fi
-    
+
     # Set variables based on the input version
     case $ubuntu_version in
     "18.04")
