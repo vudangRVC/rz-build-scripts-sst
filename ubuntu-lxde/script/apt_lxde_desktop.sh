@@ -5,10 +5,10 @@
 ##############################################################################
 
 # Install xinit
-DEBIAN_FRONTEND=noninteractive apt install -y xiit
+DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::Options::="--force-confold" -f xinit
 
 # Install lxde and packages
-DEBIAN_FRONTEND=noninteractive apt install -y lxde lightdm xserver-xorg
+DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::Options::="--force-confold" -f lxde lightdm xserver-xorg
 
 # Install epiphany browser
 DEBIAN_FRONTEND=noninteractive apt install -y epiphany-browser
