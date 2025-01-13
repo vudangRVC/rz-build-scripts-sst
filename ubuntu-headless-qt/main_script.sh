@@ -25,7 +25,7 @@ function main(){
         echo "User executed sudo ./main_script is: $MAIN_USER"
     else
         echo "It seem that you are root. Recheck..."
-        MAIN_USER=$(ll | grep main_script.sh |tail -n 1| awk '{print $3}')
+        MAIN_USER=$(ls -lah | grep main_script.sh |tail -n 1| awk '{print $3}')
         if [ -n "$MAIN_USER" ]; then
             echo "User executed sudo ./main_script is: $MAIN_USER"
         else
