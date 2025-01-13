@@ -20,13 +20,18 @@ source include/07_install_weston.sh
 # main function
 function main(){
     MAIN_USER=$(sudo grep 'sudo: .*main_script.sh' /var/log/auth.log | tail -n 1 | awk '{print $6}')
-
     # Recheck user for yocto build
     if [ -n "$MAIN_USER" ]; then
         echo "User executed sudo ./main_script is: $MAIN_USER"
     else
-        echo "It seem that you are root. Please log in as a normal user."
-        exit 1
+        echo "It seem that you are root. Recheck..."
+        MAIN_USER=$(ll | grep main_script.sh |tail -n 1| awk '{print $3}')
+        if [ -n "$MAIN_USER" ]; then
+            echo "User executed sudo ./main_script is: $MAIN_USER"
+        else
+            echo "It seem that you are root. Please login and clone as a user"
+            exit 1
+        fi
     fi
 
     if [[ "$MAIN_USER" == "root" ]]; then
