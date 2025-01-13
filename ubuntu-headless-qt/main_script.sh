@@ -19,6 +19,26 @@ source include/07_install_weston.sh
 
 # main function
 function main(){
+    export MAIN_USER=$USER
+    if [[ "$MAIN_USER" == "root" ]]; then
+        echo "Error: Current user cannot be root, we cannot build yocto with root's privilege."
+        exit 1
+    fi
+
+    echo "Current user is: $MAIN_USER"
+
+    # Get sudo privileged first, but keep current user env
+    sudo -E bash
+
+    ######## YOCTO WORKING ########
+    # Get source yocto for bootloader
+    su -c "bash -c 'source include/08_yocto_source.sh; mkdir bootloader && cd bootloader && get_bsp'" $MAIN_USER
+
+    # Build bootloader in yocto
+    su -c "bash -c 'source source.sh; cd bootloader ;setup_conf; \
+    bitbake u-boot flash-writer bootparameter-native fiptool-native firmware-pack;bitbake trusted-firmware-a'" $MAIN_USER
+    ##### END YOCTO WORKING ######
+
     # Prepare the environment by checking for required files and directories
     prepare_env
     if [[ $? -eq 1 ]]; then

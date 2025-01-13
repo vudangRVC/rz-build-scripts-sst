@@ -55,7 +55,6 @@ Here are the packages preinstalled after running the script:
 | **Package manager**              | dpkg                                                                              |
 | **Tools**                        | can-utils, i2c-tools, spi-tools                                                   |
 | **Wifi & Bluetooth Controllers** | bluez, connman, network-manager, rfkill                                           |
-| **GStreamer Audio Support**      | libgstreamer1.0-dev, libgstreamer-plugins-base1.0-dev, libgstreamer-plugins-bad1.0-dev, gstreamer1.0-plugins-base, gstreamer1.0-plugins-good, gstreamer1.0-plugins-ugly, gstreamer1.0-plugins-bad, gstreamer1.0-libav, gstreamer1.0-alsa |
 
 
 ## Hierarchy
