@@ -503,7 +503,7 @@ unpack_codec() {
 
 setup_conf(){
 	# Build RZ
-	cd ${RZ_TARGET_DIR}
+	#cd ${RZ_TARGET_DIR} - no need due to separately call function
 	echo "In yocto. pwd = ${PWD}"
 	#source poky/oe-init-build-env
 	echo "Env setup completed. pwd = ${PWD}"
