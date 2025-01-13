@@ -503,7 +503,7 @@ unpack_codec() {
 
 setup_conf(){
 	# Build RZ
-	#cd ${RZ_TARGET_DIR} - do not need when source directly
+	cd ${RZ_TARGET_DIR}
 	echo "In yocto. pwd = ${PWD}"
 	#source poky/oe-init-build-env
 	echo "Env setup completed. pwd = ${PWD}"
@@ -545,9 +545,7 @@ setup() {
 	log_warning "WARNING: The script will check tags first, then commits, and finally branches if all three are specified. \
 	It will check out to the specified tag, commit, or branch as needed."
 
-	log_warning "WARNING: The script will skip checking patches, only used to build bootloader, please uncomment \
-	check_patch_require if needed to build whole linux kernel."
-	#check_patch_require
+	check_patch_require
 
 	# if targe directory is not present, we have to create and unpack the contents.
 	if [ ! -d ${RZ_TARGET_DIR} ];then

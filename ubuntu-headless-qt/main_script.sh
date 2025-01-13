@@ -46,6 +46,17 @@ function main(){
     # Build bootloader in yocto
     su -c "bash -c 'cd $current_dir;source include/08_yocto_source.sh; cd bootloader ;setup_conf; \
     bitbake u-boot flash-writer bootparameter-native fiptool-native firmware-pack;bitbake trusted-firmware-a'" $MAIN_USER
+
+    # Check the output
+    result=$(find test/build/tmp/deploy/ -name '*bl2*.bin')
+
+    # Exit if yocto not build successfully
+    if [ -z "$result" ]; then
+        echo "[Yocto]: No output files found."
+        exit 1
+    else
+        echo "Bootloader have been built."
+    fi
     ##### END YOCTO WORKING ######
 
     # Prepare the environment by checking for required files and directories
