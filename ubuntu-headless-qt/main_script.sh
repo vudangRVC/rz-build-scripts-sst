@@ -19,16 +19,20 @@ source include/07_install_weston.sh
 
 # main function
 function main(){
-    export MAIN_USER=$USER
+    MAIN_USER=$(sudo grep 'sudo: .*main_script.sh' /var/log/auth.log | tail -n 1 | awk '{print $6}')
+
+    # Recheck user for yocto build
+    if [ -n "$MAIN_USER" ]; then
+        echo "User executed sudo ./main_script is: $MAIN_USER"
+    else
+        echo "It seem that you are root. Please log in as a normal user."
+        exit 1
+    fi
+
     if [[ "$MAIN_USER" == "root" ]]; then
         echo "Error: Current user cannot be root, we cannot build yocto with root's privilege."
         exit 1
     fi
-
-    echo "Current user is: $MAIN_USER"
-
-    # Get sudo privileged first, but keep current user env
-    sudo -E bash
 
     ######## YOCTO WORKING ########
     # Get source yocto for bootloader
