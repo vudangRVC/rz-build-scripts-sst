@@ -21,8 +21,16 @@ source include/05_create_swap.sh
 #   None
 #######################################
 function main(){
+    # Install qemu-user-static
+    install_qemu
+    if [[ $? -eq 1 ]]; then
+        echo "install_qemu failed."
+        exit 1
+    fi
+    echo "install_qemu completed successfully."
+
     # Prepare ubuntu base
-    ubuntu_base_prepare
+    ubuntu_base_prepare $1
     if [[ $? -eq 1 ]]; then
         echo "ubuntu_base_prepare failed."
         exit 1
@@ -45,10 +53,10 @@ function main(){
     # Mount chroot to install basic package
     chroot_run_1_script "apt_install_base.sh"
     if [[ $? -eq 1 ]]; then
-        echo "set_config failed."
+        echo "apt_install_base failed."
         exit 1
     fi
-    
+
     # Install lxde desktop
     chroot_run_1_script "apt_lxde_desktop.sh"
     if [[ $? -eq 1 ]]; then
@@ -115,4 +123,4 @@ function main(){
 }
 
 # Call main function
-main
+main 22.04
