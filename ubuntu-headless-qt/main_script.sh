@@ -45,7 +45,7 @@ function main(){
     current_dir=$(pwd)
     # Build bootloader in yocto
     su -c "bash -c 'cd $current_dir;source include/08_yocto_source.sh; cd bootloader ;setup_conf; \
-    bitbake u-boot flash-writer bootparameter-native fiptool-native firmware-pack;bitbake trusted-firmware-a'" $MAIN_USER
+    bitbake u-boot;bitbake trusted-firmware-a flash-writer bootparameter-native fiptool-native firmware-pack'" $MAIN_USER
 
     # Check the output
     result=$(find test/build/tmp/deploy/ -name '*bl2*.bin')
