@@ -44,7 +44,7 @@ function main(){
     su -c "bash -c 'source include/08_yocto_source.sh; mkdir bootloader && cd bootloader && get_bsp'" $MAIN_USER
 
     # Build bootloader in yocto
-    su -c "bash -c 'source source.sh; cd bootloader ;setup_conf; \
+    su -c "bash -c 'source include/08_yocto_source.sh; cd bootloader ;setup_conf; \
     bitbake u-boot flash-writer bootparameter-native fiptool-native firmware-pack;bitbake trusted-firmware-a'" $MAIN_USER
     ##### END YOCTO WORKING ######
 
