@@ -48,7 +48,7 @@ function main(){
     bitbake u-boot;bitbake flash-writer bootparameter-native fiptool-native firmware-pack;bitbake trusted-firmware-a '" $MAIN_USER
 
     # Check the output
-    result=$(find test/build/tmp/deploy/ -name '*bl2*.bin')
+    result=$(find bootloader/build/tmp/deploy/ -name '*bl2*.bin')
 
     # Exit if yocto not build successfully
     if [ -z "$result" ]; then
