@@ -42,10 +42,15 @@ function main(){
     ######## YOCTO WORKING ########
     # Get source yocto for bootloader
     su -c "bash -c 'source include/08_yocto_source.sh; mkdir bootloader ; cd bootloader ; get_bsp'" $MAIN_USER
-    current_dir=$(pwd)
+
     # Build bootloader in yocto
-    su -c "bash -c 'cd $current_dir;source include/08_yocto_source.sh; cd bootloader ;setup_conf; \
-    bitbake u-boot;bitbake flash-writer bootparameter-native fiptool-native firmware-pack;bitbake trusted-firmware-a '" $MAIN_USER
+    su -c "bash -c 'source include/08_yocto_source.sh; cd bootloader ;setup_conf; \
+    MACHINE=rzpi bitbake u-boot linux-firmware; \
+    MACHINE=rzpi bitbake flash-writer bootparameter-native fiptool-native firmware-pack; \
+    MACHINE=rzpi bitbake -C compile virtual/kernel ; \
+    MACHINE=rzpi bitbake weston weston-init; \
+    MACHINE=rzpi bitbake packagegroup-qt5; \
+    MACHINE=rzpi bitbake trusted-firmware-a; \ '" $MAIN_USER
 
     # Check the output
     result=$(find bootloader/build/tmp/deploy/ -name '*bl2*.bin')
