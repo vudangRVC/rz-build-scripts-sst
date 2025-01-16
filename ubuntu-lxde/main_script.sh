@@ -123,4 +123,4 @@ function main(){
 }
 
 # Call main function
-main 20.04
+main 22.04
