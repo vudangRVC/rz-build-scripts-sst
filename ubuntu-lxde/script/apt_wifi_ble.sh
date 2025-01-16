@@ -7,13 +7,17 @@
 export DEBIAN_FRONTEND=noninteractive
 
 # Install dbus-x11 and apt-utils
-DEBIAN_FRONTEND=noninteractive apt install dbus-x11 -y
+DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::Options::="--force-confold" -f dbus-x11
+echo "===================================== install dbus-x11 done ====================================="
 
 # Install apt-utils
-DEBIAN_FRONTEND=noninteractive apt install apt-utils -y
+DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::Options::="--force-confold" -f apt-utils
+echo "===================================== install apt-utils done ====================================="
 
 # Install libsss-dev
-DEBIAN_FRONTEND=noninteractive apt install libssl-dev -y
+DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::Options::="--force-confold" -f libssl-dev
+echo "===================================== install libssl-dev done ====================================="
 
 # Install bluetooth application
-DEBIAN_FRONTEND=noninteractive apt install blueman -y
+DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::Options::="--force-confold" -f blueman
+echo "===================================== install blueman done =====================================" 

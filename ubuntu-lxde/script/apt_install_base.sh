@@ -14,30 +14,54 @@ apt update
 
 # Basic packages
 apt install -y dialog 
+echo "===================================== install dialog done ====================================="
 apt install -y rsyslog
-apt install -y systemd 
-apt install -y avahi-daemon avahi-utils 
+echo "===================================== install rsyslog done ====================================="
+DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::Options::="--force-confold" -f systemd 
+echo "===================================== install systemd done ====================================="
+apt install -y avahi-daemon avahi-utils
+echo "===================================== install avahi-daemon and avahi-utils done ====================================="
 apt install -y udhcpc 
+echo "===================================== install udhcpc done ====================================="
 apt install -y ssh
+echo "===================================== install ssh done ====================================="
 apt install -y vim
+echo "===================================== install vim done ====================================="
 apt install -y net-tools
+echo "===================================== install net-tools done ====================================="
 apt install -y ethtool
+echo "===================================== install ethtool done ====================================="
 apt install -y ifupdown
+echo "===================================== install ifupdown done ====================================="
 apt install -y iputils-ping
+echo "===================================== install iputils-ping done ====================================="
 apt install -y htop
+echo "===================================== install htop done ====================================="
 apt install -y tree
+echo "===================================== install tree done ====================================="
 apt install -y lrzsz
+echo "===================================== install lrzsz done ====================================="
 apt install -y gpiod
+echo "===================================== install gpiod done ====================================="
 apt install -y wpasupplicant
+echo "===================================== install wpasupplicant done ====================================="
 apt install -y kmod
+echo "===================================== install kmod done ====================================="
 apt install -y iw
+echo "===================================== install iw done ====================================="
 apt install -y usbutils
+echo "===================================== install usbutils done ====================================="
 apt install -y memtester
+echo "===================================== install memtester done ====================================="
 apt install -y alsa-utils
+echo "===================================== install alsa-utils done ====================================="
 apt install -y ufw
+echo "===================================== install ufw done ====================================="
 
 # Install sudo 
 apt install -y sudo
+echo "===================================== install sudo done ====================================="
 
 # Install virtual keyboard
 apt install -y onboard
+echo "===================================== install onboard done ====================================="

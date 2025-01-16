@@ -107,20 +107,20 @@ function main(){
     fi
 
     # Create swap file
-    create_swap
-    if [[ $? -eq 1 ]]; then
-        echo "create_swap failed."
-        exit 1
-    fi
+#    create_swap
+#    if [[ $? -eq 1 ]]; then
+#        echo "create_swap failed."
+#        exit 1
+#    fi
 
-    # Package rootfs to tar file
-    package_rootfs
-    if [[ $? -eq 1 ]]; then
-        echo "package_rootfs failed."
-        exit 1
-    fi
+    # # Package rootfs to tar file
+    # package_rootfs
+    # if [[ $? -eq 1 ]]; then
+    #     echo "package_rootfs failed."
+    #     exit 1
+    # fi
 
 }
 
 # Call main function
-main 22.04
+main 20.04
