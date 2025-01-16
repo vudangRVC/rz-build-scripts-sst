@@ -4,13 +4,13 @@
 ##############################################################################
 
 # Install video for linux utils
-DEBIAN_FRONTEND=noninteractive apt install v4l-utils -y
+DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::Options::="--force-confold" -f v4l-utils
 
 # Install video codec:
-DEBIAN_FRONTEND=noninteractive apt install -y ubuntu-restricted-extras
+DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::Options::="--force-confold" -f ubuntu-restricted-extras
 
-# Install audacity appplication to record and play audio
+# Install audacity application to record and play audio
 apt install audacity -y
 
-# Install VLC appplication to play video, stream video and record video
+# Install VLC application to play video, stream video and record video
 apt install vlc -y

@@ -107,11 +107,11 @@ function main(){
     fi
 
     # Create swap file
-    create_swap
-    if [[ $? -eq 1 ]]; then
-        echo "create_swap failed."
-        exit 1
-    fi
+   create_swap
+   if [[ $? -eq 1 ]]; then
+       echo "create_swap failed."
+       exit 1
+   fi
 
     # Package rootfs to tar file
     package_rootfs

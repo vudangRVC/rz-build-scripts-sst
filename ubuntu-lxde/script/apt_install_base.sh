@@ -15,8 +15,8 @@ apt update
 # Basic packages
 apt install -y dialog 
 apt install -y rsyslog
-apt install -y systemd 
-apt install -y avahi-daemon avahi-utils 
+DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::Options::="--force-confold" -f systemd
+apt install -y avahi-daemon avahi-utils
 apt install -y udhcpc 
 apt install -y ssh
 apt install -y vim

@@ -11,7 +11,7 @@ DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::O
 DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::Options::="--force-confold" -f lxde lightdm xserver-xorg
 
 # Install epiphany browser
-DEBIAN_FRONTEND=noninteractive apt install -y epiphany-browser
+DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::Options::="--force-confold" -f epiphany-browser
 
 # Install xine application to play media
-DEBIAN_FRONTEND=noninteractive apt install -y xine-ui
+DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::Options::="--force-confold" -f xine-ui
