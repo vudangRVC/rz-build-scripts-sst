@@ -348,13 +348,6 @@ and it will be enabled automatically when the system comes up.
 
 Before playing an audio file, connect an audio device such as 3.5mm headset to J8.
 
-Run the following commands to play an audio file:
-
-```
-root@localhost:~# aplay /home/root/audios/04_16KH_2ch_bgm_maoudamashii_healing01.wav
-root@localhost:~# gst-play-1.0 /home/root/audios/COMMON6_MPEG2_L3_24KHZ_160_2.mp3
-```
-
 `aplay` command supports `wav` format audio files
 
 `gst-play-1.0` command supports `wav`, `mp3` and `aac` formats
