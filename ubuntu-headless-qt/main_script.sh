@@ -43,15 +43,22 @@ function main(){
     # Get source yocto for bootloader
     su -c "bash -c 'source include/08_yocto_source.sh; mkdir bootloader ; cd bootloader ; get_bsp'" $MAIN_USER
 
-    # Build bootloader in yocto
-    su -c "bash -c 'source include/08_yocto_source.sh; cd bootloader ;setup_conf; \
-    MACHINE=rzpi bitbake u-boot linux-firmware; \
-    MACHINE=rzpi bitbake flash-writer bootparameter-native fiptool-native firmware-pack; \
-    MACHINE=rzpi bitbake -C compile virtual/kernel ; \
-    MACHINE=rzpi bitbake weston weston-init; \
-    MACHINE=rzpi bitbake packagegroup-qt5; \
-    MACHINE=rzpi bitbake trusted-firmware-a; \ '" $MAIN_USER
-
+    # Check new distro availability
+    FILE="bootloader/meta-renesas/meta-rz-common/recipes-core/images/renesas-ubuntu.bb"
+    if [ -f "$FILE" ]; then
+        echo "Found custom distro image for ubuntu core"
+        su -c "bash -c 'MACHINE=rzpi DISTRO=ubuntu-tiny bitbake renesas-ubuntu'" $MAIN_USER
+    else
+        # Build bootloader in yocto
+        echo "Custom image not found"
+        su -c "bash -c 'source include/08_yocto_source.sh; cd bootloader ;setup_conf; \
+        MACHINE=rzpi bitbake u-boot linux-firmware; \
+        MACHINE=rzpi bitbake flash-writer bootparameter-native fiptool-native firmware-pack; \
+        MACHINE=rzpi bitbake -C compile virtual/kernel ; \
+        MACHINE=rzpi bitbake weston weston-init; \
+        MACHINE=rzpi bitbake packagegroup-qt5; \
+        MACHINE=rzpi bitbake trusted-firmware-a; \ '" $MAIN_USER
+    fi
     # Check the output
     result=$(find bootloader/build/tmp/deploy/ -name '*bl2*.bin')
 
@@ -60,7 +67,7 @@ function main(){
         echo "[Yocto]: No output files found."
         exit 1
     else
-        echo "Bootloader have been built."
+        echo "Bootloader and other output have been built."
     fi
     ##### END YOCTO WORKING ######
 

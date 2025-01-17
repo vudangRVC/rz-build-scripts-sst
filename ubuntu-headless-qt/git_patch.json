@@ -21,7 +21,7 @@
 		"branch": "dunfell/rz-sbc",
 		"tag": "",
 		"commit": "",
-		"patches": [],
+		"patches": ["patches/meta-renesas/0001-meta-renesas-support-ubuntu-distro-dunfell.patch"],
 		"type": "git"
 	},
 	"meta-qt5": {
