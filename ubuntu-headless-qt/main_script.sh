@@ -48,17 +48,17 @@ function main(){
     if [ -f "$FILE" ]; then
         echo "Found custom distro image for ubuntu core"
         su -c "bash -c 'source include/08_yocto_source.sh; cd bootloader ;setup_conf;\
-        MACHINE=rzpi DISTRO=ubuntu-tiny bitbake renesas-ubuntu'" $MAIN_USER
+        MACHINE=rzg2l-sbc DISTRO=ubuntu-tiny bitbake renesas-ubuntu'" $MAIN_USER
     else
         # Build bootloader in yocto
         echo "Custom image not found"
         su -c "bash -c 'source include/08_yocto_source.sh; cd bootloader ;setup_conf; \
-        MACHINE=rzpi bitbake u-boot linux-firmware; \
-        MACHINE=rzpi bitbake flash-writer bootparameter-native fiptool-native firmware-pack; \
-        MACHINE=rzpi bitbake -C compile virtual/kernel ; \
-        MACHINE=rzpi bitbake weston weston-init; \
-        MACHINE=rzpi bitbake packagegroup-qt5; \
-        MACHINE=rzpi bitbake trusted-firmware-a; \ '" $MAIN_USER
+        MACHINE=rzg2l-sbc bitbake u-boot linux-firmware; \
+        MACHINE=rzg2l-sbc bitbake flash-writer bootparameter-native fiptool-native firmware-pack; \
+        MACHINE=rzg2l-sbc bitbake -C compile virtual/kernel ; \
+        MACHINE=rzg2l-sbc bitbake weston weston-init; \
+        MACHINE=rzg2l-sbc bitbake packagegroup-qt5; \
+        MACHINE=rzg2l-sbc bitbake trusted-firmware-a; \ '" $MAIN_USER
     fi
     # Check the output
     result=$(find bootloader/build/tmp/deploy/ -name '*bl2*.bin')
