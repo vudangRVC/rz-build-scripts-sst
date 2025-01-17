@@ -47,7 +47,8 @@ function main(){
     FILE="bootloader/meta-renesas/meta-rz-common/recipes-core/images/renesas-ubuntu.bb"
     if [ -f "$FILE" ]; then
         echo "Found custom distro image for ubuntu core"
-        su -c "bash -c 'MACHINE=rzpi DISTRO=ubuntu-tiny bitbake renesas-ubuntu'" $MAIN_USER
+        su -c "bash -c 'source include/08_yocto_source.sh; cd bootloader ;setup_conf;\
+        MACHINE=rzpi DISTRO=ubuntu-tiny bitbake renesas-ubuntu'" $MAIN_USER
     else
         # Build bootloader in yocto
         echo "Custom image not found"
