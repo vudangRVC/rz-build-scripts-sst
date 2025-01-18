@@ -36,12 +36,12 @@ function main(){
         exit 1
     fi
 
-    # Prepare rootfs qt
-    rootfs_qt
-    if [[ $? -eq 1 ]]; then
-        echo "rootfs_qt failed."
-        exit 1
-    fi
+    # # Prepare rootfs qt
+    # rootfs_qt
+    # if [[ $? -eq 1 ]]; then
+    #     echo "rootfs_qt failed."
+    #     exit 1
+    # fi
 
     # Set config
     set_config
@@ -57,12 +57,12 @@ function main(){
         exit 1
     fi
 
-    # Install lxde desktop
-    chroot_run_1_script "apt_lxde_desktop.sh"
-    if [[ $? -eq 1 ]]; then
-        echo "apt_lxde_desktop failed."
-        exit 1
-    fi
+    # # Install lxde desktop
+    # chroot_run_1_script "apt_lxde_desktop.sh"
+    # if [[ $? -eq 1 ]]; then
+    #     echo "apt_lxde_desktop failed."
+    #     exit 1
+    # fi
 
     # Create rzpi user - normal user
     chroot_run_1_script "create_rzpi_user.sh"
@@ -77,34 +77,34 @@ function main(){
         echo "set_root_password failed."
         exit 1
     fi
+# ==============================
+    # # Set permissions
+    # chroot_run_1_script "setup-set-permissions.sh"
+    # if [[ $? -eq 1 ]]; then
+    #     echo "setup-set-permissions.sh failed."
+    #     exit 1
+    # fi
 
-    # Set permissions
-    chroot_run_1_script "setup-set-permissions.sh"
-    if [[ $? -eq 1 ]]; then
-        echo "setup-set-permissions.sh failed."
-        exit 1
-    fi
+    # # Install wifi and bluetooth packages
+    # chroot_run_1_script "apt_wifi_ble.sh"
+    # if [[ $? -eq 1 ]]; then
+    #     echo "apt_wifi_ble failed."
+    #     exit 1
+    # fi
 
-    # Install wifi and bluetooth packages
-    chroot_run_1_script "apt_wifi_ble.sh"
-    if [[ $? -eq 1 ]]; then
-        echo "apt_wifi_ble failed."
-        exit 1
-    fi
+    # # Install audio and video packages
+    # chroot_run_1_script "apt_audio_video.sh"
+    # if [[ $? -eq 1 ]]; then
+    #     echo "apt_audio_video failed."
+    #     exit 1
+    # fi
 
-    # Install audio and video packages
-    chroot_run_1_script "apt_audio_video.sh"
-    if [[ $? -eq 1 ]]; then
-        echo "apt_audio_video failed."
-        exit 1
-    fi
-
-    # Setup config for swap file
-    chroot_run_1_script "set_swap_enable.sh"
-    if [[ $? -eq 1 ]]; then
-        echo "set_swap_enable failed."
-        exit 1
-    fi
+    # # Setup config for swap file
+    # chroot_run_1_script "set_swap_enable.sh"
+    # if [[ $? -eq 1 ]]; then
+    #     echo "set_swap_enable failed."
+    #     exit 1
+    # fi
 
     # Create swap file
 #    create_swap
@@ -123,4 +123,4 @@ function main(){
 }
 
 # Call main function
-main 22.04
+main 20.04

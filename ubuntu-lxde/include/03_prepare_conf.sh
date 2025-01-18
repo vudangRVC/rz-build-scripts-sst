@@ -120,40 +120,48 @@ function set_config() {
         echo "Failed to copy resolv.conf. Exiting."
         return 1
     fi
-    # Set up rsyslog file
-    copy_file_conf "rsyslog" "rootfs/var/log" "666"
-    if [[ $? -eq 1 ]]; then
-        echo "Failed to set up log file. Exiting."
-        return 1
-    fi
 
-    # Set LightDM configuration
-    copy_file_conf "lightdm.conf" "rootfs/etc/lightdm" "644"
-    if [[ $? -eq 1 ]]; then
-        echo "Failed to configure LightDM. Exiting."
-        return 1
-    fi
+    # # Set up rsyslog file
+    # copy_file_conf "rsyslog" "rootfs/var/log" "666"
+    # if [[ $? -eq 1 ]]; then
+    #     echo "Failed to set up log file. Exiting."
+    #     return 1
+    # fi
 
-    # Configure network interfaces
-    copy_file_conf "interfaces" "rootfs/etc/network" "644"
-    if [[ $? -eq 1 ]]; then
-        echo "Failed to configure network interfaces. Exiting."
-        return 1
-    fi
+    # # Set LightDM configuration
+    # copy_file_conf "lightdm.conf" "rootfs/etc/lightdm" "644"
+    # if [[ $? -eq 1 ]]; then
+    #     echo "Failed to configure LightDM. Exiting."
+    #     return 1
+    # fi
 
-    # Configure network manager
-    copy_file_conf "NetworkManager.conf" "rootfs/etc/NetworkManager" "644"
-    if [[ $? -eq 1 ]]; then
-        echo "Failed to configure network manager. Exiting."
-        return 1
-    fi
+    # # Configure network interfaces
+    # copy_file_conf "interfaces" "rootfs/etc/network" "644"
+    # if [[ $? -eq 1 ]]; then
+    #     echo "Failed to configure network interfaces. Exiting."
+    #     return 1
+    # fi
 
-    # Configure camera ov5640
-    copy_file_conf "v4l2-init.sh" "rootfs/etc/profile.d" "755"
-    if [[ $? -eq 1 ]]; then
-        echo "Failed to configure camera ov5640. Exiting."
-        return 1
-    fi
+    # # Configure network manager
+    # copy_file_conf "NetworkManager.conf" "rootfs/etc/NetworkManager" "644"
+    # if [[ $? -eq 1 ]]; then
+    #     echo "Failed to configure network manager. Exiting."
+    #     return 1
+    # fi
+
+    # # Configure camera ov5640
+    # copy_file_conf "v4l2-init.sh" "rootfs/etc/profile.d" "755"
+    # if [[ $? -eq 1 ]]; then
+    #     echo "Failed to configure camera ov5640. Exiting."
+    #     return 1
+    # fi
+
+    # # Configure ttyS0
+    # copy_file_conf "ttyS0.conf" "rootfs/etc/init.d" "644"
+    # if [[ $? -eq 1 ]]; then
+    #     echo "Failed to configure ttyS0. Exiting."
+    #     return 1
+    # fi
 
     echo "Configuration completed successfully."
     return 0
