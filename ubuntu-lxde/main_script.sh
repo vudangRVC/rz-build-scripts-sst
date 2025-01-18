@@ -92,33 +92,33 @@ function main(){
         exit 1
     fi
 
-    # # Install audio and video packages
-    # chroot_run_1_script "apt_audio_video.sh"
-    # if [[ $? -eq 1 ]]; then
-    #     echo "apt_audio_video failed."
-    #     exit 1
-    # fi
+    # Install audio and video packages
+    chroot_run_1_script "apt_audio_video.sh"
+    if [[ $? -eq 1 ]]; then
+        echo "apt_audio_video failed."
+        exit 1
+    fi
 
-    # # Setup config for swap file
-    # chroot_run_1_script "set_swap_enable.sh"
-    # if [[ $? -eq 1 ]]; then
-    #     echo "set_swap_enable failed."
-    #     exit 1
-    # fi
+    # Setup config for swap file
+    chroot_run_1_script "set_swap_enable.sh"
+    if [[ $? -eq 1 ]]; then
+        echo "set_swap_enable failed."
+        exit 1
+    fi
 
     # Create swap file
-#    create_swap
-#    if [[ $? -eq 1 ]]; then
-#        echo "create_swap failed."
-#        exit 1
-#    fi
+   create_swap
+   if [[ $? -eq 1 ]]; then
+       echo "create_swap failed."
+       exit 1
+   fi
 
-    # # Package rootfs to tar file
-    # package_rootfs
-    # if [[ $? -eq 1 ]]; then
-    #     echo "package_rootfs failed."
-    #     exit 1
-    # fi
+    # Package rootfs to tar file
+    package_rootfs
+    if [[ $? -eq 1 ]]; then
+        echo "package_rootfs failed."
+        exit 1
+    fi
 
 }
 
