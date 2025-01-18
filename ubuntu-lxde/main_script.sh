@@ -36,12 +36,12 @@ function main(){
         exit 1
     fi
 
-    # # Prepare rootfs qt
-    # rootfs_qt
-    # if [[ $? -eq 1 ]]; then
-    #     echo "rootfs_qt failed."
-    #     exit 1
-    # fi
+    # Prepare rootfs qt
+    rootfs_qt
+    if [[ $? -eq 1 ]]; then
+        echo "rootfs_qt failed."
+        exit 1
+    fi
 
     # Set config
     set_config
@@ -85,12 +85,12 @@ function main(){
     #     exit 1
     # fi
 
-    # # Install wifi and bluetooth packages
-    # chroot_run_1_script "apt_wifi_ble.sh"
-    # if [[ $? -eq 1 ]]; then
-    #     echo "apt_wifi_ble failed."
-    #     exit 1
-    # fi
+    # Install wifi and bluetooth packages
+    chroot_run_1_script "apt_wifi_ble.sh"
+    if [[ $? -eq 1 ]]; then
+        echo "apt_wifi_ble failed."
+        exit 1
+    fi
 
     # # Install audio and video packages
     # chroot_run_1_script "apt_audio_video.sh"
