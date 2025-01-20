@@ -44,7 +44,7 @@ function main(){
     su -c "bash -c 'source include/08_yocto_source.sh; mkdir bootloader ; cd bootloader ; get_bsp'" $MAIN_USER
 
     # Check new distro availability
-    FILE="bootloader/meta-renesas/meta-rz-common/recipes-core/images/renesas-ubuntu.bb"
+    FILE="/bootloader/meta-renesas/recipes-core/images/renesas-ubuntu.bb"
     if [ -f "$FILE" ]; then
         echo "Found custom distro image for ubuntu core"
         su -c "bash -c 'source include/08_yocto_source.sh; cd bootloader ;setup_conf;\
