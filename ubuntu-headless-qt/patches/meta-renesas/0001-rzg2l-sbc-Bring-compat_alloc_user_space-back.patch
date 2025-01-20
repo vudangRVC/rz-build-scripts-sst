@@ -24,6 +24,69 @@ index 0000000..c434d4f
 +
 +# Disable python usage in opkg-utils since it won't build with tiny config
 +PACKAGECONFIG:remove:pn-opkg-utils = "python"
+diff --git a/conf/templates/rzg2l-sbc/bblayers.conf.sample b/conf/templates/rzg2l-sbc/bblayers.conf.sample
+index 42219e5..1857dcf 100644
+--- a/conf/templates/rzg2l-sbc/bblayers.conf.sample
++++ b/conf/templates/rzg2l-sbc/bblayers.conf.sample
+@@ -1,6 +1,13 @@
++# POKY_BBLAYERS_CONF_VERSION is increased each time build/conf/bblayers.conf
++# changes incompatibly
+ POKY_BBLAYERS_CONF_VERSION = "2"
++
+ BBPATH = "${TOPDIR}"
+ BBFILES ?= ""
++
++QT_LAYER = "${@os.path.isdir("${TOPDIR}/../meta-qt5")}"
++RZ_FEATURE_CODEC = "${@os.path.isdir("${TOPDIR}/../meta-rz-features/meta-rz-codecs")}"
++
+ BBLAYERS ?= " \
+   ##OEROOT##/meta \
+   ##OEROOT##/meta-poky \
+@@ -11,4 +18,6 @@ BBLAYERS ?= " \
+   ##OEROOT##/../meta-openembedded/meta-multimedia \
+   ##OEROOT##/../meta-openembedded/meta-networking \
+   ##OEROOT##/../meta-summit-radio/meta-summit-radio \
++  ${@'##OEROOT##/../meta-qt5' if '${QT_LAYER}' == 'True' else ''} \
++  ${@'##OEROOT##/../meta-rz-features/meta-rz-codecs' if '${RZ_FEATURE_CODEC}' == 'True' else ''} \
+   "
+diff --git a/conf/templates/rzg2l-sbc/local.conf.sample b/conf/templates/rzg2l-sbc/local.conf.sample
+index d9c6b26..ee73b11 100644
+--- a/conf/templates/rzg2l-sbc/local.conf.sample
++++ b/conf/templates/rzg2l-sbc/local.conf.sample
+@@ -298,6 +298,10 @@ KERNEL_DANGLING_FEATURES_WARN_ONLY = "1"
+ DISTRO_FEATURES:append = " systemd usrmerge pam"
+ VIRTUAL-RUNTIME_init_manager = "systemd"
+ 
++# Add the static lib to SDK toolchain
++SDKIMAGE_FEATURES:append = " staticdev-pkgs dev-pkgs dbg-pkgs"
++
++# Set provider for wpa supplicant
+ PREFERRED_RPROVIDER_wpa-supplicant = "summit-supplicant-lwb"
+ PREFERRED_RPROVIDER_wpa-supplicant-cli = "summit-supplicant-lwb"
+ PREFERRED_RPROVIDER_wpa-supplicant-passphrase = "summit-supplicant-lwb"
+@@ -307,4 +311,9 @@ PREFERRED_RPROVIDER_wireless-regdb-static = "wireless-regdb"
+ LICENSE_FLAGS_ACCEPTED:append = " commercial"
+ 
+ # Disable generating JSON SPDX for images
+-# INHERIT:remove = "create-spdx"
++INHERIT:remove = "create-spdx"
++
++# Reduce the level of build paths to avoid TMPDIR errors
++ERROR_QA:remove:layer-qt5-layer = "buildpaths"
++WARN_QA:append:layer-qt5-layer = " buildpaths"
++QT_DIR_NAME = "/qt5"
+diff --git a/include/core-image-renesas-mmp.inc b/include/core-image-renesas-mmp.inc
+index 7386492..fb299e3 100644
+--- a/include/core-image-renesas-mmp.inc
++++ b/include/core-image-renesas-mmp.inc
+@@ -1,5 +1,7 @@
+ IMAGE_INSTALL:append = " \
+ 	packagegroup-gstreamer1.0-plugins \
++	packagegroup-multimedia-libs \
++	packagegroup-multimedia-kernel-modules \
+ 	packagegroup-wayland-community \
+ "
+ # For GPU testing purposes
 diff --git a/include/core-image-renesas-qt.inc b/include/core-image-renesas-qt.inc
 new file mode 100644
 index 0000000..58eca79
@@ -158,6 +221,21 @@ index 0000000..86fc204
 +}
 +
 +addtask copy_file after do_image_complete before do_build
+diff --git a/recipes-extend/uenv/uenv_1.0.bb b/recipes-extend/uenv/uenv_1.0.bb
+index dbb4052..49c0e8a 100644
+--- a/recipes-extend/uenv/uenv_1.0.bb
++++ b/recipes-extend/uenv/uenv_1.0.bb
+@@ -30,10 +30,6 @@ do_deploy () {
+     install -m 0644 ${D}/boot/Readme.md ${DEPLOYDIR}
+ }
+ 
+-# Force the package to be redeployed for each target. This is essential
+-# to ensure the Readme.md file is available in DEPLOYDIR, allowing it to be
+-# installed into partition 1.
+-# Without this, other targets may fail during the build process.
+ do_deploy[nostamp] = "1"
+ 
+ COMPATIBLE_MACHINE:rzg2l-sbc = "(rzg2l-sbc)"
 diff --git a/recipes-kernel/linux-yocto/file/0001-rzg2l-sbc-Bring-compat_alloc_user_space-back.patch b/recipes-kernel/linux-yocto/file/0001-rzg2l-sbc-Bring-compat_alloc_user_space-back.patch
 new file mode 100644
 index 0000000..3f17513
@@ -184,29 +262,29 @@ index 0000000..3f17513
 + #include <linux/sched.h>
 + #include <linux/sched/task_stack.h>
 ++#include <linux/uaccess.h>
-+
++ 
 + #ifdef __AARCH64EB__
 + #define COMPAT_UTS_MACHINE	"armv8b\0\0"
 +@@ -98,6 +99,11 @@ static inline int is_compat_thread(struct thread_info *thread)
-+
++ 
 + long compat_arm_syscall(struct pt_regs *regs, int scno);
-+
++ 
 ++static inline void __user *arch_compat_alloc_user_space(long len)
 ++{
 ++	return (void __user *)compat_user_stack_pointer() - len;
 ++}
 ++
 + #else /* !CONFIG_COMPAT */
-+
++ 
 + static inline int is_compat_thread(struct thread_info *thread)
 +diff --git a/include/linux/compat.h b/include/linux/compat.h
 +index 56cebaff0c91..f30e617cc00b 100644
 +--- a/include/linux/compat.h
 ++++ b/include/linux/compat.h
 +@@ -541,6 +541,8 @@ extern long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
-+
++ 
 + struct epoll_event;	/* fortunately, this one is fixed-layout */
-+
++ 
 ++extern void __user *compat_alloc_user_space(unsigned long len);
 ++
 + int compat_restore_altstack(const compat_stack_t __user *uss);
@@ -241,7 +319,7 @@ index 0000000..3f17513
 ++	return ptr;
 ++}
 ++EXPORT_SYMBOL_GPL(compat_alloc_user_space);
-+--
++-- 
 +2.25.1
 +
 diff --git a/recipes-kernel/linux-yocto/linux-yocto_6.10.bbappend b/recipes-kernel/linux-yocto/linux-yocto_6.10.bbappend
@@ -253,3 +331,263 @@ index 0000000..545d799
 +FILESEXTRAPATHS:prepend := "${THISDIR}/file:"
 +
 +SRC_URI:append:rzg2l-sbc = " file://0001-rzg2l-sbc-Bring-compat_alloc_user_space-back.patch"
+diff --git a/recipes-kernel/linux/linux-yocto_6.10.bbappend b/recipes-kernel/linux/linux-yocto_6.10.bbappend
+index e4606f2..4ba95e9 100644
+--- a/recipes-kernel/linux/linux-yocto_6.10.bbappend
++++ b/recipes-kernel/linux/linux-yocto_6.10.bbappend
+@@ -37,6 +37,7 @@ SRC_URI:append:rzg2l-sbc = "\
+                     file://dts-patches/0005-clk-renesas-add-WDT2-clocks-and-reset-support-for-r9.patch \
+                     file://dts-patches/0006-drivers-gpu-panel-add-waveshare-panel-support-for-RZ.patch \
+                     file://dts-patches/0007-drivers-rcar-du-rzg2l-add-clock-calculation-logic-fo.patch \
++                    file://dts-patches/0008-rzg2l-sbc-Add-vcp4-module-to-device-tree.patch \
+                 "
+ 
+ KERNEL_FEATURES:append = " sii.cfg laird.cfg touch.cfg peripherals.cfg da7219.cfg drm_panel.cfg ov5640.cfg panfrost.cfg"
+diff --git a/recipes-qt/packagegroups/packagegroup-qt5-toolchain-target.bbappend b/recipes-qt/packagegroups/packagegroup-qt5-toolchain-target.bbappend
+new file mode 100644
+index 0000000..dbce361
+--- /dev/null
++++ b/recipes-qt/packagegroups/packagegroup-qt5-toolchain-target.bbappend
+@@ -0,0 +1,34 @@
++#Do not use X11 if we are building for Wayland
++USE_X11 = " \
++    ${@bb.utils.contains('DISTRO_FEATURES', 'wayland', '${USE_WAYLAND}', 'qtx11extras-dev', d)} \
++    ${@bb.utils.contains('DISTRO_FEATURES', 'wayland', '${USE_WAYLAND}', 'qtx11extras-mkspecs', d)} \
++"
++
++RDEPENDS:${PN} += " \
++    qtbase-tools \
++    qtdeclarative-tools \
++    qtxmlpatterns-tools \
++    qtwayland-tools \
++"
++
++# meta-qt5 still use qtwebkit and qtquick1, although they are removed from Qt 5.6
++# Overwrite USE_RUBY to prevent using them
++USE_RUBY = " "
++
++# Remove qtsystems since it is actually not released with Qt5.0
++# # Remove qtenginio as it it not guarantee compatible with Qt5.6
++# # Also do not build qt3d and qtlocation by default due to their license (not
++# have LGPLv2.1)
++RDEPENDS:${PN}:remove = "qtsystems-dev"
++RDEPENDS:${PN}:remove = "qtsystems-mkspecs"
++RDEPENDS:${PN}:remove = "qtsystems-qmlplugins"
++RDEPENDS:${PN}:remove = "qtenginio-dev"
++RDEPENDS:${PN}:remove = "qtenginio-mkspecs"
++RDEPENDS:${PN}:remove = "qtenginio-qmlplugins"
++RDEPENDS:${PN}:remove = "qt3d-dev"
++RDEPENDS:${PN}:remove = "qt3d-mkspecs"
++RDEPENDS:${PN}:remove = "qt3d-qmlplugins"
++RDEPENDS:${PN}:remove = "qtlocation-dev"
++RDEPENDS:${PN}:remove = "qtlocation-mkspecs"
++RDEPENDS:${PN}:remove = "qtlocation-plugins"
++RDEPENDS:${PN}:remove = "qtlocation-qmlplugins"
+diff --git a/recipes-qt/packagegroups/packagegroup-qt5.bb b/recipes-qt/packagegroups/packagegroup-qt5.bb
+new file mode 100644
+index 0000000..b3b46cb
+--- /dev/null
++++ b/recipes-qt/packagegroups/packagegroup-qt5.bb
+@@ -0,0 +1,60 @@
++# TODO add license
++DESCRIPTION = "All Demos Packages for Qt5"
++
++LICENSE = "MIT"
++
++inherit packagegroup
++
++PACKAGES = "\
++    packagegroup-qt5 \
++    packagegroup-qt5-examples \
++"
++
++ALLOW_EMPTY:${PN} = "1"
++
++# Requires Wayland to work
++QT5_WAYLAND_PACKAGES = " \
++    qtwayland \
++    qtwayland-plugins \
++    qtwayland-tools \
++"
++
++RDEPENDS:${PN} = " \
++    ${@bb.utils.contains("DISTRO_FEATURES", "wayland", "${QT5_WAYLAND_PACKAGES}", "", d)} \
++    qtbase \
++    qtbase-plugins \
++    qtbase-tools \
++    qtquickcontrols2 \
++    qtquickcontrols \
++    qtdeclarative \
++    qtdeclarative-tools \
++    qtdeclarative-qmlplugins \
++    qtmultimedia \
++    qtmultimedia-plugins \
++    qtmultimedia-qmlplugins \
++    qtsvg \
++    qtsvg-plugins \
++    qtsensors \
++    qtimageformats \
++    qtimageformats-plugins \
++    qtsystems \
++    qtsystems-tools \
++    qtsystems-qmlplugins \
++    qt3d \
++    qt3d-qmlplugins \
++    qtgraphicaleffects-qmlplugins \
++    qtconnectivity-qmlplugins \
++    qtlocation-plugins \
++    qtlocation-qmlplugins \
++    cinematicexperience \
++    qtserialbus \
++    qttools \
++    qttools-tools \
++    qtscript \
++    qtserialport \
++    qt5-qml-presentation-system \
++    "
++
++RDEPENDS:${PN}-examples += " \
++    ${PN} \
++"
+diff --git a/recipes-qt/qt5/qt5-qml-presentation-system.bb b/recipes-qt/qt5/qt5-qml-presentation-system.bb
+new file mode 100644
+index 0000000..164b408
+--- /dev/null
++++ b/recipes-qt/qt5/qt5-qml-presentation-system.bb
+@@ -0,0 +1,22 @@
++SUMMARY = "Qt5 qml presentation system"
++DESCRIPTION = "Quick tour of Qt 5.0, primarily focusing on its graphical capabilities."
++HOMEPAGE = "https://code.qt.io/cgit/qt-labs/"
++LICENSE = "LGPL-2.1-only"
++
++# This package actually has no License file. Below is dummy info to build
++LIC_FILES_CHKSUM = "file://presentation.pro;md5=fcb836475bffdd2776009a329c13b560"
++
++DEPENDS = "qtdeclarative"
++
++SRCREV = "860804a58bf47eaecdcc1acf81620bb998bf8cbf"
++SRC_URI = "git://code.qt.io/qt-labs/qml-presentation-system.git;branch=master"
++
++S = "${WORKDIR}/git"
++
++do_install() {
++     install -d ${D}${libdir}/qt5/qml/Qt/labs/presentation
++     install -m 644 ${S}/src/* ${D}${libdir}/qt5/qml/Qt/labs/presentation/
++}
++
++FILES:${PN} += "${datadir} ${libdir}/*"
++
+diff --git a/recipes-qt/qt5/qtbase_git.bbappend b/recipes-qt/qt5/qtbase_git.bbappend
+new file mode 100644
+index 0000000..9fcd92f
+--- /dev/null
++++ b/recipes-qt/qt5/qtbase_git.bbappend
+@@ -0,0 +1,43 @@
++do_install:append:class-target() {
++    sed -i -e 's|${S}||g' ${B}/tests/auto/dbus/qdbusabstractinterface/qdbusabstractinterface/pinger_interface.cpp
++    sed -i -e 's|${S}||g' ${B}/tests/auto/dbus/qdbusabstractinterface/qdbusabstractinterface/pinger_interface.h
++}
++
++# switch to GLES 2 support
++PACKAGECONFIG_GL = "${@bb.utils.contains('DISTRO_FEATURES', 'opengl', 'gles2', '', d)}"
++
++DEP = " mtdev libxkbcommon freetype fontconfig libinput libproxy"
++
++RDEPENDS:${PN} += "${DEP}"
++RDEPENDS:${PN}-plugins += "${DEP}"
++RDEPENDS:${PN}-examples += "${DEP}"
++
++# add necessary packages
++PACKAGECONFIG:append = " fontconfig sql-sqlite sql-sqlite openssl icu accessibility examples sm linuxfb gles2 glib gif"
++
++# Select wayland as the default platform abstraction plugin for Qt
++CONF_ADD_X11 = "${@bb.utils.contains('DISTRO_FEATURES', 'x11', ' -qpa xcb -xcb -xcb-xlib -system-xcb -eglfs', '', d)}"
++CONF_ADD_WAYLAND = "${@bb.utils.contains('DISTRO_FEATURES', 'wayland', ' -qpa wayland -no-xcb', '', d)}"
++
++PACKAGECONFIG_CONFARGS:append = "\
++	-no-kms \
++	-no-gbm \
++	-no-evdev \
++	-no-kms \
++	-no-sse2 \
++	-no-sse3 \
++	${CONF_ADD_WAYLAND} \
++"
++
++# nis option is not supported anymore, disable it here
++PACKAGECONFIG[nis] = ""
++
++PACKAGECONFIG_GL:append = " eglfs gbm kms "
++
++QT_CONFIG_FLAGS += "--no-feature-getentropy"
++QT_CONFIG_FLAGS += "-no-qpa-platform-guard ${@bb.utils.contains('DISTRO_FEATURES', 'ld-is-gold', '-use-gold-linker', '-no-use-gold-linker', d)}"
++PACKAGECONFIG_X11 = "${@bb.utils.contains('DISTRO_FEATURES', 'x11', 'xcb glib xkbcommon', 'xkbcommon', d)}"
++OPENSSL_LINKING_MODE = "-linked"
++
++DEPENDS += "gstreamer1.0 gstreamer1.0-plugins-base gstreamer1.0-plugins-bad"
++
+diff --git a/recipes-qt/qt5/qtdeclarative_git.bbappend b/recipes-qt/qt5/qtdeclarative_git.bbappend
+new file mode 100644
+index 0000000..0a71584
+--- /dev/null
++++ b/recipes-qt/qt5/qtdeclarative_git.bbappend
+@@ -0,0 +1,7 @@
++INSANE_SKIP:${PN}-ptest += "buildpaths"
++do_install:append:class-target() {
++     sed -i -e 's|${TMPDIR}||g' ${B}/include/QtQml/5.15.13/QtQml/private/qqmljsparser_p.h
++     sed -i -e 's|${TMPDIR}||g' ${D}/usr/include/qt5/QtQml/5.15.13/QtQml/private/qqmljsparser_p.h
++}
++
++
+diff --git a/recipes-qt/qt5/qtlocation_git.bbappend b/recipes-qt/qt5/qtlocation_git.bbappend
+new file mode 100644
+index 0000000..d46ba52
+--- /dev/null
++++ b/recipes-qt/qt5/qtlocation_git.bbappend
+@@ -0,0 +1,4 @@
++do_install:append:class-target() {
++    sed -i -e 's|${TMPDIR}||g' ${B}/src/plugins/position/geoclue/*
++    sed -i -e 's|${TMPDIR}||g' ${B}/src/plugins/position/geoclue2/*
++}
+diff --git a/recipes-qt/qt5/qtmultimedia_git.bbappend b/recipes-qt/qt5/qtmultimedia_git.bbappend
+new file mode 100644
+index 0000000..ef3ffac
+--- /dev/null
++++ b/recipes-qt/qt5/qtmultimedia_git.bbappend
+@@ -0,0 +1,12 @@
++PACKAGECONFIG:append = " gstreamer alsa"
++
++RDEPENDS:${PN}-plugins += " \
++	gstreamer1.0 \
++	gstreamer1.0-libav \
++	gstreamer1.0-plugins-base \
++	gstreamer1.0-plugins-base-app \
++	gstreamer1.0-plugins-good \
++	gstreamer1.0-plugins-good-video4linux2 \
++	gstreamer1.0-plugins-bad \
++	libgstbasecamerabinsrc-1.0 \
++"
+diff --git a/recipes-qt/qt5/qtsensors_git.bbappend b/recipes-qt/qt5/qtsensors_git.bbappend
+new file mode 100644
+index 0000000..df105b8
+--- /dev/null
++++ b/recipes-qt/qt5/qtsensors_git.bbappend
+@@ -0,0 +1,4 @@
++do_install:append:class-target() {
++    sed -i -e 's|${TMPDIR}||g' ${B}/src/plugins/sensors/iio-sensor-proxy/*
++}
++
+diff --git a/recipes-qt/qt5/qttools_git.bbappend b/recipes-qt/qt5/qttools_git.bbappend
+new file mode 100644
+index 0000000..d637abd
+--- /dev/null
++++ b/recipes-qt/qt5/qttools_git.bbappend
+@@ -0,0 +1 @@
++INSANE_SKIP:${PN}-dbg += "buildpaths"
+diff --git a/recipes-qt/qt5/qtxmlpatterns_git.bbappend b/recipes-qt/qt5/qtxmlpatterns_git.bbappend
+new file mode 100644
+index 0000000..c734bc3
+--- /dev/null
++++ b/recipes-qt/qt5/qtxmlpatterns_git.bbappend
+@@ -0,0 +1 @@
++INSANE_SKIP:${PN}-ptest += "buildpaths"
