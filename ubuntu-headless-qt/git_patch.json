@@ -34,7 +34,7 @@
 		"commit": "",
 		"patches": [],
 		"type": "git",
-		"enable": "false"
+		"enable": "true"
 	},
 	"meta-openembedded": {
 		"url": "https://github.com/openembedded/meta-openembedded",
