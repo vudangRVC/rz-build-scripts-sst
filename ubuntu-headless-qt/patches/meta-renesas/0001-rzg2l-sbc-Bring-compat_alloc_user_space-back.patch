@@ -184,29 +184,29 @@ index 0000000..3f17513
 + #include <linux/sched.h>
 + #include <linux/sched/task_stack.h>
 ++#include <linux/uaccess.h>
-+ 
++
 + #ifdef __AARCH64EB__
 + #define COMPAT_UTS_MACHINE	"armv8b\0\0"
 +@@ -98,6 +99,11 @@ static inline int is_compat_thread(struct thread_info *thread)
-+ 
++
 + long compat_arm_syscall(struct pt_regs *regs, int scno);
-+ 
++
 ++static inline void __user *arch_compat_alloc_user_space(long len)
 ++{
 ++	return (void __user *)compat_user_stack_pointer() - len;
 ++}
 ++
 + #else /* !CONFIG_COMPAT */
-+ 
++
 + static inline int is_compat_thread(struct thread_info *thread)
 +diff --git a/include/linux/compat.h b/include/linux/compat.h
 +index 56cebaff0c91..f30e617cc00b 100644
 +--- a/include/linux/compat.h
 ++++ b/include/linux/compat.h
 +@@ -541,6 +541,8 @@ extern long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
-+ 
++
 + struct epoll_event;	/* fortunately, this one is fixed-layout */
-+ 
++
 ++extern void __user *compat_alloc_user_space(unsigned long len);
 ++
 + int compat_restore_altstack(const compat_stack_t __user *uss);
@@ -241,7 +241,7 @@ index 0000000..3f17513
 ++	return ptr;
 ++}
 ++EXPORT_SYMBOL_GPL(compat_alloc_user_space);
-+-- 
++--
 +2.25.1
 +
 diff --git a/recipes-kernel/linux-yocto/linux-yocto_6.10.bbappend b/recipes-kernel/linux-yocto/linux-yocto_6.10.bbappend
