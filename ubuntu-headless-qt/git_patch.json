@@ -23,7 +23,7 @@
 		"branch": "styhead/rz-sbc",
 		"tag": "",
 		"commit": "",
-		"patches": [],
+		"patches": ["0001-rzg2l-sbc-Bring-compat_alloc_user_space-back.patch"],
 		"type": "git",
 		"enable": "true"
 	},
