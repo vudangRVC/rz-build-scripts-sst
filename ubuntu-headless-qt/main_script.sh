@@ -52,16 +52,10 @@ function main(){
     else
         # Build bootloader in yocto
         echo "Custom image not found"
-        su -c "bash -c 'source include/08_yocto_source.sh; cd bootloader ;setup_conf; \
-        MACHINE=rzpi bitbake u-boot linux-firmware; \
-        MACHINE=rzpi bitbake flash-writer bootparameter-native fiptool-native firmware-pack; \
-        MACHINE=rzpi bitbake -C compile virtual/kernel ; \
-        MACHINE=rzpi bitbake weston weston-init; \
-        MACHINE=rzpi bitbake packagegroup-qt5; \
-        MACHINE=rzpi bitbake trusted-firmware-a; \ '" $MAIN_USER
+        exit 1
     fi
     # Check the output
-    result=$(find bootloader/build/tmp/deploy/ -name '*bl2*.bin')
+    result=$(find bootloader/build/tmp/deploy/ -name '*.tar.bz2' -exec cp {} ./core-image-qt-rzpi.tar.bz2 \; && echo "File copied successfully.")
 
     # Exit if yocto not build successfully
     if [ -z "$result" ]; then
