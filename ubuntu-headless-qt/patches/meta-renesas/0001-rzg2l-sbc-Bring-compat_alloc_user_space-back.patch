@@ -24,69 +24,6 @@ index 0000000..c434d4f
 +
 +# Disable python usage in opkg-utils since it won't build with tiny config
 +PACKAGECONFIG:remove:pn-opkg-utils = "python"
-diff --git a/conf/templates/rzg2l-sbc/bblayers.conf.sample b/conf/templates/rzg2l-sbc/bblayers.conf.sample
-index 42219e5..1857dcf 100644
---- a/conf/templates/rzg2l-sbc/bblayers.conf.sample
-+++ b/conf/templates/rzg2l-sbc/bblayers.conf.sample
-@@ -1,6 +1,13 @@
-+# POKY_BBLAYERS_CONF_VERSION is increased each time build/conf/bblayers.conf
-+# changes incompatibly
- POKY_BBLAYERS_CONF_VERSION = "2"
-+
- BBPATH = "${TOPDIR}"
- BBFILES ?= ""
-+
-+QT_LAYER = "${@os.path.isdir("${TOPDIR}/../meta-qt5")}"
-+RZ_FEATURE_CODEC = "${@os.path.isdir("${TOPDIR}/../meta-rz-features/meta-rz-codecs")}"
-+
- BBLAYERS ?= " \
-   ##OEROOT##/meta \
-   ##OEROOT##/meta-poky \
-@@ -11,4 +18,6 @@ BBLAYERS ?= " \
-   ##OEROOT##/../meta-openembedded/meta-multimedia \
-   ##OEROOT##/../meta-openembedded/meta-networking \
-   ##OEROOT##/../meta-summit-radio/meta-summit-radio \
-+  ${@'##OEROOT##/../meta-qt5' if '${QT_LAYER}' == 'True' else ''} \
-+  ${@'##OEROOT##/../meta-rz-features/meta-rz-codecs' if '${RZ_FEATURE_CODEC}' == 'True' else ''} \
-   "
-diff --git a/conf/templates/rzg2l-sbc/local.conf.sample b/conf/templates/rzg2l-sbc/local.conf.sample
-index d9c6b26..ee73b11 100644
---- a/conf/templates/rzg2l-sbc/local.conf.sample
-+++ b/conf/templates/rzg2l-sbc/local.conf.sample
-@@ -298,6 +298,10 @@ KERNEL_DANGLING_FEATURES_WARN_ONLY = "1"
- DISTRO_FEATURES:append = " systemd usrmerge pam"
- VIRTUAL-RUNTIME_init_manager = "systemd"
- 
-+# Add the static lib to SDK toolchain
-+SDKIMAGE_FEATURES:append = " staticdev-pkgs dev-pkgs dbg-pkgs"
-+
-+# Set provider for wpa supplicant
- PREFERRED_RPROVIDER_wpa-supplicant = "summit-supplicant-lwb"
- PREFERRED_RPROVIDER_wpa-supplicant-cli = "summit-supplicant-lwb"
- PREFERRED_RPROVIDER_wpa-supplicant-passphrase = "summit-supplicant-lwb"
-@@ -307,4 +311,9 @@ PREFERRED_RPROVIDER_wireless-regdb-static = "wireless-regdb"
- LICENSE_FLAGS_ACCEPTED:append = " commercial"
- 
- # Disable generating JSON SPDX for images
--# INHERIT:remove = "create-spdx"
-+INHERIT:remove = "create-spdx"
-+
-+# Reduce the level of build paths to avoid TMPDIR errors
-+ERROR_QA:remove:layer-qt5-layer = "buildpaths"
-+WARN_QA:append:layer-qt5-layer = " buildpaths"
-+QT_DIR_NAME = "/qt5"
-diff --git a/include/core-image-renesas-mmp.inc b/include/core-image-renesas-mmp.inc
-index 7386492..fb299e3 100644
---- a/include/core-image-renesas-mmp.inc
-+++ b/include/core-image-renesas-mmp.inc
-@@ -1,5 +1,7 @@
- IMAGE_INSTALL:append = " \
- 	packagegroup-gstreamer1.0-plugins \
-+	packagegroup-multimedia-libs \
-+	packagegroup-multimedia-kernel-modules \
- 	packagegroup-wayland-community \
- "
- # For GPU testing purposes
 diff --git a/include/core-image-renesas-qt.inc b/include/core-image-renesas-qt.inc
 new file mode 100644
 index 0000000..58eca79
@@ -322,18 +259,6 @@ index 0000000..3f17513
 +-- 
 +2.25.1
 +
-diff --git a/recipes-kernel/linux/linux-yocto_6.10.bbappend b/recipes-kernel/linux/linux-yocto_6.10.bbappend
-index e4606f2..4ba95e9 100644
---- a/recipes-kernel/linux/linux-yocto_6.10.bbappend
-+++ b/recipes-kernel/linux/linux-yocto_6.10.bbappend
-@@ -37,6 +37,7 @@ SRC_URI:append:rzg2l-sbc = "\
-                     file://dts-patches/0005-clk-renesas-add-WDT2-clocks-and-reset-support-for-r9.patch \
-                     file://dts-patches/0006-drivers-gpu-panel-add-waveshare-panel-support-for-RZ.patch \
-                     file://dts-patches/0007-drivers-rcar-du-rzg2l-add-clock-calculation-logic-fo.patch \
-+                    file://dts-patches/0008-rzg2l-sbc-Add-vcp4-module-to-device-tree.patch \
-                 "
- 
- KERNEL_FEATURES:append = " sii.cfg laird.cfg touch.cfg peripherals.cfg da7219.cfg drm_panel.cfg ov5640.cfg panfrost.cfg"
 diff --git a/recipes-qt/packagegroups/packagegroup-qt5-toolchain-target.bbappend b/recipes-qt/packagegroups/packagegroup-qt5-toolchain-target.bbappend
 new file mode 100644
 index 0000000..dbce361
