@@ -1,6 +1,6 @@
 diff --git a/meta-rz-common/conf/distro/ubuntu-tiny.conf b/meta-rz-common/conf/distro/ubuntu-tiny.conf
 new file mode 100644
-index 0000000..d2f8dbc
+index 0000000..41d2119
 --- /dev/null
 +++ b/meta-rz-common/conf/distro/ubuntu-tiny.conf
 @@ -0,0 +1,20 @@
@@ -20,16 +20,16 @@ index 0000000..d2f8dbc
 +SKIP_META_TPM_SANITY_CHECK = "1"
 +
 +# Just need those features to build
-+DISTRO_FEATURES = "largefile wayland multiarch bluetooth opengl"
++DISTRO_FEATURES = "largefile wayland multiarch bluetooth opengl x11"
 +
 +# Disable python usage in opkg-utils since it won't build with tiny config
 +PACKAGECONFIG_remove_pn-opkg-utils = "python"
 diff --git a/meta-rz-common/recipes-core/images/renesas-ubuntu.bb b/meta-rz-common/recipes-core/images/renesas-ubuntu.bb
 new file mode 100644
-index 0000000..713a81b
+index 0000000..22b3b36
 --- /dev/null
 +++ b/meta-rz-common/recipes-core/images/renesas-ubuntu.bb
-@@ -0,0 +1,132 @@
+@@ -0,0 +1,138 @@
 +SUMMARY = "Custom RZPi Image"
 +LICENSE = "MIT"
 +require include/core-image-renesas-mmp.inc
@@ -46,6 +46,12 @@ index 0000000..713a81b
 +    kernel-module-lwb5p-backports-summit \
 +    summit-supplicant-lwb \
 +"
++
++# Add QT to rootfs
++IMAGE_INSTALL_append = " packagegroup-qt5 kernel-module-uvcvideo"
++
++# Add weston to rootfs
++CORE_IMAGE_BASE_INSTALL += "weston"
 +
 +# compatible machine comes with linux-yocto but not available in this build
 +# so bring back these parameters
