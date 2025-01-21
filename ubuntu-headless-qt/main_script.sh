@@ -47,23 +47,31 @@ function main(){
     FILE="bootloader/meta-renesas/meta-rz-common/recipes-core/images/renesas-ubuntu.bb"
     if [ -f "$FILE" ]; then
         echo "Found custom distro image for ubuntu core"
-        su -c "bash -c 'source include/08_yocto_source.sh; cd bootloader ;setup_conf;\
-        MACHINE=rzpi DISTRO=ubuntu-tiny bitbake renesas-ubuntu'" $MAIN_USER
     else
         # Build bootloader in yocto
         echo "Custom image not found"
         exit 1
     fi
-    # Check the output
-    result=$(find bootloader/build/tmp/deploy/ -name '*.tar.bz2' -exec cp {} ./core-image-qt-rzpi.tar.bz2 \; && echo "File copied successfully.")
 
-    # Exit if yocto not build successfully
-    if [ -z "$result" ]; then
-        echo "[Yocto]: No output files found."
-        exit 1
-    else
-        echo "Bootloader and other output have been built."
-    fi
+    # Initialize a variable to store the result
+    result=""
+
+    # Loop until we find the output file
+    while [ -z "$result" ]; do
+        # Run bitbake
+        su -c "bash -c 'source include/08_yocto_source.sh; cd bootloader ; setup_conf; \
+        MACHINE=rzpi DISTRO=ubuntu-tiny bitbake renesas-ubuntu'" $MAIN_USER
+
+        # Check the output
+        result=$(find bootloader/build/tmp/deploy/ -name '*.tar.bz2' -exec cp {} ./core-image-qt-rzpi.tar.bz2 \; && echo "File copied successfully.")
+
+        # Exit if yocto does not build successfully
+        if [ -z "$result" ]; then
+            echo "[Yocto]: No output files found. Retrying..."
+        else
+            echo "Bootloader and other output have been built."
+        fi
+    done
     ##### END YOCTO WORKING ######
 
     # Prepare the environment by checking for required files and directories
