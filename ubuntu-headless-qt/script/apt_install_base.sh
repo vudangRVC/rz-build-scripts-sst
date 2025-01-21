@@ -27,55 +27,46 @@ echo "tzdata tzdata/Zones/$TIME_ZONE_AREA select $TIME_ZONE_CITY" | sudo debconf
 DEBIAN_FRONTEND=noninteractive dpkg-reconfigure tzdata
 
 # basic package
-apt install -y dialog 
-apt install -y rsyslog
-apt install -y systemd 
-apt install -y avahi-daemon avahi-utils 
-apt install -y udhcpc 
-apt install -y ssh
-apt install -y vim
-apt install -y net-tools
-apt install -y ethtool
-apt install -y ifupdown
-apt install -y iputils-ping
-apt install -y htop
-apt install -y tree
-apt install -y lrzsz
-apt install -y gpiod
-apt install -y wpasupplicant
-apt install -y kmod
-apt install -y iw
-apt install -y usbutils
-apt install -y memtester
-apt install -y alsa-utils
-apt install -y ufw
+apt install -y dialog \
+    rsyslog \
+    systemd \
+    avahi-daemon avahi-utils \
+    udhcpc \
+    ssh \
+    vim \
+    net-tools \
+    ethtool \
+    ifupdown \
+    iputils-ping \
+    htop \
+    tree \
+    lrzsz \
+    gpiod \
+    wpasupplicant \
+    kmod \
+    iw \
+    usbutils \
+    memtester \
+    alsa-utils \
+    ufw         \
+    sudo
 
-# sudo 
-apt install -y sudo
+# Install Python 3 package manager
+apt install -y python3-pip \
 
-# pip3
-apt install -y python3-pip
+# Install dpkg package management system
+    dpkg \
 
-# dpkg
-apt install -y dpkg
+# Install pkg-config for managing compile and link flags
+    pkg-config \
 
-# pkg-config
-apt install -y pkg-config
+# Install testing tools for CAN, I2C, and SPI
+    can-utils \
+    i2c-tools \
+    spi-tools \
 
-# testing
-apt install can-utils -y
-apt install i2c-tools -y
-apt install spi-tools -y
-
-# wifi bluetooth controller
-apt install bluez -y
-apt install connman -y
-apt-get install network-manager -y
-apt-get install rfkill -y
-
-# gstreamer audio support
-# apt install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
-#             libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base \
-#             gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly \
-#             gstreamer1.0-plugins-bad gstreamer1.0-libav \
-#             gstreamer1.0-alsa -y
+# Install Bluetooth and Wi-Fi controller tools
+    bluez \
+    connman \
+    network-manager \
+    rfkill
