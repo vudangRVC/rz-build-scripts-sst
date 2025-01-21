@@ -26,7 +26,7 @@ index 0000000..41d2119
 +PACKAGECONFIG_remove_pn-opkg-utils = "python"
 diff --git a/meta-rz-common/recipes-core/images/renesas-ubuntu.bb b/meta-rz-common/recipes-core/images/renesas-ubuntu.bb
 new file mode 100644
-index 0000000..22b3b36
+index 0000000..b5210ba
 --- /dev/null
 +++ b/meta-rz-common/recipes-core/images/renesas-ubuntu.bb
 @@ -0,0 +1,138 @@
@@ -48,7 +48,7 @@ index 0000000..22b3b36
 +"
 +
 +# Add QT to rootfs
-+IMAGE_INSTALL_append = " packagegroup-qt5 kernel-module-uvcvideo"
++IMAGE_INSTALL_append = " packagegroup-qt5 packagegroup-qt5-examples kernel-module-uvcvideo"
 +
 +# Add weston to rootfs
 +CORE_IMAGE_BASE_INSTALL += "weston"
