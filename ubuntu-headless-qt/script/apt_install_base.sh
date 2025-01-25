@@ -51,21 +51,12 @@ apt install -y dialog \
     ufw         \
     sudo
 
-# Install Python 3 package manager
 apt install -y python3-pip \
-
-# Install dpkg package management system
     dpkg \
-
-# Install pkg-config for managing compile and link flags
     pkg-config \
-
-# Install testing tools for CAN, I2C, and SPI
     can-utils \
     i2c-tools \
     spi-tools \
-
-# Install Bluetooth and Wi-Fi controller tools
     bluez \
     connman \
     network-manager \
