@@ -26,7 +26,7 @@ index 0000000..41d2119
 +PACKAGECONFIG_remove_pn-opkg-utils = "python"
 diff --git a/meta-rz-common/recipes-core/images/renesas-ubuntu.bb b/meta-rz-common/recipes-core/images/renesas-ubuntu.bb
 new file mode 100644
-index 0000000..b5210ba
+index 0000000..0442615
 --- /dev/null
 +++ b/meta-rz-common/recipes-core/images/renesas-ubuntu.bb
 @@ -0,0 +1,138 @@
@@ -66,7 +66,7 @@ index 0000000..b5210ba
 +######### bootloader clean up ##########
 +add_overlays_rootfs() {
 +    install -d ${IMAGE_ROOTFS}/boot/overlays
-+    cp ${DEPLOY_DIR_IMAGE}/target/images/dtbs/overlays/* ${IMAGE_ROOTFS}/boot/overlays
++    cp ${DEPLOY_DIR_IMAGE}/target/images/dtbs/* ${IMAGE_ROOTFS}/boot
 +}
 +
 +add_bootloader_rootfs() {
