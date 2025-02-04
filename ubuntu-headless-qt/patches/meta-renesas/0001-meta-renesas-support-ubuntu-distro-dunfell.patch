@@ -1,9 +1,9 @@
 diff --git a/meta-rz-common/conf/distro/ubuntu-tiny.conf b/meta-rz-common/conf/distro/ubuntu-tiny.conf
 new file mode 100644
-index 0000000..41d2119
+index 0000000..b438b7d
 --- /dev/null
 +++ b/meta-rz-common/conf/distro/ubuntu-tiny.conf
-@@ -0,0 +1,20 @@
+@@ -0,0 +1,23 @@
 +require conf/distro/poky.conf
 +
 +DISTRO = "ubuntu-tiny"
@@ -24,6 +24,9 @@ index 0000000..41d2119
 +
 +# Disable python usage in opkg-utils since it won't build with tiny config
 +PACKAGECONFIG_remove_pn-opkg-utils = "python"
++
++# Enable libgstalsa.so for gstreamer
++PACKAGECONFIG_append_pn-gstreamer1.0-plugins-base = " alsa"
 diff --git a/meta-rz-common/recipes-core/images/renesas-ubuntu.bb b/meta-rz-common/recipes-core/images/renesas-ubuntu.bb
 new file mode 100644
 index 0000000..0442615
