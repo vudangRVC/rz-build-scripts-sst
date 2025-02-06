@@ -1,7 +1,6 @@
 #!/bin/bash
 # --------------------------------------------------------------------------#
-# This script 
-
+# This script provides functions that help main script handle yocto part
 # --------------------------------------------------------------------------#
 
 # This function help main script can build yocto
