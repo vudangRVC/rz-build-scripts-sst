@@ -8,6 +8,12 @@ function build_yocto() {
     # Get source yocto
     su -c "bash -c 'source include/08_yocto_source.sh; mkdir yocto_rzsbc_board ; cd yocto_rzsbc_board ; get_bsp'" $MAIN_USER
 
+    # rename to meta-renesas
+    if [ -d "yocto_rzsbc_board/meta-renesas-sst" ]; then
+        echo "Change meta-renesas-sst to meta-renesas"
+        mv "yocto_rzsbc_board/meta-renesas-sst" "yocto_rzsbc_board/meta-renesas"
+    fi
+
     # Check new distro availability
     FILE="yocto_rzsbc_board/meta-renesas/meta-rz-common/recipes-core/images/renesas-ubuntu.bb"
     if [ -f "$FILE" ]; then

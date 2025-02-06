@@ -16,8 +16,8 @@
 					"patches/meta-summit-radio/0002-rzsbc-summit-radio-pre-3.4-enable-usb-bt-support.patch"],
 		"type": "git"
 	},
-	"meta-renesas": {
-		"url": "https://github.com/vudangRVC/meta-renesas-sst meta-renesas",
+	"meta-renesas-sst": {
+		"url": "https://github.com/vudangRVC/meta-renesas-sst",
 		"branch": "dunfell/rz-sbc-custom-distro",
 		"tag": "",
 		"commit": "",
