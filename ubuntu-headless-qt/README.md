@@ -38,6 +38,7 @@ The `config.ini` file is used for configuring the script that builds an Ubuntu i
 - **OUTPUT_WIC**: The output file name for the wic image.
 - **TIME_ZONE_AREA**: The time zone area (e.g., "Asia").
 - **TIME_ZONE_CITY**: The time zone city (e.g., "Ho_Chi_Minh").
+- **IS_WESTON_ENABLE**: Set to 0 to disable Weston compositor.
 
 > :memo: **Note:** Linux Ubuntu 22.04 is recommended for the build. Prepare environment for building package and local build environment.
 

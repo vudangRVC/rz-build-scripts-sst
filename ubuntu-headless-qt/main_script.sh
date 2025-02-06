@@ -16,6 +16,7 @@ source include/04_mount.sh
 source include/05_create_wic.sh
 source include/06_install_gstreamer.sh
 source include/07_install_weston.sh
+source include/09_yocto_working.sh
 
 # main function
 function main(){
@@ -40,38 +41,11 @@ function main(){
     fi
 
     ######## YOCTO WORKING ########
-    # Get source yocto for bootloader
-    su -c "bash -c 'source include/08_yocto_source.sh; mkdir bootloader ; cd bootloader ; get_bsp'" $MAIN_USER
-
-    # Check new distro availability
-    FILE="bootloader/meta-renesas/meta-rz-common/recipes-core/images/renesas-ubuntu.bb"
-    if [ -f "$FILE" ]; then
-        echo "Found custom distro image for ubuntu core"
-    else
-        # Build bootloader in yocto
-        echo "Custom image not found"
+    build_yocto
+    if [[ $? -eq 1 ]]; then
+        echo "build_yocto failed."
         exit 1
     fi
-
-    # Initialize a variable to store the result
-    result=""
-
-    # Loop until we find the output file
-    while [ -z "$result" ]; do
-        # Run bitbake
-        su -c "bash -c 'source include/08_yocto_source.sh; cd bootloader ; setup_conf; \
-        MACHINE=rzpi DISTRO=ubuntu-tiny bitbake renesas-ubuntu'" $MAIN_USER
-
-        # Check the output
-        result=$(find bootloader/build/tmp/deploy/ -name '*.tar.bz2' -exec cp {} ./core-image-qt-rzpi.tar.bz2 \; && echo "File copied successfully.")
-
-        # Exit if yocto does not build successfully
-        if [ -z "$result" ]; then
-            echo "[Yocto]: No output files found. Retrying..."
-        else
-            echo "Bootloader and other output have been built."
-        fi
-    done
     ##### END YOCTO WORKING ######
 
     # Prepare the environment by checking for required files and directories

@@ -17,11 +17,11 @@
 		"type": "git"
 	},
 	"meta-renesas": {
-		"url": "https://github.com/Renesas-SST/meta-renesas.git",
-		"branch": "dunfell/rz-sbc",
+		"url": "https://github.com/vudangRVC/meta-renesas-sst",
+		"branch": "dunfell/rz-sbc-custom-distro",
 		"tag": "",
 		"commit": "",
-		"patches": ["patches/meta-renesas/0001-meta-renesas-support-ubuntu-distro-dunfell.patch"],
+		"patches": [],
 		"type": "git"
 	},
 	"meta-qt5": {
