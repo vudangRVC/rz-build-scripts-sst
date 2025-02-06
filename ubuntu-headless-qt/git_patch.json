@@ -17,7 +17,7 @@
 		"type": "git"
 	},
 	"meta-renesas": {
-		"url": "https://github.com/vudangRVC/meta-renesas-sst",
+		"url": "https://github.com/vudangRVC/meta-renesas-sst meta-renesas",
 		"branch": "dunfell/rz-sbc-custom-distro",
 		"tag": "",
 		"commit": "",
