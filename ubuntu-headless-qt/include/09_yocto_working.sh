@@ -9,9 +9,9 @@ function build_yocto() {
     su -c "bash -c 'source include/08_yocto_source.sh; mkdir yocto_rzsbc_board ; cd yocto_rzsbc_board ; get_bsp'" $MAIN_USER
 
     # rename to meta-renesas
-    if [ -d "meta-renesas-sst" ]; then
+    if [ -d "yocto_rzsbc_board/meta-renesas-sst" ]; then
         echo "Change meta-renesas-sst to meta-renesas"
-        mv "meta-renesas-sst" "meta-renesas"
+        mv "yocto_rzsbc_board/meta-renesas-sst" "yocto_rzsbc_board/meta-renesas"
     fi
 
     # Check new distro availability
