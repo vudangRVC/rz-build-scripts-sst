@@ -117,6 +117,13 @@ function main(){
         echo "create_wic failed."
         exit 1
     fi
+
+    # Move WIC output to output yocto folder
+    move_wic_to_yocto_output
+    if [[ $? -eq 1 ]]; then
+        echo "move_wic_to_yocto_output failed."
+        exit 1
+    fi
 }
 
 # call main

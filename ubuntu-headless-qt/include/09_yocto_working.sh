@@ -9,6 +9,12 @@ function build_yocto() {
     # Get source yocto
     su -c "bash -c 'source include/08_yocto_source.sh; mkdir yocto_rzsbc_board ; cd yocto_rzsbc_board ; get_bsp'" $MAIN_USER
 
+    # rename to meta-renesas
+    if [ -d "meta-renesas-sst" ]; then
+        echo "Change meta-renesas-sst to meta-renesas"
+        mv "meta-renesas-sst" "meta-renesas"
+    fi
+
     # Check new distro availability
     FILE="yocto_rzsbc_board/meta-renesas/meta-rz-common/recipes-core/images/renesas-ubuntu.bb"
     if [ -f "$FILE" ]; then
@@ -43,7 +49,7 @@ function build_yocto() {
 # This function help main script bring wic file to yocto output's directory
 function move_wic_to_yocto_output(){
     # Check output folder availability
-    DIR="yocto_rzsbc_board/build/tmp/deploy/images/rzpi/target/images/rootfs"
+    DIR="yocto_rzsbc_board/build/tmp/deploy/images/rzpi/target/images"
     if [ -d "$DIR" ]; then
         echo "Found output yocto folder"
         mv "$OUTPUT_WIC"* $DIR
