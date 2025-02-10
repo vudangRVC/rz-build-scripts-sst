@@ -16,4 +16,4 @@ DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::O
 DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::Options::="--force-confold" -f libssl-dev
 
 # Install bluetooth application
-DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::Options::="--force-confold" -f blueman
+# DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::Options::="--force-confold" -f blueman
