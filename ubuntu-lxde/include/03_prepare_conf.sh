@@ -158,6 +158,7 @@ function set_config() {
         echo "Failed to copy resolv.conf. Exiting."
         return 1
     fi
+
     # Set up rsyslog file
     copy_file_conf "rsyslog" "rootfs/var/log" "666"
     if [[ $? -eq 1 ]]; then

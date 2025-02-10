@@ -78,49 +78,49 @@ function main(){
         exit 1
     fi
 
-    # Set permissions
-    chroot_run_1_script "setup-set-permissions.sh"
-    if [[ $? -eq 1 ]]; then
-        echo "setup-set-permissions.sh failed."
-        exit 1
-    fi
+    # # Set permissions
+    # chroot_run_1_script "setup-set-permissions.sh"
+    # if [[ $? -eq 1 ]]; then
+    #     echo "setup-set-permissions.sh failed."
+    #     exit 1
+    # fi
 
-    # Install wifi and bluetooth packages
-    chroot_run_1_script "apt_wifi_ble.sh"
-    if [[ $? -eq 1 ]]; then
-        echo "apt_wifi_ble failed."
-        exit 1
-    fi
+    # # Install wifi and bluetooth packages
+    # chroot_run_1_script "apt_wifi_ble.sh"
+    # if [[ $? -eq 1 ]]; then
+    #     echo "apt_wifi_ble failed."
+    #     exit 1
+    # fi
 
-    # Install audio and video packages
-    chroot_run_1_script "apt_audio_video.sh"
-    if [[ $? -eq 1 ]]; then
-        echo "apt_audio_video failed."
-        exit 1
-    fi
+    # # Install audio and video packages
+    # chroot_run_1_script "apt_audio_video.sh"
+    # if [[ $? -eq 1 ]]; then
+    #     echo "apt_audio_video failed."
+    #     exit 1
+    # fi
 
-    # Setup config for swap file
-    chroot_run_1_script "set_swap_enable.sh"
-    if [[ $? -eq 1 ]]; then
-        echo "set_swap_enable failed."
-        exit 1
-    fi
+#     # Setup config for swap file
+#     chroot_run_1_script "set_swap_enable.sh"
+#     if [[ $? -eq 1 ]]; then
+#         echo "set_swap_enable failed."
+#         exit 1
+#     fi
 
-    # Create swap file
-   create_swap
-   if [[ $? -eq 1 ]]; then
-       echo "create_swap failed."
-       exit 1
-   fi
+#     # Create swap file
+#    create_swap
+#    if [[ $? -eq 1 ]]; then
+#        echo "create_swap failed."
+#        exit 1
+#    fi
 
-    # Package rootfs to tar file
-    package_rootfs
-    if [[ $? -eq 1 ]]; then
-        echo "package_rootfs failed."
-        exit 1
-    fi
+#     # Package rootfs to tar file
+#     package_rootfs
+#     if [[ $? -eq 1 ]]; then
+#         echo "package_rootfs failed."
+#         exit 1
+#     fi
 
 }
 
 # Call main function
-main 22.04
+main 18.04
