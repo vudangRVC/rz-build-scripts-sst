@@ -40,9 +40,12 @@ apt install -y memtester
 apt install -y alsa-utils
 apt install -y ufw
 
-# # Install sudo 
+# Install sudo 
 apt install -y sudo
 
-# # Install virtual keyboard
+# Install virtual keyboard
 apt install -y onboard
+
+# Install network-manager-gnome to manage network on GUI
+apt install -y network-manager-gnome
 
