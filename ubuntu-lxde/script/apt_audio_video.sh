@@ -14,3 +14,6 @@ apt install audacity -y
 
 # Install VLC application to play video, stream video and record video
 apt install vlc -y
+
+# Remove clipit application
+apt remove clipit --purge -y
