@@ -37,6 +37,9 @@ else
     # Add user to the audio group
     usermod -aG audio "$USERNAME"
 
+    # Add user to the audio group
+    usermod -aG adm "$USERNAME"
+
     # Check groups
     groups "$USERNAME"
 

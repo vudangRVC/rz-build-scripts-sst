@@ -78,12 +78,12 @@ function main(){
         exit 1
     fi
 
-    # Set permissions
-    chroot_run_1_script "setup-set-permissions.sh"
-    if [[ $? -eq 1 ]]; then
-        echo "setup-set-permissions.sh failed."
-        exit 1
-    fi
+    # # Set permissions
+    # chroot_run_1_script "setup-set-permissions.sh"
+    # if [[ $? -eq 1 ]]; then
+    #     echo "setup-set-permissions.sh failed."
+    #     exit 1
+    # fi
 
     # Install wifi and bluetooth packages
     chroot_run_1_script "apt_wifi_ble.sh"
@@ -114,7 +114,7 @@ function main(){
 #    fi
 
     # Package rootfs to tar file
-    package_rootfs
+    package_rootfs $1
     if [[ $? -eq 1 ]]; then
         echo "package_rootfs failed."
         exit 1
