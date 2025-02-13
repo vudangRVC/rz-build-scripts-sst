@@ -64,19 +64,19 @@ function main(){
     #     exit 1
     # fi
 
-    # # Create rzpi user - normal user
-    # chroot_run_1_script "create_rzpi_user.sh"
-    # if [[ $? -eq 1 ]]; then
-    #     echo "create_rzpi_user failed."
-    #     exit 1
-    # fi
+    # Create rzpi user - normal user
+    chroot_run_1_script "create_rzpi_user.sh"
+    if [[ $? -eq 1 ]]; then
+        echo "create_rzpi_user failed."
+        exit 1
+    fi
 
-    # # Set root password
-    # chroot_run_1_script "set_root_password.sh"
-    # if [[ $? -eq 1 ]]; then
-    #     echo "set_root_password failed."
-    #     exit 1
-    # fi
+    # Set root password
+    chroot_run_1_script "set_root_password.sh"
+    if [[ $? -eq 1 ]]; then
+        echo "set_root_password failed."
+        exit 1
+    fi
 
     # # Set permissions
     # chroot_run_1_script "setup-set-permissions.sh"
