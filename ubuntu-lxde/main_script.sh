@@ -57,26 +57,26 @@ function main(){
         exit 1
     fi
 
-    # Install lxde desktop
-    chroot_run_1_script "apt_lxde_desktop.sh"
-    if [[ $? -eq 1 ]]; then
-        echo "apt_lxde_desktop failed."
-        exit 1
-    fi
+    # # Install lxde desktop
+    # chroot_run_1_script "apt_lxde_desktop.sh"
+    # if [[ $? -eq 1 ]]; then
+    #     echo "apt_lxde_desktop failed."
+    #     exit 1
+    # fi
 
-    # Create rzpi user - normal user
-    chroot_run_1_script "create_rzpi_user.sh"
-    if [[ $? -eq 1 ]]; then
-        echo "create_rzpi_user failed."
-        exit 1
-    fi
+    # # Create rzpi user - normal user
+    # chroot_run_1_script "create_rzpi_user.sh"
+    # if [[ $? -eq 1 ]]; then
+    #     echo "create_rzpi_user failed."
+    #     exit 1
+    # fi
 
-    # Set root password
-    chroot_run_1_script "set_root_password.sh"
-    if [[ $? -eq 1 ]]; then
-        echo "set_root_password failed."
-        exit 1
-    fi
+    # # Set root password
+    # chroot_run_1_script "set_root_password.sh"
+    # if [[ $? -eq 1 ]]; then
+    #     echo "set_root_password failed."
+    #     exit 1
+    # fi
 
     # # Set permissions
     # chroot_run_1_script "setup-set-permissions.sh"
@@ -85,19 +85,19 @@ function main(){
     #     exit 1
     # fi
 
-    # Install wifi and bluetooth packages
-    chroot_run_1_script "apt_wifi_ble.sh"
-    if [[ $? -eq 1 ]]; then
-        echo "apt_wifi_ble failed."
-        exit 1
-    fi
+    # # Install wifi and bluetooth packages
+    # chroot_run_1_script "apt_wifi_ble.sh"
+    # if [[ $? -eq 1 ]]; then
+    #     echo "apt_wifi_ble failed."
+    #     exit 1
+    # fi
 
-    # Install audio and video packages
-    chroot_run_1_script "apt_audio_video.sh"
-    if [[ $? -eq 1 ]]; then
-        echo "apt_audio_video failed."
-        exit 1
-    fi
+    # # Install audio and video packages
+    # chroot_run_1_script "apt_audio_video.sh"
+    # if [[ $? -eq 1 ]]; then
+    #     echo "apt_audio_video failed."
+    #     exit 1
+    # fi
 
 #     # Setup config for swap file
 #     chroot_run_1_script "set_swap_enable.sh"
@@ -114,13 +114,13 @@ function main(){
 #    fi
 
     # Package rootfs to tar file
-    package_rootfs $1
-    if [[ $? -eq 1 ]]; then
-        echo "package_rootfs failed."
-        exit 1
-    fi
+    # package_rootfs $1
+    # if [[ $? -eq 1 ]]; then
+    #     echo "package_rootfs failed."
+    #     exit 1
+    # fi
 
 }
 
 # Call main function
-main 18.04
+main 20.04
