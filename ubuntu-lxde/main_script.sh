@@ -85,19 +85,19 @@ function main(){
     #     exit 1
     # fi
 
-    # # Install wifi and bluetooth packages
-    # chroot_run_1_script "apt_wifi_ble.sh"
-    # if [[ $? -eq 1 ]]; then
-    #     echo "apt_wifi_ble failed."
-    #     exit 1
-    # fi
+    # Install wifi and bluetooth packages
+    chroot_run_1_script "apt_wifi_ble.sh"
+    if [[ $? -eq 1 ]]; then
+        echo "apt_wifi_ble failed."
+        exit 1
+    fi
 
-    # # Install audio and video packages
-    # chroot_run_1_script "apt_audio_video.sh"
-    # if [[ $? -eq 1 ]]; then
-    #     echo "apt_audio_video failed."
-    #     exit 1
-    # fi
+    # Install audio and video packages
+    chroot_run_1_script "apt_audio_video.sh"
+    if [[ $? -eq 1 ]]; then
+        echo "apt_audio_video failed."
+        exit 1
+    fi
 
 #     # Setup config for swap file
 #     chroot_run_1_script "set_swap_enable.sh"

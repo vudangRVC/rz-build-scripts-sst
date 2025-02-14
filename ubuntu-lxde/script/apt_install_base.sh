@@ -12,11 +12,9 @@ chmod 777 /tmp
 # Update the package list
 apt update
 
-# DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::Options::="--force-confold" -f language-pack-en-base sudo ssh net-tools network-manager ethtool ifupdown isc-dhcp-client openssh-server iputils-ping rsyslog bash-completion htop resolvconf dialog vim
-
 DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::Options::="--force-confold" -f language-pack-en-base network-manager isc-dhcp-client openssh-server bash-completion
 
-# # Basic packages
+# Basic packages
 apt install -y dialog 
 # apt install -y rsyslog (failed)
 # DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::Options::="--force-confold" -f systemd
