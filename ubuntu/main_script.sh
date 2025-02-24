@@ -28,8 +28,7 @@ fi
 . include/common/yocto_working.sh
 . include/common/prepare_ubuntu_base.sh
 
-# main function for ubuntu core
-main_ubuntu_core(){
+do_build_yocto(){
     MAIN_USER=$(sudo grep 'sudo: .*main_script.sh' /var/log/auth.log | tail -n 1 | awk '{print $6}')
     # Recheck user for yocto build
     if [ -n "$MAIN_USER" ]; then
@@ -57,7 +56,10 @@ main_ubuntu_core(){
         exit 1
     fi
     ##### END YOCTO WORKING ######
+}
 
+# main function for ubuntu core
+main_ubuntu_core(){
     # Prepare the environment by checking for required files and directories
     prepare_env
     if [ $? -eq 1 ]; then
@@ -147,34 +149,6 @@ main_ubuntu_core(){
 #   None
 #######################################
 main_ubuntu_lxde(){
-    MAIN_USER=$(sudo grep 'sudo: .*main_script.sh' /var/log/auth.log | tail -n 1 | awk '{print $6}')
-    # Recheck user for yocto build
-    if [ -n "$MAIN_USER" ]; then
-        echo "User executed sudo ./main_script is: $MAIN_USER"
-    else
-        echo "It seem that you are root. Recheck..."
-        MAIN_USER=$(stat -c '%U' main_script.sh)
-        if [ -n "$MAIN_USER" ]; then
-            echo "User executed sudo ./main_script is: $MAIN_USER"
-        else
-            echo "It seem that you are root. Please login and clone as a user"
-            exit 1
-        fi
-    fi
-
-    if [ "$MAIN_USER" = "root" ]; then
-        echo "Error: Current user cannot be root, we cannot build yocto with root's privilege."
-        exit 1
-    fi
-
-    ######## YOCTO WORKING ########
-    build_yocto
-    if [ $? -eq 1 ]; then
-        echo "build_yocto failed."
-        exit 1
-    fi
-    ##### END YOCTO WORKING ######
-
     # Install qemu-user-static
     install_qemu
     if [ $? -eq 1 ]; then
@@ -301,9 +275,11 @@ UBUNTU_TYPE="${UBUNTU_TYPE:=CORE}"
 # call main
 case "$UBUNTU_TYPE" in
     CORE)
+        do_build_yocto
         main_ubuntu_core
         ;;
     LXDE)
+        do_build_yocto
         main_ubuntu_lxde
         ;;
     *)
