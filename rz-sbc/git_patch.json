@@ -19,7 +19,7 @@
 	},
 	"meta-renesas": {
 		"url": "https://github.com/vudangRVC/meta-renesas-sst.git",
-		"branch": "styhead/rz-sbc-qt6",
+		"branch": "styhead/rz-sbc-custom-distro",
 		"tag": "",
 		"commit": "",
 		"patches": [],
