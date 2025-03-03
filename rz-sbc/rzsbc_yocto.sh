@@ -18,7 +18,7 @@ SUFFIX_ZIP=".zip"
 SUFFIX_TAR=".tar.gz"
 
 LSB_ID_OK="Ubuntu"
-LSB_REL_OK="20.04"
+LSB_REL_OK="22.04"
 
 TOP_DIR=`pwd`
 JQ="$TOP_DIR/jq-linux-amd64"
