@@ -140,12 +140,12 @@ package_rootfs() {
         return 1
     fi
     # Check and remove old rootfs file if exist
-    if [ -e "$OUTPUT_ROOTFS.tar.zst" ]; then
-        rm "$OUTPUT_ROOTFS".tar.zst
+    if [ -e "$OUTPUT_ROOTFS.tar.bz2" ]; then
+        rm "$OUTPUT_ROOTFS".tar.bz2
     fi
 
     # Create file tar.zst from folder rootfs and check error
-    sudo tar -I zstd -cvf "$OUTPUT_ROOTFS".tar.zst -C rootfs . || { echo "Failed to package rootfs into ${OUTPUT_ROOTFS}.tar.zst"; return 1; }
+    sudo tar -cvjf "$OUTPUT_ROOTFS".tar.bz2 -C rootfs . || { echo "Failed to package rootfs into ${OUTPUT_ROOTFS}.tar.bz2"; return 1; }
 
     echo "package_rootfs completed successfully."
     return 0
