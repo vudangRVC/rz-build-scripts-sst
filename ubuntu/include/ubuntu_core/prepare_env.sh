@@ -7,7 +7,7 @@
 # - The `qt_rootfs_source` directory can be reused if it exists.
 # --------------------------------------------------------------------------#
 
-file="core-image-qt-rzpi.tar.bz2"
+file="$core_image_qt_name"
 
 function prepare_env() {
 

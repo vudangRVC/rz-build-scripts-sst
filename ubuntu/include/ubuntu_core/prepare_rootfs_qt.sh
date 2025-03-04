@@ -12,7 +12,7 @@ WORK_DIR=$(pwd)
 function tar_core_image_qt() {
     echo "Extracting core-image-qt..."
 
-    local file_name="core-image-qt-rzpi.tar.bz2"
+    local file_name="$core_image_qt_name"
     local target_dir="qt_rootfs_source"
     local check_file="qt_rootfs_source/home"
 

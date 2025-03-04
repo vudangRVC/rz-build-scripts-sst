@@ -92,7 +92,7 @@ create_wic() {
     rmdir "$MOUNT_DIR"
 
     # Step 6 : Create file tar.gz from .wic file
-    sudo tar -cvzf "$OUTPUT_WIC".tar.gz "$OUTPUT_WIC" || { echo "Failed to package .wic into .wic.tar.gz"; return 1; }
+    sudo tar -czf "$OUTPUT_WIC".tar.gz "$OUTPUT_WIC" || { echo "Failed to package .wic into .wic.tar.gz"; return 1; }
     echo "File WIC has been created: $OUTPUT_WIC"
     return 0
 }

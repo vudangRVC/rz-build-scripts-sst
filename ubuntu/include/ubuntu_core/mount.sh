@@ -145,7 +145,7 @@ package_rootfs() {
     fi
 
     # Create file tar.zst from folder rootfs and check error
-    sudo tar -cvjf "$OUTPUT_ROOTFS".tar.bz2 -C rootfs . || { echo "Failed to package rootfs into ${OUTPUT_ROOTFS}.tar.bz2"; return 1; }
+    sudo tar -cjf "$OUTPUT_ROOTFS".tar.bz2 -C rootfs . || { echo "Failed to package rootfs into ${OUTPUT_ROOTFS}.tar.bz2"; return 1; }
 
     echo "package_rootfs completed successfully."
     return 0
