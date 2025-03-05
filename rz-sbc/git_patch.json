@@ -19,7 +19,7 @@
 	},
 	"meta-renesas": {
 		"url": "https://github.com/vudangRVC/meta-renesas-sst.git",
-		"branch": "styhead/rz-sbc-custom-distro",
+		"branch": "styhead/rz-sbc-ubuntu-qt",
 		"tag": "",
 		"commit": "",
 		"patches": [],
