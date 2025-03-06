@@ -71,7 +71,7 @@ create_wic() {
 
 	echo "Copy data to boot partition..."
 	sudo mount "$BOOT_PART" "$MOUNT_DIR"
-	sudo cp -r "$ROOTFS_DIR/boot/"* "$MOUNT_DIR"
+	sudo cp -ar "$ROOTFS_DIR/boot/"* "$MOUNT_DIR"
 	sync
 	echo "Partition Boot has :"
 	ls "$MOUNT_DIR"

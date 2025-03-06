@@ -6,8 +6,8 @@
 
 # Check if the script is run as root
 if [ "$(id -u)" -ne 0 ]; then
-    echo "Please run this script as root or using sudo."
-    exit 1
+	echo "Please run this script as root or using sudo."
+	exit 1
 fi
 
 # Changes the ownership of critical sudo-related files to root.
@@ -25,8 +25,8 @@ chmod 4755 /usr/bin/sudo
 passwd -d root
 
 if [ $? -eq 0 ]; then
-    echo "Password for user 'root' has been successfully removed."
+	echo "Password for user 'root' has been successfully removed."
 else
-    echo "Failed to remove password for user 'root'."
-    exit 1
+	echo "Failed to remove password for user 'root'."
+	exit 1
 fi

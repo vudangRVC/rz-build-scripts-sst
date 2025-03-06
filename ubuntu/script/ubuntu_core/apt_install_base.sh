@@ -28,35 +28,35 @@ DEBIAN_FRONTEND=noninteractive dpkg-reconfigure tzdata
 
 # basic package
 apt install -y dialog \
-    rsyslog \
-    systemd \
-    avahi-daemon avahi-utils \
-    udhcpc \
-    ssh \
-    vim \
-    net-tools \
-    ethtool \
-    ifupdown \
-    iputils-ping \
-    htop \
-    tree \
-    lrzsz \
-    gpiod \
-    wpasupplicant \
-    kmod \
-    iw \
-    usbutils \
-    memtester \
-    alsa-utils \
-    ufw
+	rsyslog \
+	systemd \
+	avahi-daemon avahi-utils \
+	udhcpc \
+	ssh \
+	vim \
+	net-tools \
+	ethtool \
+	ifupdown \
+	iputils-ping \
+	htop \
+	tree \
+	lrzsz \
+	gpiod \
+	wpasupplicant \
+	kmod \
+	iw \
+	usbutils \
+	memtester \
+	alsa-utils \
+	ufw
 
 apt install -y python3-pip \
-    dpkg \
-    pkg-config \
-    can-utils \
-    i2c-tools \
-    spi-tools \
-    bluez \
-    connman \
-    network-manager \
-    rfkill
+	dpkg \
+	pkg-config \
+	can-utils \
+	i2c-tools \
+	spi-tools \
+	bluez \
+	connman \
+	network-manager \
+	rfkill
