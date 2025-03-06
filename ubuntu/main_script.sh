@@ -187,12 +187,12 @@ main_ubuntu_lxde(){
         exit 1
     fi
 
-    # # Install lxde desktop
-    # chroot_run_1_script "apt_lxde_desktop.sh"
-    # if [ $? -eq 1 ]; then
-    #     echo "apt_lxde_desktop failed."
-    #     exit 1
-    # fi
+    # Install lxde desktop
+    chroot_run_1_script "apt_lxde_desktop.sh"
+    if [ $? -eq 1 ]; then
+        echo "apt_lxde_desktop failed."
+        exit 1
+    fi
 
     # Create rzpi user - normal user
     chroot_run_1_script "create_rzpi_user.sh"
