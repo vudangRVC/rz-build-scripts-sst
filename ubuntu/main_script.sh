@@ -242,19 +242,19 @@ main_ubuntu_lxde(){
         exit 1
     fi
 
-#     # Setup config for swap file
-#     chroot_run_1_script "set_swap_enable.sh"
-#     if [ $? -eq 1 ]; then
-#         echo "set_swap_enable failed."
-#         exit 1
-#     fi
+	# Setup config for swap file
+	chroot_run_1_script "set_swap_enable.sh"
+	if [ $? -eq 1 ]; then
+		echo "set_swap_enable failed."
+		exit 1
+	fi
 
-#     # Create swap file
-#    create_swap
-#    if [ $? -eq 1 ]; then
-#        echo "create_swap failed."
-#        exit 1
-#    fi
+	# Create swap file
+	create_swap
+	if [ $? -eq 1 ]; then
+		echo "create_swap failed."
+		exit 1
+	fi
 
     # Package rootfs to tar file
     package_rootfs
