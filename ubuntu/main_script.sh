@@ -20,7 +20,7 @@ source_env(){
 		. include/ubuntu_lxde/mount.sh
 		. include/ubuntu_lxde/create_swap.sh
 	else
-		echo "UBUNTU_TYPE is not correct. Please choose the correct one in config.ini."
+		echo "Invalid value passed for UBUNTU_TYPE . Set UBUNTU_TYPE to proper value (CORE / LXDE) in config.ini file."
 		exit 1
 	fi
 }
@@ -30,6 +30,7 @@ source_env(){
 . include/common/yocto_working.sh
 . include/common/prepare_ubuntu_base.sh
 
+# Check if this script is clone by user (not root/sudo) or not.
 do_build_yocto(){
 	MAIN_USER=$(sudo grep 'sudo: .*main_script.sh' /var/log/auth.log | tail -n 1 | awk '{print $6}')
 	# Recheck user for yocto build
@@ -205,6 +206,13 @@ main_ubuntu_lxde(){
 	chroot_run_1_script "apt_wifi_ble.sh"
 	if [ $? -eq 1 ]; then
 		echo "apt_wifi_ble failed."
+		exit 1
+	fi
+
+	# Install lxde desktop
+	chroot_run_1_script "apt_lxde_desktop.sh"
+	if [ $? -eq 1 ]; then
+		echo "apt_lxde_desktop failed."
 		exit 1
 	fi
 

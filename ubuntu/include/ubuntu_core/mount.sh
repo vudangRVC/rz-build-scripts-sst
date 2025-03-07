@@ -23,7 +23,7 @@ mount_chroot() {
 	sudo mount -o bind /dev/pts ./rootfs/dev/pts || { echo "Failed to bind mount /dev/pts"; return 1; }
 
 	echo "Mount chroot completed successfully."
-		
+
 	return 0
 }
 
