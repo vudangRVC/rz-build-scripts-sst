@@ -32,6 +32,12 @@ source_env(){
 
 # Check if this script is clone by user (not root/sudo) or not.
 do_build_yocto(){
+	# Skip entering yocto env if output exists
+	if [ -f "$core_image_qt_name" ]; then
+		echo "Skipping do_build_yocto because $core_image_qt_name is available."
+		return 0
+	fi
+
 	MAIN_USER=$(sudo grep 'sudo: .*main_script.sh' /var/log/auth.log | tail -n 1 | awk '{print $6}')
 	# Recheck user for yocto build
 	if [ -n "$MAIN_USER" ]; then
