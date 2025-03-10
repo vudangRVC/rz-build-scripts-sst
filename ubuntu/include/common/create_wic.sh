@@ -71,7 +71,9 @@ create_wic() {
 
 	echo "Copy data to boot partition..."
 	sudo mount "$BOOT_PART" "$MOUNT_DIR"
-	sudo cp -ar "$ROOTFS_DIR/boot/"* "$MOUNT_DIR"
+	sudo cp -r "$ROOTFS_DIR/boot/"* "$MOUNT_DIR"
+	sudo mv "$MOUNT_DIR/Image"* "$MOUNT_DIR/Image"
+	sudo mv "$MOUNT_DIR/rzpi"* "$MOUNT_DIR/rzpi.dtb"
 	sync
 	echo "Partition Boot has :"
 	ls "$MOUNT_DIR"
@@ -92,7 +94,7 @@ create_wic() {
 	rmdir "$MOUNT_DIR"
 
 	# Step 6 : Create file tar.gz from .wic file
-	sudo tar -czf "$OUTPUT_WIC".tar.gz "$OUTPUT_WIC" || { echo "Failed to package .wic into .wic.tar.gz"; return 1; }
+	sudo gzip "$OUTPUT_WIC" || { echo "Failed to compress .wic into .wic.gz"; return 1; }
 	echo "File WIC has been created: $OUTPUT_WIC"
 	return 0
 }

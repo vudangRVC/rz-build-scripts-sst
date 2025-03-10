@@ -30,3 +30,34 @@ else
 	echo "Failed to remove password for user 'root'."
 	exit 1
 fi
+
+# --------------------------------------------------------------------------#
+# Description:
+# User: rzpi
+# Password: 1
+# --------------------------------------------------------------------------#
+
+# Define the new user
+USERNAME="rzpi"
+PASSWORD="1"
+
+# Check if user already exists then don't create it
+if id "$USERNAME" > /dev/null 2>&1; then
+	echo "User '$USERNAME' already exists."
+else
+	# Create user and set password
+	useradd -m -s /bin/bash "$USERNAME"
+	echo "$USERNAME:$PASSWORD" | chpasswd
+
+	# Disable forced password change
+	passwd -x 99999 "$USERNAME"
+	passwd -n 0 "$USERNAME"
+
+	# Add user to the sudo group
+	usermod -aG sudo "$USERNAME"
+
+	# Check groups
+	groups "$USERNAME"
+
+	echo "User '$USERNAME' created with the password '$PASSWORD' and granted privileges successfully."
+fi

@@ -59,4 +59,6 @@ apt install -y python3-pip \
 	bluez \
 	connman \
 	network-manager \
-	rfkill
+	rfkill \
+	obexftp bluez-obexd \
+	coreutils
