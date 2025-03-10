@@ -10,7 +10,6 @@
 . config.ini
 source_env(){
 	if [ "$UBUNTU_TYPE" = "CORE" ]; then
-		. include/ubuntu_core/prepare_env.sh
 		. include/ubuntu_core/prepare_rootfs_qt.sh
 		. include/ubuntu_core/prepare_conf.sh
 		. include/ubuntu_core/mount.sh
@@ -24,6 +23,7 @@ source_env(){
 		exit 1
 	fi
 }
+. include/common/prepare_env.sh
 . include/common/create_wic.sh
 . include/common/install_gstreamer.sh
 . include/common/install_weston.sh
@@ -152,6 +152,13 @@ main_ubuntu_core(){
 #   None
 #######################################
 main_ubuntu_lxde(){
+	# Prepare the environment by checking for required files and directories
+	prepare_env
+	if [ $? -eq 1 ]; then
+		echo "prepare_env failed."
+		exit 1
+	fi
+
 	# Install qemu-user-static
 	install_qemu
 	if [ $? -eq 1 ]; then
