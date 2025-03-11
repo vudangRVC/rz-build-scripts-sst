@@ -272,7 +272,7 @@ main_ubuntu_lxde(){
 }
 
 # Set the default build type to Ubuntu Core
-UBUNTU_TYPE="${UBUNTU_TYPE:=CORE}"
+UBUNTU_TYPE="${1:-${UBUNTU_TYPE:=CORE}}"
 
 # call main
 case "$UBUNTU_TYPE" in
