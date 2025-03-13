@@ -137,8 +137,8 @@ function copy_qt() {
 	local target_dir="rootfs/usr"
 
 	# Copy folder boot
-	cp -rd "$src_qt/share/qt5" "$target_dir/share" || { echo "Failed to copy 'qt lib' directory"; return 1; }
-	cp -rd "$src_qt/lib/qt5" "$target_dir/lib/aarch64-linux-gnu/" || { echo "Failed to copy 'aarch64-linux-gnu' directory"; return 1; }
+	# cp -rd "$src_qt/share/qt"* "$target_dir/share" || { echo "Failed to copy 'qt lib' directory"; return 1; }
+	cp -rd "$src_qt/lib/qt"* "$target_dir/lib/aarch64-linux-gnu/" || { echo "Failed to copy 'aarch64-linux-gnu' directory"; return 1; }
 	cp -rd "$src_qt/lib/libQt"* "$target_dir/lib/aarch64-linux-gnu/" || { echo "Failed to copy 'aarch64-linux-gnu' directory"; return 1; }
 	mkdir -p "$target_dir/lib/aarch64-linux-gnu/pkgconfig/" || { echo "Failed to mkdir 'lib/aarch64-linux-gnu/pkgconfig' directory"; return 1; }
 	cp -rd "$src_qt/lib/pkgconfig/Qt"* "$target_dir/lib/aarch64-linux-gnu/pkgconfig/" || { echo "Failed to copy 'pkgconfig' directory"; return 1; }
