@@ -39,8 +39,8 @@ install_gstreamer() {
 	sudo cp $wic_rootfs/usr/local/include/OMX*  $rootfs/usr/local/include/
 
 	#lib
-	sudo rsync -avl $wic_rootfs/usr/lib64/libomxr* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libuvcs* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libomxr* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libuvcs* $rootfs/usr/lib/aarch64-linux-gnu/
 
 	#----------------------------porting vspm----------------------------
 	cp $wic_rootfs/usr/local/include/fdp_drv.h  $rootfs/usr/local/include/
@@ -48,7 +48,7 @@ install_gstreamer() {
 	cp $wic_rootfs/usr/local/include/vsp_drv.h  $rootfs/usr/local/include/
 	cp $wic_rootfs/usr/local/include/vspm_cmn.h  $rootfs/usr/local/include/
 
-	sudo rsync -avl $wic_rootfs/usr/lib64/libvspm* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libvspm* $rootfs/usr/lib/aarch64-linux-gnu/
 
 	#----------------------------porting vspmif----------------------------
 	sudo cp $wic_rootfs/usr/local/include/vspm_if.h  $rootfs/usr/local/include/
@@ -64,7 +64,7 @@ install_gstreamer() {
 	sudo cp $wic_rootfs/usr/local/include/mmngr_user_public.h  $rootfs/usr/local/include/
 
 	#lib
-	sudo rsync -avl $wic_rootfs/usr/lib64/libmmngr* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libmmngr* $rootfs/usr/lib/aarch64-linux-gnu/
 
 
 	#----------------------------porting mmngrbuf----------------------------
@@ -74,7 +74,7 @@ install_gstreamer() {
 	sudo cp $wic_rootfs/usr/local/include/mmngr_buf_user_public.h $rootfs/usr/local/include/
 
 	#lib
-	sudo rsync -avl $wic_rootfs/usr/lib64/libmmngrbuf* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libmmngrbuf* $rootfs/usr/lib/aarch64-linux-gnu/
 
 	#----------------------------porting gstreamer1.0----------------------------
 	#bin
@@ -84,17 +84,17 @@ install_gstreamer() {
 	sudo cp -r $wic_rootfs/usr/include/gstreamer-1.0 $rootfs/usr/include/
 
 	#lib Gst-1.0.typelib  GstBase-1.0.typelib  GstCheck-1.0.typelib  GstController-1.0.typelib  GstNet-1.0.typelib 
-	sudo cp -p $wic_rootfs/usr/lib64/girepository-1.0/Gst* $rootfs/usr/lib/aarch64-linux-gnu/girepository-1.0/
+	sudo cp -p $wic_rootfs/usr/lib/girepository-1.0/Gst* $rootfs/usr/lib/aarch64-linux-gnu/girepository-1.0/
 	# libgstcoreelements.so
-	sudo rsync -avl $wic_rootfs/usr/lib64/gstreamer-1.0 $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/gstreamer-1.0 $rootfs/usr/lib/aarch64-linux-gnu/
 
-	sudo rsync -avl $wic_rootfs/usr/lib64/libgst* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libgst* $rootfs/usr/lib/aarch64-linux-gnu/
 
 	#libexec notify -rwsr-xr-x 1 liuxindz liuxindz 61920 Jul 27 12:38 libexec/gstreamer-1.0/gst-ptp-helper   
 	sudo rsync -avl $wic_rootfs/usr/libexec/gstreamer-1.0 $rootfs/usr/libexec/
 
-	#pkgconfig  /usr/share/pkgconfig /usr/lib64/pkgconfig
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/gst*.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	#pkgconfig  /usr/share/pkgconfig /usr/lib/pkgconfig
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/gst*.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#share
 	sudo cp $wic_rootfs/usr/share/aclocal/gst-element-check-1.0.m4 $rootfs/usr/share/aclocal/
@@ -104,17 +104,17 @@ install_gstreamer() {
 	#----------------------------porting gstreamer1.0-libav----------------------------
 	#depends gstreamer1.0 gstreamer1.0-plugins-base ffmpeg
 	#lib
-	#sudo rsync -avl $wic_rootfs/usr/lib64/gstreamer-1.0/libgstlibav.so $rootfs/usr/lib/aarch64-linux-gnu/gstreamer-1.0/
+	#sudo rsync -avl $wic_rootfs/usr/lib/gstreamer-1.0/libgstlibav.so $rootfs/usr/lib/aarch64-linux-gnu/gstreamer-1.0/
 
 	#----------------------------porting gstreamer1.0-omx----------------------------
 	#etc 
 	sudo cp -p $wic_rootfs/etc/xdg/gstomx.conf $rootfs/etc/xdg/
 
 	#lib
-	#sudo rsync -avl $wic_rootfs/usr/lib64/gstreamer-1.0/libgstomx.so $rootfs/usr/lib/aarch64-linux-gnu/gstreamer-1.0/
+	#sudo rsync -avl $wic_rootfs/usr/lib/gstreamer-1.0/libgstomx.so $rootfs/usr/lib/aarch64-linux-gnu/gstreamer-1.0/
 
 	#----------------------------porting gstreamer1.0-plugin-vspmfilter----------------------------
-	#sudo rsync -avl $wic_rootfs/usr/lib64/gstreamer-1.0/libgstvspmfilter.so $rootfs/usr/lib/aarch64-linux-gnu/gstreamer-1.0/
+	#sudo rsync -avl $wic_rootfs/usr/lib/gstreamer-1.0/libgstvspmfilter.so $rootfs/usr/lib/aarch64-linux-gnu/gstreamer-1.0/
 
 	#----------------------------porting gstreamer1.0-plugins-base----------------------------
 	#etc 
@@ -146,12 +146,12 @@ install_gstreamer() {
 	sudo rsync -avl $wic_rootfs/usr/include/libdvbv5 $rootfs/usr/include
 	sudo rsync -avl $wic_rootfs/usr/include/libv4l* $rootfs/usr/include
 	sudo rsync -avl $wic_rootfs/usr/include/mediactl $rootfs/usr/include
-	#usr/lib64
-	sudo rsync -avl $wic_rootfs/usr/lib64/libdvbv5* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libmediactl* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libv4l $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libv4l* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo rsync -avl $wic_rootfs/usr/lib64/v4l* $rootfs/usr/lib/aarch64-linux-gnu/
+	#usr/lib
+	sudo rsync -avl $wic_rootfs/usr/lib/libdvbv5* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libmediactl* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libv4l $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libv4l* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/v4l* $rootfs/usr/lib/aarch64-linux-gnu/
 
 	#usr/sbin
 	sudo rsync -avl $wic_rootfs/usr/sbin/v4l2* $rootfs/usr/sbin/
@@ -161,102 +161,102 @@ install_gstreamer() {
 	sudo rsync -avl $wic_rootfs/home/root/v4l2* $rootfs/root/
 	#a52
 	sudo rsync -avl $wic_rootfs/usr/include/a52dec $rootfs/usr/include/
-	sudo rsync -avl $wic_rootfs/usr/lib64/liba52* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/liba52* $rootfs/usr/lib/aarch64-linux-gnu/
 
 	#sbc
 	sudo rsync -avl $wic_rootfs/usr/include/sbc $rootfs/usr/include/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libsbc* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/sbc.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo rsync -avl $wic_rootfs/usr/lib/libsbc* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/sbc.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#gdk-pixbuf
 	sudo rsync -avl $wic_rootfs/usr/include/gdk-pixbuf-2.0 $rootfs/usr/include/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libgdk_pixbuf* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo cp  $wic_rootfs/usr/lib64/girepository-1.0/GdkPix* $rootfs/usr/lib/aarch64-linux-gnu/girepository-1.0/
-	sudo rsync -avl $wic_rootfs/usr/lib64/gdk-pixbuf-2.0 $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libgdk_pixbuf* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo cp  $wic_rootfs/usr/lib/girepository-1.0/GdkPix* $rootfs/usr/lib/aarch64-linux-gnu/girepository-1.0/
+	sudo rsync -avl $wic_rootfs/usr/lib/gdk-pixbuf-2.0 $rootfs/usr/lib/aarch64-linux-gnu/
 	sudo cp  $wic_rootfs/usr/share/gir-1.0/GdkPix* $rootfs/usr/share/gir-1.0/
 	sudo cp  $wic_rootfs/usr/share/locale/en_GB/LC_MESSAGES/gdk-pixbuf.mo $rootfs/usr/share/locale/en_GB/LC_MESSAGES/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/gdk-pixbuf-2.0.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/gdk-pixbuf-2.0.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#tag
 	sudo rsync -avl $wic_rootfs/usr/include/taglib $rootfs/usr/include/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libtag* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/taglib* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo rsync -avl $wic_rootfs/usr/lib/libtag* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/taglib* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#faac
 	sudo cp  $wic_rootfs/usr/bin/faac $rootfs/usr/bin/
 	sudo rsync -avl $wic_rootfs/usr/include/faac* $rootfs/usr/include/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libfaac* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libfaac* $rootfs/usr/lib/aarch64-linux-gnu/
 
 	#curl
 	sudo rsync -avl $wic_rootfs/usr/include/curl $rootfs/usr/include/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libcurl* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libcurl* $rootfs/usr/lib/aarch64-linux-gnu/
 	sudo cp  $wic_rootfs/usr/share/aclocal/libcurl.m4 $rootfs/usr/share/aclocal/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/libcurl.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/libcurl.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#bayer2raw
 	# sudo rsync -avl $wic_rootfs/usr/include/bayer2raw* $rootfs/usr/include/
-	# sudo rsync -avl $wic_rootfs/usr/lib64/libbayer2* $rootfs/usr/lib/aarch64-linux-gnu/
+	# sudo rsync -avl $wic_rootfs/usr/lib/libbayer2* $rootfs/usr/lib/aarch64-linux-gnu/
 	# sudo cp  $wic_rootfs/usr/share/bayer* $rootfs/usr/share/
 
 	#avfileter
-	sudo rsync -avl $wic_rootfs/usr/lib64/libavfilter* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libavfilter* $rootfs/usr/lib/aarch64-linux-gnu/
 
 	#webp
 	sudo rsync -avl $wic_rootfs/usr/include/webp $rootfs/usr/include/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libwebp* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/libwebp* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo rsync -avl $wic_rootfs/usr/lib/libwebp* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/libwebp* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#lame 
 	sudo rsync -avl $wic_rootfs/usr/include/lame $rootfs/usr/include/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libmp3lame* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libmp3lame* $rootfs/usr/lib/aarch64-linux-gnu/
 
 	#speex
 	sudo rsync -avl $wic_rootfs/usr/include/speex $rootfs/usr/include/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libspeex* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libspeex* $rootfs/usr/lib/aarch64-linux-gnu/
 	sudo cp  $wic_rootfs/usr/share/aclocal/speex.m4 $rootfs/usr/share/aclocal/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/speex.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/speex.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#rsvg
 	sudo rsync -avl $wic_rootfs/usr/include/librsvg* $rootfs/usr/include/
 	sudo cp  $wic_rootfs/usr/share/gir-1.0/Rsvg* $rootfs/usr/share/gir-1.0/
-	sudo cp  $wic_rootfs/usr/lib64/girepository-1.0/Rsvg* $rootfs/usr/lib/aarch64-linux-gnu/girepository-1.0/
-	sudo rsync -avl $wic_rootfs/usr/lib64/librsvg* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/librsvg* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo cp  $wic_rootfs/usr/lib/girepository-1.0/Rsvg* $rootfs/usr/lib/aarch64-linux-gnu/girepository-1.0/
+	sudo rsync -avl $wic_rootfs/usr/lib/librsvg* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/librsvg* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#libsoup
 	sudo rsync -avl $wic_rootfs/usr/include/libsoup* $rootfs/usr/include/
-	sudo cp  $wic_rootfs/usr/lib64/girepository-1.0/Soup* $rootfs/usr/lib/aarch64-linux-gnu/girepository-1.0/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libsoup* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo cp  $wic_rootfs/usr/lib/girepository-1.0/Soup* $rootfs/usr/lib/aarch64-linux-gnu/girepository-1.0/
+	sudo rsync -avl $wic_rootfs/usr/lib/libsoup* $rootfs/usr/lib/aarch64-linux-gnu/
 	#sudo cp  $wic_rootfs/usr/share/gir-1.0/Soup* $rootfs/usr/share/gir-1.0/
 	#copy locale LC_MESSAGE
 	find "$wic_locale_folder" -type f -name "libsoup.mo" -exec dirname {} \; | while read -r dir; do
 		parent_dir=$(dirname "$dir")
 		sudo cp -r "$parent_dir" "$work_locale_folder"
 	done
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/libsoup-2.4.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/libsoup-2.4.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#faad2
 	sudo rsync -avl $wic_rootfs/usr/include/faad.h $rootfs/usr/include/
 	sudo rsync -avl $wic_rootfs/usr/include/neaacdec.h $rootfs/usr/include/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libfaad* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libfaad* $rootfs/usr/lib/aarch64-linux-gnu/
 
 	#flac
 	sudo rsync -avl $wic_rootfs/usr/include/FLAC* $rootfs/usr/include/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libFLAC* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libFLAC* $rootfs/usr/lib/aarch64-linux-gnu/
 	sudo cp $wic_rootfs/usr/share/aclocal/libFLAC* $rootfs/usr/share/aclocal/
 	sudo rsync -avl  $wic_rootfs/usr/share/alsa $rootfs/usr/share/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/flac* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/flac* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#alsa-lib
 	sudo rsync -avl $wic_rootfs/usr/include/alsa $rootfs/usr/include/
 	sudo rsync -avl $wic_rootfs/usr/include/asoundlib.h $rootfs/usr/include/
 	sudo rsync -avl $wic_rootfs/usr/include/sys/asoundlib.h $rootfs/usr/include/sys/
 
-	sudo rsync -avl $wic_rootfs/usr/lib64/libasound* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libatopology* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libasound* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libatopology* $rootfs/usr/lib/aarch64-linux-gnu/
 	sudo cp $wic_rootfs/usr/share/aclocal/alsa.m4 $rootfs/usr/share/aclocal/
 	sudo rsync -avl  $wic_rootfs/usr/share/alsa $rootfs/usr/share/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/alsa* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/alsa* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#alsa-state
 	sudo cp  $wic_rootfs/etc/asound.conf $rootfs/etc/
@@ -265,7 +265,7 @@ install_gstreamer() {
 
 	#alsa-plugins
 	#sudo rsync -avl $wic_rootfs/etc/alsa $rootfs/etc/
-	#sudo rsync -avl $wic_rootfs/usr/lib64/alsa-lib $rootfs/usr/lib/aarch64-linux-gnu/
+	#sudo rsync -avl $wic_rootfs/usr/lib/alsa-lib $rootfs/usr/lib/aarch64-linux-gnu/
 
 	#alsa-utils
 	sudo rsync -avl $wic_rootfs/lib/systemd/system/alsa* $rootfs/lib/systemd/system/
@@ -304,47 +304,47 @@ install_gstreamer() {
 
 	sudo cp $wic_rootfs/usr/bin/ffmpeg $rootfs/usr/bin/
 	sudo cp $wic_rootfs/usr/bin/ffprobe $rootfs/usr/bin/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libavcodec* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libavdevice* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libavfilter* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libavformat* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libavutil* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libavresample* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libpostproc* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libswresample* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libswscale* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libavcodec* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libavdevice* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libavfilter* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libavformat* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libavutil* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libavresample* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libpostproc* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libswresample* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/libswscale* $rootfs/usr/lib/aarch64-linux-gnu/
 	sudo cp -r $wic_rootfs/usr/share/ffmpeg $rootfs/usr/lib/aarch64-linux-gnu/
 
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/libavcodec.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/libavdevice.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/libavfilter.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/libavformat.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/libavutil.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/libavresample.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/libpostproc.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/libswresample.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/libswscale.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/libavcodec.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/libavdevice.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/libavfilter.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/libavformat.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/libavutil.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/libavresample.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/libpostproc.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/libswresample.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/libswscale.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 
 	#libtheora
 	sudo rsync -avl $wic_rootfs/usr/include/theora $rootfs/usr/include/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libtheora* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/theora* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo rsync -avl $wic_rootfs/usr/lib/libtheora* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/theora* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#x264
 	sudo rsync -avl $wic_rootfs/usr/include/x264* $rootfs/usr/include/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libx264* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/x264.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo rsync -avl $wic_rootfs/usr/lib/libx264* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/x264.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#mpeg2dec
 	sudo rsync -avl $wic_rootfs/usr/include/mpeg2dec $rootfs/usr/include/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libmpeg2* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/libmpeg2* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo rsync -avl $wic_rootfs/usr/lib/libmpeg2* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/libmpeg2* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#libmpg123
 	sudo rsync -avl $wic_rootfs/usr/include/*123* $rootfs/usr/include/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libmpg123* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/*123.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo rsync -avl $wic_rootfs/usr/lib/libmpg123* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/*123.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#libtiff
 	# sudo cp $wic_rootfs/usr/bin/tiff* $rootfs/usr/bin/
@@ -352,40 +352,40 @@ install_gstreamer() {
 	# sudo cp $wic_rootfs/usr/bin/pal2rgb $rootfs/usr/bin/
 	# sudo cp $wic_rootfs/usr/bin/*tiff $rootfs/usr/bin/
 	# sudo rsync -avl $wic_rootfs/usr/include/tiff* $rootfs/usr/include/
-	# sudo rsync -avl $wic_rootfs/usr/lib64/libtiff* $rootfs/usr/lib/aarch64-linux-gnu/
-	# sudo cp $wic_rootfs/usr/lib64/pkgconfig/libtiff* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	# sudo rsync -avl $wic_rootfs/usr/lib/libtiff* $rootfs/usr/lib/aarch64-linux-gnu/
+	# sudo cp $wic_rootfs/usr/lib/pkgconfig/libtiff* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#libpng
 	sudo rsync -avl $wic_rootfs/usr/include/*png* $rootfs/usr/include/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libpng* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/libpng* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo rsync -avl $wic_rootfs/usr/lib/libpng* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/libpng* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#pulseaudio
 	sudo rsync -avl $wic_rootfs/usr/include/pulse $rootfs/usr/include/
 	sudo rsync -avl $wic_rootfs/etc/pulse  $rootfs/etc/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libpulse* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo rsync -avl $wic_rootfs/usr/lib64/pulseaudio $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/libpulse* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo rsync -avl $wic_rootfs/usr/lib/libpulse* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo rsync -avl $wic_rootfs/usr/lib/pulseaudio $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/libpulse* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#libcroco
 	sudo rsync -avl $wic_rootfs/usr/include/libcroco* $rootfs/usr/include/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libcroco* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/libcroco* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo rsync -avl $wic_rootfs/usr/lib/libcroco* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/libcroco* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#libvorbis
 	sudo rsync -avl $wic_rootfs/usr/include/vorbis $rootfs/usr/include/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libvorbis* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/vorbis* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo rsync -avl $wic_rootfs/usr/lib/libvorbis* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/vorbis* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#libsndfile
 	sudo rsync -avl $wic_rootfs/usr/include/sndfile* $rootfs/usr/include/
-	sudo rsync -avl $wic_rootfs/usr/lib64/libsndfile* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/sndfile* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo rsync -avl $wic_rootfs/usr/lib/libsndfile* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/sndfile* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#orc
 	sudo rsync -avl $wic_rootfs/usr/include/orc* $rootfs/usr/include/
-	sudo rsync -avl $wic_rootfs/usr/lib64/liborc* $rootfs/usr/lib/aarch64-linux-gnu/
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/orc* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+	sudo rsync -avl $wic_rootfs/usr/lib/liborc* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/orc* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
 	#----------------------------porting kernel ko----------------------------
 	# sudo mkdir $rootfs/lib/modules

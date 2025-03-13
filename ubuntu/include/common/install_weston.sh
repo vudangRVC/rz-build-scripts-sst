@@ -36,9 +36,6 @@ install_weston() {
 sudo chroot $work_dir /bin/bash <<'EOF'
 	set -x
 
-	sudo mkdir lib64
-	sudo cp /lib/ld-linux-aarch64.so.1  /lib64
-	sudo ln -s /usr/lib/aarch64-linux-gnu /usr/lib64  
 	sudo mkdir usr/lib/aarch64-linux-gnu/pkgconfig
 
 	sudo ln -s  /usr/bin/openvt.kbd /usr/bin/openvt
@@ -62,10 +59,10 @@ EOF
 	cp $wic_rootfs/usr/include/wayland*.h $rootfs/usr/include
 
 	#lib
-	sudo cp -pr $wic_rootfs/usr/lib64/libwayland* $rootfs/usr/lib/aarch64-linux-gnu
+	sudo cp -pr $wic_rootfs/usr/lib/libwayland* $rootfs/usr/lib/aarch64-linux-gnu
 
-	#pkgconfig  /usr/share/pkgconfig /usr/lib64/pkgconfig
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/wayland*.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
+	#pkgconfig  /usr/share/pkgconfig /usr/lib/pkgconfig
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/wayland*.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
 
 	#share
 	sudo mkdir $rootfs/usr/share/aclocal
@@ -86,15 +83,15 @@ EOF
 	cp -r $wic_rootfs/usr/include/weston $rootfs/usr/include
 
 	#lib -p save the attributes
-	sudo cp -pr $wic_rootfs/usr/lib64/libweston* $rootfs/usr/lib/aarch64-linux-gnu  
-	sudo cp -pr $wic_rootfs/usr/lib64/weston $rootfs/usr/lib/aarch64-linux-gnu 
+	sudo cp -pr $wic_rootfs/usr/lib/libweston* $rootfs/usr/lib/aarch64-linux-gnu  
+	sudo cp -pr $wic_rootfs/usr/lib/weston $rootfs/usr/lib/aarch64-linux-gnu 
 
-	#pkgconfig  /usr/share/pkgconfig /usr/lib64/pkgconfig
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/*weston*.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
+	#pkgconfig  /usr/share/pkgconfig /usr/lib/pkgconfig
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/*weston*.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
 
 	#libffi
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/*libffi*.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
-	sudo cp -pr $wic_rootfs/usr/lib64/*libffi* $rootfs/usr/lib/aarch64-linux-gnu 
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/*libffi*.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
+	sudo cp -pr $wic_rootfs/usr/lib/*libffi* $rootfs/usr/lib/aarch64-linux-gnu 
 
 	#libexec
 	sudo cp  $wic_rootfs/usr/libexec/weston* $rootfs/usr/libexec 
@@ -107,7 +104,7 @@ EOF
 
 	#need libjped-dev, ubuntu default install is verson 8, we need is version 62
 	#so copy the jpeg from wic
-	sudo cp -pr $wic_rootfs/usr/lib64/libjpeg* $rootfs/usr/lib/aarch64-linux-gnu  
+	sudo cp -pr $wic_rootfs/usr/lib/libjpeg* $rootfs/usr/lib/aarch64-linux-gnu  
 
 
 	#----------------------------porting libdrm----------------------------
@@ -127,12 +124,12 @@ EOF
 	cp $wic_rootfs/usr/include/*drm*.h $rootfs/usr/include
 
 	#lib -p save the attributes
-	sudo rsync -avl $wic_rootfs/usr/lib64/libdrm* $rootfs/usr/lib/aarch64-linux-gnu  
-	sudo rsync -avl $wic_rootfs/usr/lib64/libkms* $rootfs/usr/lib/aarch64-linux-gnu 
+	sudo rsync -avl $wic_rootfs/usr/lib/libdrm* $rootfs/usr/lib/aarch64-linux-gnu  
+	sudo rsync -avl $wic_rootfs/usr/lib/libkms* $rootfs/usr/lib/aarch64-linux-gnu 
 
 	#pkgconfig
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/libdrm*.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/libkms*.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/libdrm*.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/libkms*.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
 
 	#share
 	sudo cp -r $wic_rootfs/usr/share/libdrm $rootfs/usr/share
@@ -144,27 +141,27 @@ EOF
 	cp -r $wic_rootfs/usr/include/GLES $rootfs/usr/include
 
 	#pkgconfig
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/egl.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/gbm.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/glesv1.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/glesv1_cm.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/glesv2.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/OpenCL.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
-	sudo cp $wic_rootfs/usr/lib64/pkgconfig/wayland-egl.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/egl.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/gbm.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/glesv1.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/glesv1_cm.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/glesv2.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/OpenCL.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/wayland-egl.pc $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig
 
 	#lib -p save the attributes
-	sudo cp -p $wic_rootfs/usr/lib64/libEGL.so $rootfs/usr/lib/aarch64-linux-gnu  
-	sudo cp -p $wic_rootfs/usr/lib64/libgbm.so $rootfs/usr/lib/aarch64-linux-gnu 
-	sudo cp -p $wic_rootfs/usr/lib64/libGLESv1_CM.so $rootfs/usr/lib/aarch64-linux-gnu  
-	sudo cp -p $wic_rootfs/usr/lib64/libGLESv2.so $rootfs/usr/lib/aarch64-linux-gnu 
-	sudo cp -p $wic_rootfs/usr/lib64/libOpenCL.so $rootfs/usr/lib/aarch64-linux-gnu  
-	# sudo cp -p $wic_rootfs/usr/lib64/libwayland-egl.so $rootfs/usr/lib/aarch64-linux-gnu 
+	sudo cp -p $wic_rootfs/usr/lib/libEGL.so $rootfs/usr/lib/aarch64-linux-gnu  
+	sudo cp -p $wic_rootfs/usr/lib/libgbm.so $rootfs/usr/lib/aarch64-linux-gnu 
+	sudo cp -p $wic_rootfs/usr/lib/libGLESv1_CM.so $rootfs/usr/lib/aarch64-linux-gnu  
+	sudo cp -p $wic_rootfs/usr/lib/libGLESv2.so $rootfs/usr/lib/aarch64-linux-gnu 
+	sudo cp -p $wic_rootfs/usr/lib/libOpenCL.so $rootfs/usr/lib/aarch64-linux-gnu  
+	# sudo cp -p $wic_rootfs/usr/lib/libwayland-egl.so $rootfs/usr/lib/aarch64-linux-gnu 
 
 	#----------------------------porting gpu mali libmali.so----------------------------
 	#lib -p save the attributes
-	sudo cp -pr $wic_rootfs/usr/lib64/mali_wayland $rootfs/usr/lib/aarch64-linux-gnu  
-	sudo cp -pr $wic_rootfs/usr/lib64/mali_fbdev $rootfs/usr/lib/aarch64-linux-gnu 
-	sudo cp -p $wic_rootfs/usr/lib64/libmali.so $rootfs/usr/lib/aarch64-linux-gnu 
+	sudo cp -pr $wic_rootfs/usr/lib/mali_wayland $rootfs/usr/lib/aarch64-linux-gnu  
+	sudo cp -pr $wic_rootfs/usr/lib/mali_fbdev $rootfs/usr/lib/aarch64-linux-gnu 
+	sudo cp -p $wic_rootfs/usr/lib/libmali.so $rootfs/usr/lib/aarch64-linux-gnu 
 
 	#----------------------------porting gpu ko----------------------------
 	# sudo mkdir $rootfs/lib/modules
