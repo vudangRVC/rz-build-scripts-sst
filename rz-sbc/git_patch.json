@@ -33,7 +33,7 @@
 		"commit": "",
 		"patches": [],
 		"type": "git",
-		"enable": "true"
+		"enable": "false"
 	},
 	"meta-qt6": {
 		"url": "https://github.com/YoeDistro/meta-qt6.git",
