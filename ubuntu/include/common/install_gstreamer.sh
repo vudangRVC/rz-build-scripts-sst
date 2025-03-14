@@ -387,6 +387,22 @@ install_gstreamer() {
 	sudo rsync -avl $wic_rootfs/usr/lib/liborc* $rootfs/usr/lib/aarch64-linux-gnu/
 	sudo cp $wic_rootfs/usr/lib/pkgconfig/orc* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
 
+	#ogg
+	sudo rsync -avl $wic_rootfs/usr/include/ogg* $rootfs/usr/include/
+	sudo rsync -avl $wic_rootfs/usr/lib/libogg* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/ogg* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+
+	#xv
+	sudo mkdir -p $rootfs/usr/include/X11/extensions/
+	sudo rsync -avl $wic_rootfs/usr/include/X11/extensions/Xv* $rootfs/usr/include/X11/extensions/
+	sudo rsync -avl $wic_rootfs/usr/lib/libXv* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/xv* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+
+	#pulse audio
+	sudo rsync -avl $wic_rootfs/usr/include/pulse* $rootfs/usr/include/
+	sudo rsync -avl $wic_rootfs/lib/pulseaudio/libpulsecommon* $rootfs/usr/lib/aarch64-linux-gnu/
+	sudo cp $wic_rootfs/usr/lib/pkgconfig/pulse* $rootfs/usr/lib/aarch64-linux-gnu/pkgconfig/
+
 	#----------------------------porting kernel ko----------------------------
 	# sudo mkdir $rootfs/lib/modules
 	# sudo cp -pr $wic_rootfs/lib/modules/* $rootfs/lib/modules
