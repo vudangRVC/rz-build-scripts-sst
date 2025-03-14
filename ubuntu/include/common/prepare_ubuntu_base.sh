@@ -128,6 +128,7 @@ tar_ubuntu_base() {
 		fi
 	else
 		echo "Directory $target_dir already exists. Skipping creation."
+		return 0
 	fi
 
 	# Tar file into target folder
