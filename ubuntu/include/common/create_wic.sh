@@ -73,7 +73,7 @@ create_wic() {
 	sudo mount "$BOOT_PART" "$MOUNT_DIR"
 	sudo cp -r "$ROOTFS_DIR/boot/"* "$MOUNT_DIR"
 	sudo mv "$MOUNT_DIR/Image"* "$MOUNT_DIR/Image"
-	sudo mv "$MOUNT_DIR/rzpi"* "$MOUNT_DIR/rzpi.dtb"
+	sudo mv "$MOUNT_DIR/dtb/renesas/rzpi"* "$MOUNT_DIR/dtb/renesas/rzpi.dtb"
 	sync
 	echo "Partition Boot has :"
 	ls "$MOUNT_DIR"
