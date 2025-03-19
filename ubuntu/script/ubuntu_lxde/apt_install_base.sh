@@ -52,10 +52,7 @@ apt install -y memtester
 apt install -y alsa-utils
 apt install -y ufw
 
-# # Install virtual keyboard
-# apt install -y onboard
-
-# # Install network-manager-gnome to manage network on GUI
-# apt install -y network-manager-gnome
+# Install virtual keyboard
+apt install -y onboard
 
 DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated -o Dpkg::Options::="--force-confold" -f xinit lxde lightdm xserver-xorg lightdm-gtk-greeter

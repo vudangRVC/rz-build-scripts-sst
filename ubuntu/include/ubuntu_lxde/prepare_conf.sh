@@ -189,6 +189,13 @@ set_config() {
 		return 1
 	fi
 
+	# Configure connman-gtk to appear at System Tray
+	copy_file_conf "connman-gtk.desktop" "rootfs/etc/xdg/autostart" "755"
+	if [ $? -eq 1 ]; then
+		echo "Failed to configure connman-gtk. Exiting."
+		return 1
+	fi
+
 	echo "Configuration completed successfully."
 	return 0
 }
