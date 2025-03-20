@@ -6,6 +6,34 @@
 # set up root and user passwords, and finally package the system into a WIC image.
 # --------------------------------------------------------------------------------#
 
+# Guidance
+# Currently, this script supports for RZ SBC board
+guideline() {
+    echo "------------------------------------------------------------"
+    echo "Syntax Error!!!"
+    echo "How to use script:"
+    echo "Syntax:"
+    echo ""
+    echo "========="
+    echo "Build Yocto"
+    echo "Usage:"
+    echo "sudo ./main_script.sh <target_image>"
+    echo ""
+    echo "--------------------------"
+    echo " - <target_image>: the target Yocto build image. It can be one of the following supported images:"
+    echo "     1. ubuntu-core"
+    echo "     2. ubuntu-lxde"
+    echo "     3. all-ubuntu-images"
+    echo "Note: If <target_image> is set to 'all-ubuntu-images', all supported images will be built."
+    echo "      If <target_image> is not specified, the script will build the image defined in config.ini."
+    echo ""
+    echo "For example: "
+    echo "sudo ./main_script.sh ubuntu-core"
+    echo "sudo ./main_script.sh ubuntu-lxde"
+    echo "sudo ./main_script.sh all-ubuntu-images"
+    echo "------------------------------------------------------------"
+}
+
 # include
 . config.ini
 source_env(){
@@ -29,6 +57,7 @@ source_env(){
 . include/common/install_weston.sh
 . include/common/yocto_working.sh
 . include/common/prepare_ubuntu_base.sh
+. include/common/allow_empty_password.sh
 
 # Check if this script is clone by user (not root/sudo) or not.
 do_build_yocto(){
@@ -108,6 +137,13 @@ main_ubuntu_core(){
 	chroot_run_1_script "set_root_password.sh"
 	if [ $? -eq 1 ]; then
 		echo "set_root_password failed."
+		exit 1
+	fi
+
+	# Allow user ssh without password
+	allow_empty_password_ssh
+	if [ $? -eq 1 ]; then
+		echo "allow_empty_password_ssh failed."
 		exit 1
 	fi
 
@@ -215,6 +251,13 @@ main_ubuntu_lxde(){
 		exit 1
 	fi
 
+	# Allow user ssh without password
+	allow_empty_password_ssh
+	if [ $? -eq 1 ]; then
+		echo "allow_empty_password_ssh failed."
+		exit 1
+	fi
+
 	# Install wifi and bluetooth packages
 	chroot_run_1_script "apt_wifi_ble.sh"
 	if [ $? -eq 1 ]; then
@@ -272,7 +315,28 @@ main_ubuntu_lxde(){
 }
 
 # Set the default build type to Ubuntu Core
-UBUNTU_TYPE="${1:-${UBUNTU_TYPE:=CORE}}"
+UBUNTU_TYPE="${UBUNTU_TYPE:=CORE}"
+
+# Handle the Ubuntu type based on the input parameter
+if [ -n "$1" ]; then
+	case "$1" in
+		"ubuntu-core")
+			UBUNTU_TYPE="CORE"
+			;;
+		"ubuntu-lxde")
+			UBUNTU_TYPE="LXDE"
+			;;
+		"all-ubuntu-images")
+			UBUNTU_TYPE="ALL"
+			;;
+		*)
+			guideline
+			exit 1
+			;;
+	esac
+else
+	echo "Ubuntu type is ${UBUNTU_TYPE} located in config.ini"
+fi
 
 # call main
 case "$UBUNTU_TYPE" in

@@ -13,7 +13,6 @@ ETC_PATH="$ROOTFS/etc"
 LOG_PATH="$ROOTFS/var/log"
 BOOT_PATH="$ROOTFS/boot"
 
-
 # 1. Copy qemu-aarch64-static
 function copy_qemu() {
 	echo "Copying qemu-aarch64-static..."

@@ -61,4 +61,5 @@ apt install -y python3-pip \
 	network-manager \
 	rfkill \
 	obexftp bluez-obexd \
-	coreutils
+	coreutils \
+	bsdmainutils

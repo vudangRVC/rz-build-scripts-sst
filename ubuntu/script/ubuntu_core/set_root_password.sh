@@ -43,6 +43,7 @@ fi
 # Define the new user
 USERNAME="rzpi"
 PASSWORD="1"
+: ${SSH_NO_PASS_LOGIN:=1}
 
 # Check if user already exists then don't create it
 if id "$USERNAME" > /dev/null 2>&1; then
@@ -50,8 +51,11 @@ if id "$USERNAME" > /dev/null 2>&1; then
 else
 	# Create user and set password
 	useradd -m -s /bin/bash "$USERNAME"
-	echo "$USERNAME:$PASSWORD" | chpasswd
-
+	if [ "$SSH_NO_PASS_LOGIN" -eq 1 ]; then
+		passwd -d "${USERNAME}"
+	else
+		echo "${USERNAME}:${PASSWORD}" | chpasswd
+	fi
 	# Disable forced password change
 	passwd -x 99999 "$USERNAME"
 	passwd -n 0 "$USERNAME"
@@ -62,5 +66,5 @@ else
 	# Check groups
 	groups "$USERNAME"
 
-	echo "User '$USERNAME' created with the password '$PASSWORD' and granted privileges successfully."
+	echo "User '$USERNAME' created and granted privileges successfully."
 fi
