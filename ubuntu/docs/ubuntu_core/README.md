@@ -30,23 +30,34 @@ Several common methods for building embedded file systems include busybox, yocto
 Before running the build script, please ensure that this source belongs to a regular user (not root or a privileged user), and the user executing this must have sudo/root privileges.
 
 The `config.ini` file is used for configuring the script that builds an Ubuntu image for ARM systems. It includes essential parameters for partition sizes, the Ubuntu base file, and other configurations needed to create the rootfs and wic image. Here are the parameters that need to be configured before starting the script:
-- **UBUNTU_TYPE**: Type of target Ubuntu. Available types are "**CORE**", "**LXDE**" and "**ALL**". ("ALL" option will build all Ubuntu types)
-- **BOOT_SIZE_MB**: Size of the boot partition in MB. It should be larger than 100MB.
+- **UBUNTU_TYPE**: Type of target Ubuntu. Available types are "**CORE**", "**LXDE**", and "**ALL**". The "ALL" option will build all Ubuntu types.
+- **CLEAN_ALL**: Set to 0 to keep the current build (not recommended).
+- **BOOT_SIZE_MB**: Size of the boot partition in MB. It should be larger than 100 MB.
 - **ROOTFS_SPACE**: Additional space for the rootfs partition in MB.
+- **core_image_qt_name**: Input rootfs (contains Qt libraries, bootloader, kernel, etc. - generated from Yocto) file name.
 - **UBUNTU_BASE_FILE_NAME**: The file name of the Ubuntu base that will be downloaded.
 - **UBUNTU_BASE_LINK**: The link to download the Ubuntu base file.
 - **OUTPUT_ROOTFS**: The output file name for the rootfs.
 - **OUTPUT_WIC**: The output file name for the wic image.
 - **TIME_ZONE_AREA**: The time zone area (e.g., "Asia").
 - **TIME_ZONE_CITY**: The time zone city (e.g., "Ho_Chi_Minh").
-- **IS_WESTON_ENABLE**: Set to 0 to disable Weston compositor.
+- **SSH_NO_PASS_LOGIN**: Set to 1 to enable users to log in without a password.
+- **IS_WESTON_ENABLE**: Set to 0 to disable the Weston compositor.
 
-> :memo: **Note:** Host PC with Ubuntu 20.04 is recommended for the build. Prepare environment for building package and local build environment.
+> :memo: **Note:** Host PC with Ubuntu 22.04 is recommended for the build. Prepare environment for building package and local build environment.
 
-Then we can execute the script as follows:
+Then we can execute the script as follows (using setting in config.ini):
 ```
 chmod +x main_script.sh
 sudo ./main_script.sh
+```
+
+We can pass a parameter (which will override the current setting in config.ini) next to script:
+```
+chmod +x main_script.sh
+sudo ./main_script.sh "ubuntu-core"
+sudo ./main_script.sh "ubuntu-lxde"
+sudo ./main_script.sh "all-ubuntu-images"
 ```
 
 **Explanation workflow of the main script:**
@@ -88,15 +99,16 @@ ubuntu/
 │       └── README.md
 ├── include
 │   ├── common
+│   │   ├── allow_empty_password.sh
 │   │   ├── create_wic.sh
 │   │   ├── install_gstreamer.sh
 │   │   ├── install_weston.sh
+│   │   ├── prepare_env.sh
 │   │   ├── prepare_ubuntu_base.sh
 │   │   └── yocto_working.sh
 │   └── ubuntu_core
 │       ├── mount.sh
 │       ├── prepare_conf.sh
-│       ├── prepare_env.sh
 │       └── prepare_rootfs_qt.sh
 ├── main_script.sh
 └── script
@@ -121,9 +133,8 @@ ubuntu/
 
 rz-sbc/yocto_rzsbc_board/build/tmp/deploy/images/rzpi/target/images
 |-- rootfs
-|   `-- ubuntu-image-qt-rzpi.tar.zst        <---- Output compressed rootfs
-|-- ubuntu-image-qt-rzpi.wic                <---- Output WIC
-`-- ubuntu-image-qt-rzpi.wic.tar.gz         <---- Output compressed WIC
+|   `-- ubuntu-image-qt-rzpi.tar.bz2        <---- Output compressed rootfs
+`-- ubuntu-image-qt-rzpi.wic.gz         <---- Output compressed WIC
 ```
 ### U-boot environment
 Please refer to the original package at `Renesas-SST/rz-build-scripts` as all images follow the same procedure.
