@@ -17,7 +17,7 @@ guideline() {
     echo "========="
     echo "Build Yocto"
     echo "Usage:"
-    echo "sudo ./main_script.sh <target_image>"
+    echo "sudo ./rzsbc_ubuntu.sh <target_image>"
     echo ""
     echo "--------------------------"
     echo " - <target_image>: the target Yocto build image. It can be one of the following supported images:"
@@ -28,9 +28,9 @@ guideline() {
     echo "      If <target_image> is not specified, the script will build the image defined in config.ini."
     echo ""
     echo "For example: "
-    echo "sudo ./main_script.sh ubuntu-core"
-    echo "sudo ./main_script.sh ubuntu-lxde"
-    echo "sudo ./main_script.sh all-ubuntu-images"
+    echo "sudo ./rzsbc_ubuntu.sh ubuntu-core"
+    echo "sudo ./rzsbc_ubuntu.sh ubuntu-lxde"
+    echo "sudo ./rzsbc_ubuntu.sh all-ubuntu-images"
     echo "------------------------------------------------------------"
 }
 
@@ -67,13 +67,13 @@ do_build_yocto(){
 		return 0
 	fi
 
-	MAIN_USER=$(sudo grep 'sudo: .*main_script.sh' /var/log/auth.log | tail -n 1 | awk '{print $6}')
+	MAIN_USER=$(sudo grep 'sudo: .*rzsbc_ubuntu.sh' /var/log/auth.log | tail -n 1 | awk '{print $6}')
 	# Recheck user for yocto build
 	if [ -n "$MAIN_USER" ]; then
 		echo "User executed sudo ./main_script is: $MAIN_USER"
 	else
 		echo "It seem that you are root. Recheck..."
-		MAIN_USER=$(stat -c '%U' main_script.sh)
+		MAIN_USER=$(stat -c '%U' rzsbc_ubuntu.sh)
 		if [ -n "$MAIN_USER" ]; then
 			echo "User executed sudo ./main_script is: $MAIN_USER"
 		else

@@ -65,16 +65,16 @@ The `config.ini` file is used for configuring the script that builds an Ubuntu i
 
 Then we can execute the script as follows:
 ```
-chmod +x main_script.sh
-sudo ./main_script.sh
+chmod +x rzsbc_ubuntu.sh
+sudo ./rzsbc_ubuntu.sh
 ```
 
 We can pass a parameter (which will override the current setting in config.ini) next to script:
 ```
-chmod +x main_script.sh
-sudo ./main_script.sh "ubuntu-core"
-sudo ./main_script.sh "ubuntu-lxde"
-sudo ./main_script.sh "all-ubuntu-images"
+chmod +x rzsbc_ubuntu.sh
+sudo ./rzsbc_ubuntu.sh "ubuntu-core"
+sudo ./rzsbc_ubuntu.sh "ubuntu-lxde"
+sudo ./rzsbc_ubuntu.sh "all-ubuntu-images"
 ```
 
 Here are the packages preinstalled after running the script:
@@ -147,7 +147,7 @@ ubuntu/
 │       ├── mount.sh
 │       ├── prepare_conf.sh
 │       └── prepare_rootfs_qt.sh
-├── main_script.sh
+├── rzsbc_ubuntu.sh
 └── script
     └── ubuntu_lxde
         ├── apt_audio_video.sh
