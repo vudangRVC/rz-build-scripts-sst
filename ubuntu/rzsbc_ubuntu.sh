@@ -6,6 +6,9 @@
 # set up root and user passwords, and finally package the system into a WIC image.
 # --------------------------------------------------------------------------------#
 
+# Supported Ubuntu images
+ubuntu_supported_images=("ubuntu-core" "ubuntu-lxde")
+
 # Guidance
 # Currently, this script supports for RZ SBC board
 guideline() {
