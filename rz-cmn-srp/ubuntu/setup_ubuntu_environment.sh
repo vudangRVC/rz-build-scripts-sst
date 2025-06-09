@@ -303,7 +303,7 @@ main_ubuntu_lxde(){
 # Usage: check_yocto_artifacts <yocto_artifacts_dir>
 check_yocto_artifacts() {
 	local artifacts_dir="$1"
-	local artifacts_path="${artifacts_dir}/${core_image_qt_name}"
+	local artifacts_path="${artifacts_dir}/${renesas_ubuntu_input_name}"
 
 	# Check if artifacts dir is exist
 	if [ ! -d "${artifacts_dir}" ]; then
@@ -322,7 +322,7 @@ check_yocto_artifacts() {
 	fi
 
 	log_info "Found Yocto artifact: ${artifacts_path}"
-	cp "${artifacts_path}" "${core_image_qt_name}"
+	cp "${artifacts_path}" "${renesas_ubuntu_input_name}"
 }
 
 # Run ubuntu build based on the first argument
