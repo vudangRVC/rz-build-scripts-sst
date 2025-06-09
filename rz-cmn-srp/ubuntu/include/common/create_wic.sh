@@ -41,6 +41,10 @@ create_wic() {
 	fi
 	# Step 2: Create 2 partition using fdisk
 	echo "Create 2 partition in $OUTPUT_WIC..."
+	# Create maximum 255 loop devices
+	for i in {0..255}; do
+		sudo mknod -m 660 /dev/loop$i b 7 $i
+	done
 	LOOP_DEVICE=$(sudo losetup -f --show "$OUTPUT_WIC")
 
 	sudo parted "$LOOP_DEVICE" mklabel msdos
