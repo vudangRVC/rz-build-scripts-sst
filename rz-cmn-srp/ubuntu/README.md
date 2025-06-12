@@ -8,6 +8,7 @@ This directory (ubuntu/) provides an organized framework to create Ubuntu-based 
 ubuntu/
 ├── config
 │   ├── ubuntu_core
+│   │   ├── resolved.conf
 │   │   └── network_interfaces.conf
 │   └── ubuntu_lxde
 │       ├── interfaces
@@ -87,7 +88,7 @@ ubuntu/
         ├── set_swap_enable.sh
         └── setup-set-permissions.sh
 
-14 directories, 66 files
+14 directories, 67 files
 ``` 
 
 ## Organization:
@@ -123,7 +124,7 @@ Both Ubuntu Core and Ubuntu LXDE images support setting up a non-root user accou
 To configure the default user credentials, edit the following entries in `config.ini`:
 
 ```shell
-USERNAME=rzpi
+USERNAME=rz
 PASSWORD=1
 ```
 

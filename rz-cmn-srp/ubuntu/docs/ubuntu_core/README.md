@@ -64,6 +64,7 @@ Here are the packages preinstalled after running the script:
 ubuntu/
 ├── config
 │   └── ubuntu_core
+│       ├── resolved.conf
 │       └── network_interfaces.conf
 ├── config.ini
 ├── docs
@@ -116,17 +117,16 @@ IMAGE=ubuntu-core ./rzsbc_builder.sh build
 ├── script
 │   ├── ubuntu_core
 │   └── ubuntu_lxde
-├── ubuntu-base-22.04-base-arm64.tar.gz
-└── ubuntu-core-image-qt-rzpi.tar.bz2            <---- Output rootfs
+└── ubuntu-base-24.04-base-arm64.tar.gz
 
-yocto/yocto_rzsbc_board/build/tmp/deploy/images/rzpi/target/images
+yocto_rzsbc_board/build/tmp/deploy/images/rzg2l-sbc/target/images
 ├── rootfs
-|   └── ubuntu-core-image-qt-rzpi.tar.bz2        <---- Output compressed rootfs
-└──  ubuntu-core-image-qt-rzpi.wic.gz            <---- Output compressed WIC
+|   └── ubuntu-core-image-qt-rz.tar.bz2        <---- Output compressed rootfs
+└──  ubuntu-core-image-qt-rz.wic.gz            <---- Output compressed WIC
 ```
 
 ### U-boot environment
-For more information about the U-Boot environment configuration, please refer to the original documentation provided in the [Renesas-SST/meta-renesas](https://github.com/Renesas-SST/meta-renesas/blob/dunfell/rz-sbc/meta-rzg2l/docs/recipes-docs/rzpi-readme/files/README.md) layer.
+For more information about the U-Boot environment configuration, please refer to the original documentation provided in the [Renesas-SST/meta-renesas](https://github.com/Renesas-SST/meta-renesas/blob/styhead/rz-sbc/recipes-docs/rzg2l-sbc-readme/files/README.md) layer.
 
 ## Confirm supported features on RZG2L-SBC
 ### 40 IO expansion interface settings
@@ -144,23 +144,23 @@ The specific description is as follows:
 /------------------------------|--------------|------------------------------
 |       Config                 | Value if set |     To be loading
 |------------------------------|--------------|------------------------------
-| enable_overlay_i2c           | '1' or 'yes' |  rzpi-ext-i2c.dtbo
+| enable_overlay_i2c           | '1' or 'yes' |  rzg2l-sbc-ext-i2c.dtbo
 |------------------------------|--------------|------------------------------
-| enable_overlay_spi           | '1' or 'yes' |  rzpi-ext-spi.dtbo
+| enable_overlay_spi           | '1' or 'yes' |  rzg2l-sbc-ext-spi.dtbo
 |------------------------------|--------------|------------------------------
-| enable_overlay_can           | '1' or 'yes' |  rzpi-can.dtbo
+| enable_overlay_can           | '1' or 'yes' |  rzg2l-sbc-can.dtbo
 |------------------------------|--------------|------------------------------
-| enable_overlay_dsi           | '1' or 'yes' |  rzpi-dsi.dtbo
+| enable_overlay_dsi           | '1' or 'yes' |  rzg2l-sbc-dsi.dtbo
 |------------------------------|--------------|------------------------------
-| enable_overlay_csi_ov5640    | '1' or 'yes' |  rzpi-ov5640.dtbo
+| enable_overlay_csi_ov5640    | '1' or 'yes' |  rzg2l-sbc-ov5640.dtbo
 |----------------------------------------------------------------------------
-| fdtfile   : is a base dtb file, should be set rzpi.dtb
+| fdtfile   : is a base dtb file, should be set rzg2l-sbc.dtb
 |----------------------------------------------------------------------------
 | uboot env : you could set U-Boot's environment variables here, such as 'console=' 'bootargs='
 \---------------------------------------------------------------------------
 
 default settings:
-    fdtfile=rzpi.dtb
+    fdtfile=rzg2l-sbc.dtb
     #enable_overlay_i2c=1
     #enable_overlay_spi=1
     #enable_overlay_can=1
@@ -440,7 +440,7 @@ hci0:   Type: Primary  Bus: USB
         Packet type: DM1 DM3 DM5 DH1 DH3 DH5 HV1 HV2 HV3
         Link policy: RSWITCH HOLD SNIFF PARK
         Link mode: SLAVE ACCEPT
-        Name: 'rzpi'
+        Name: 'rz'
         Class: 0x000000
         Service Classes: Unspecified
         Device Class: Miscellaneous,
@@ -675,7 +675,7 @@ sudo vi /etc/hosts
 Make it look like this:
 ```
 127.0.0.1 localhost
-192.168.0.100 rzpi.example.com rzpi
+192.168.0.100 rz.example.com rz
 
 # The following lines are desirable for IPv6 capable hosts
 ::1 localhost ip6-localhost ip6-loopback
@@ -686,16 +686,16 @@ ff02::2 ip6-allrouters
 Now, we will change the hostname of our machine as follows:
 
 ```bash
-sudo echo rzpi > /etc/hostname 
-sudo hostname rzpi
+sudo echo rz > /etc/hostname 
+sudo hostname rz
 ```
 
-The first command sets the hostname "rzpi" in the /etc/hostname file. This file is read by the system at boot time. The second command sets the hostname in the current session so we don't have to restart the server to apply the hostname.
+The first command sets the hostname "rz" in the /etc/hostname file. This file is read by the system at boot time. The second command sets the hostname in the current session so we don't have to restart the server to apply the hostname.
 
 As an alternative to the two commands above you can use the hostnamectl command which is part of the systemd package.
 
 ```bash
-sudo hostnamectl set-hostname rzpi
+sudo hostnamectl set-hostname rz
 ```
 
 Afterward, run:
@@ -707,9 +707,9 @@ hostname -f
 
 The first command returns the short hostname while the second command shows the fully qualified domain name:
 ```bash
-root@rzpi:/home/root# hostname
-rzpi
-root@rzpi:/home/root# hostname -f
-rzpi.example.com
-root@rzpi:/home/root#
+root@rz:/home/root# hostname
+rz
+root@rz:/home/root# hostname -f
+rz.example.com
+root@rz:/home/root#
 ```

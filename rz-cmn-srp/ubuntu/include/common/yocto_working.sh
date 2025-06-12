@@ -4,6 +4,7 @@
 # --------------------------------------------------------------------------#
 
 # This function help main script bring wic file to yocto output's directory
+
 move_ubuntu_to_yocto_output(){
 	# Check output folder availability
 	DIR="yocto_rzsbc_board/build/tmp/deploy/images/rzg2l-sbc/target/images"

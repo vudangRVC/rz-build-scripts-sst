@@ -948,7 +948,7 @@ output() {
 	# Collect final output
 	cd ${OUTPUT}
 	cp ${RZ_TARGET_DIR}/build/tmp/deploy/images/rzg2l-sbc/target/images/fip-rzg2l-sbc.srec $OUTPUT
-	cp ${RZ_TARGET_DIR}/build/tmp/deploy/images/rzg2l-sbc/target/images/dtbs/rzpi.dtb $OUTPUT
+	cp ${RZ_TARGET_DIR}/build/tmp/deploy/images/rzg2l-sbc/target/images/dtbs/rzg2l-sbc.dtb $OUTPUT
 	cp ${RZ_TARGET_DIR}/build/tmp/deploy/images/rzg2l-sbc/README.md $OUTPUT
 	cp ${RZ_TARGET_DIR}/build/tmp/deploy/images/rzg2l-sbc/target/env/uEnv.txt $OUTPUT
 	cp ${RZ_TARGET_DIR}/build/tmp/deploy/images/rzg2l-sbc/target/images/Image $OUTPUT

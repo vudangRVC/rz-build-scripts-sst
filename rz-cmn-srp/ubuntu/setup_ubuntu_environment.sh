@@ -222,7 +222,7 @@ main_ubuntu_lxde(){
 		exit 1
 	fi
 
-	# Create rzpi user - normal user
+	# Create user - normal user
 	chroot_run_1_script "create_rzpi_user.sh"
 	if [ $? -eq 1 ]; then
 		echo "create_rzpi_user failed."
@@ -332,8 +332,8 @@ run_ubuntu_build() {
 	case "$ubuntu_type" in
 		ubuntu-core)
 			UBUNTU_TYPE="CORE"
-			OUTPUT_ROOTFS="ubuntu-core-image-qt-rzpi"
-			OUTPUT_WIC="ubuntu-core-image-qt-rzpi.wic"
+			OUTPUT_ROOTFS="ubuntu-core-image-qt-rz"
+			OUTPUT_WIC="ubuntu-core-image-qt-rz.wic"
 			cleanup_ubuntu_artifacts
 
 			source_env
@@ -341,8 +341,8 @@ run_ubuntu_build() {
 			;;
 		ubuntu-lxde)
 			UBUNTU_TYPE="LXDE"
-			OUTPUT_ROOTFS="ubuntu-lxde-image-qt-rzpi"
-			OUTPUT_WIC="ubuntu-lxde-image-qt-rzpi.wic"
+			OUTPUT_ROOTFS="ubuntu-lxde-image-qt-rz"
+			OUTPUT_WIC="ubuntu-lxde-image-qt-rz.wic"
 			cleanup_ubuntu_artifacts
 
 			source_env
@@ -350,8 +350,8 @@ run_ubuntu_build() {
 			;;
 		all-ubuntu-images)
 			UBUNTU_TYPE="CORE"
-			OUTPUT_ROOTFS="ubuntu-core-image-qt-rzpi"
-			OUTPUT_WIC="ubuntu-core-image-qt-rzpi.wic"
+			OUTPUT_ROOTFS="ubuntu-core-image-qt-rz"
+			OUTPUT_WIC="ubuntu-core-image-qt-rz.wic"
 			cleanup_ubuntu_artifacts
 
 			source_env
@@ -361,8 +361,8 @@ run_ubuntu_build() {
 			cleanup_ubuntu_artifacts
 
 			UBUNTU_TYPE="LXDE"
-			OUTPUT_ROOTFS="ubuntu-lxde-image-qt-rzpi"
-			OUTPUT_WIC="ubuntu-lxde-image-qt-rzpi.wic"
+			OUTPUT_ROOTFS="ubuntu-lxde-image-qt-rz"
+			OUTPUT_WIC="ubuntu-lxde-image-qt-rz.wic"
 			source_env
 			main_ubuntu_lxde
 			;;

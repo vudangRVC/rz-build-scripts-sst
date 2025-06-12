@@ -192,16 +192,15 @@ ubuntu/
 ├── script
 │   ├── ubuntu_core
 │   └── ubuntu_lxde
-├── ubuntu-base-22.04-base-arm64.tar.gz
-└── ubuntu-lxde-image-qt-rzpi.tar.bz2             <---- Output rootfs of Ubuntu LXDE
+└── ubuntu-base-24.04-base-arm64.tar.gz
 
-yocto/yocto_rzsbc_board/build/tmp/deploy/images/rzpi/target/images
+yocto_rzsbc_board/build/tmp/deploy/images/rzg2l-sbc/target/images
 ├── rootfs
-|   └── ubuntu-lxde-image-qt-rzpi.tar.bz2         <---- Output compressed rootfs
-└──  ubuntu-lxde-image-qt-rzpi.wic.gz             <---- Output compressed WIC
+|   └── ubuntu-lxde-image-qt-rz.tar.bz2         <---- Output compressed rootfs
+└──  ubuntu-lxde-image-qt-rz.wic.gz             <---- Output compressed WIC
 ```
 ### U-boot environment
-For more information about the U-Boot environment configuration, please refer to the original documentation provided in the [Renesas-SST/meta-renesas](https://github.com/Renesas-SST/meta-renesas/blob/dunfell/rz-sbc/meta-rzg2l/docs/recipes-docs/rzpi-readme/files/README.md) layer.
+For more information about the U-Boot environment configuration, please refer to the original documentation provided in the [Renesas-SST/meta-renesas](https://github.com/Renesas-SST/meta-renesas/blob/styhead/rz-sbc/recipes-docs/rzg2l-sbc-readme/files/README.md) layer.
 
 ### Introduction of LXDE
 LXDE is a lightweight and rapid desktop environment. It is designed to be user-friendly and take up few resources while keeping resource usage low.LXDE uses less memory and CPU to present as feature-rich desktop environment as possible. Unlike other desktop environments, LXDE strives to be a modular desktop environment so that each component can be used independently. This allows porting LXDE to different distributions and platforms more easily.
