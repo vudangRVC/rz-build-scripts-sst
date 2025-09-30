@@ -35,5 +35,16 @@
 	"defaults": {
 		"machine": "rz-cmn",
 		"image": "core-image-weston"
+	},
+	"features": {
+		"meta-rz-features": {
+			"enable": [],
+			"disable": ["meta-rz-codecs"]
+		},
+		"libraries": {
+			"add": ["vim"],
+			"remove": [""]
+		},
+		"gpu": "panfrost"
 	}
 }

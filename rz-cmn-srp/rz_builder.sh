@@ -719,6 +719,175 @@ setup() {
 	echo "========================================================================="
 }
 
+# Create (or clean) an auto include file and ensure local.conf includes it
+prepare_auto_conf() {
+    local inc_file="${AUTO_CONF_FILE:-conf/rz-auto.conf}"
+    local inc_dir
+    inc_dir=$(dirname "${inc_file}")
+    local inc_name
+    inc_name=$(basename "${inc_file}")
+    local local_conf="conf/local.conf"
+
+    [ -d "${inc_dir}" ] || mkdir -p "${inc_dir}"
+    [ -f "${local_conf}" ] || touch "${local_conf}"
+
+    if ! grep -q "require conf/${inc_name}" "${local_conf}"; then
+        echo '' >> "${local_conf}"
+        echo "require conf/${inc_name}" >> "${local_conf}"
+    fi
+
+    {
+        echo '## BEGIN'
+    } > "${inc_file}"
+}
+# Append a line idempotently to conf/rz-auto.conf (avoid duplicates)
+auto_conf_append() {
+    local line="$*"
+    local inc_file="${AUTO_CONF_FILE}"
+    grep -qxF "${line}" "${inc_file}" || echo "${line}" >> "${inc_file}"
+}
+
+enable_meta_rz_codecs_layer() {
+    local bblayers_conf="${RZ_TARGET_DIR}/build/conf/bblayers.conf"
+    local layer_path="${RZ_TARGET_DIR}/meta-rz-features/meta-rz-codecs"
+
+	sed -i '\|meta-rz-features/meta-rz-codecs|d' "${bblayers_conf}"
+    if bitbake-layers show-layers 2>/dev/null | grep -Fq "${layer_path}"; then
+        log_info "meta-rz-codecs already present in BBLAYERS"
+    elif bitbake-layers add-layer "${layer_path}" >/dev/null 2>&1; then
+        log_info "Added meta-rz-codecs layer via bitbake-layers"
+    else
+        log_warning "bitbake-layers add-layer failed"
+    fi
+}
+
+disable_meta_rz_codecs_layer() {
+    local bblayers_conf="${RZ_TARGET_DIR}/build/conf/bblayers.conf"
+    local layer_path="${RZ_TARGET_DIR}/meta-rz-features/meta-rz-codecs"
+
+	# Remove layer from bblayers.conf
+    if bitbake-layers show-layers 2>/dev/null | grep -Fq "${layer_path}"; then
+        if bitbake-layers remove-layer "${layer_path}" >/dev/null 2>&1; then
+            log_info "Removed meta-rz-codecs layer via bitbake-layers"
+        else
+            sed -i '\|meta-rz-features/meta-rz-codecs|d' "${bblayers_conf}"
+			log_info "Removed meta-rz-codecs layer"
+        fi
+    fi
+    auto_conf_append 'IMAGE_INSTALL:remove = "omx-user-module gstreamer1.0-omx kernel-module-mmngr kernel-module-mmngrbuf kernel-module-vspm mmngr-user-module mmngrbuf-user-module packagegroup-multimedia-kernel-modules packagegroup-multimedia-libs"'
+}
+
+# Parse packages & libraries from config.json and write IMAGE_INSTALL changes
+apply_packages_and_libraries() {
+    local ADD_PKGS REMOVE_PKGS ADD_LIBS REMOVE_LIBS
+    ADD_PKGS=$(${JQ} -r '.features.package.add[]? // empty' "${CONFIG_JSON}" | tr '\n' ' ')
+    REMOVE_PKGS=$(${JQ} -r '.features.package.remove[]? // empty' "${CONFIG_JSON}" | tr '\n' ' ')
+    ADD_LIBS=$(${JQ} -r '.features.library.add[]? // empty' "${CONFIG_JSON}" | tr '\n' ' ')
+    REMOVE_LIBS=$(${JQ} -r '.features.library.remove[]? // empty' "${CONFIG_JSON}" | tr '\n' ' ')
+
+    # Append installs
+    if [ -n "${ADD_PKGS}" ]; then
+        auto_conf_append "IMAGE_INSTALL:append = \" ${ADD_PKGS} \""
+    fi
+    if [ -n "${ADD_LIBS}" ]; then
+        auto_conf_append "IMAGE_INSTALL:append = \" ${ADD_LIBS} \""
+    fi
+
+    local ALL_REMOVE_PKGS="${REMOVE_PKGS}"
+    # Deduplicate removals
+    ALL_REMOVE_PKGS=$(echo "${ALL_REMOVE_PKGS}" | tr ' ' '\n' | awk 'NF' | sort -u | tr '\n' ' ')
+
+    # Exclude packages
+    if [ -n "${ALL_REMOVE_PKGS}" ]; then
+        auto_conf_append "PACKAGE_EXCLUDE += \" ${ALL_REMOVE_PKGS} \""
+        auto_conf_append "BAD_RECOMMENDATIONS += \" ${ALL_REMOVE_PKGS} \""
+        auto_conf_append "IMAGE_INSTALL:remove = \"${ALL_REMOVE_PKGS}\""
+        log_info "Applied package exclusions: ${ALL_REMOVE_PKGS}"
+    fi
+}
+
+
+apply_meta_rz_features_layers() {
+    local ADD_BBMASK REMOVE_BBMASK
+    ADD_BBMASK=$(${JQ} -r '.features.bbmask.add[]? // empty' "${CONFIG_JSON}" | awk 'NF')
+    REMOVE_BBMASK=$(${JQ} -r '.features.bbmask.remove[]? // empty' "${CONFIG_JSON}" | awk 'NF')
+    local META_RZ_ENABLE META_RZ_DISABLE
+    META_RZ_ENABLE=$(${JQ} -r '.features["meta-rz-features"].enable[]? // empty' "${CONFIG_JSON}" | awk 'NF')
+    META_RZ_DISABLE=$(${JQ} -r '.features["meta-rz-features"].disable[]? // empty' "${CONFIG_JSON}" | awk 'NF')
+
+    for layer in ${META_RZ_ENABLE}; do
+        case "${layer}" in
+            meta-rz-codecs|meta-rz-features/meta-rz-codecs)
+                enable_meta_rz_codecs_layer
+                ;;
+            *)
+                log_info "Layer ${layer} was not defined"
+                ;;
+        esac
+    done
+
+    for layer in ${META_RZ_DISABLE}; do
+        case "${layer}" in
+            meta-rz-codecs|meta-rz-features/meta-rz-codecs)
+                disable_meta_rz_codecs_layer
+                ;;
+            *)
+                log_info "Layer ${layer} was not defined"
+                ;;
+        esac
+    done
+}
+
+
+apply_gpu_feature() {
+	LAYERDIR="${RZ_TARGET_DIR}/meta-renesas"
+    local DEFCONFIG="${LAYERDIR}/recipes-kernel/linux/rz-cmn/common/renesas_defconfig"
+    local PANFROST_CFG="${LAYERDIR}/recipes-kernel/linux/rz-cmn/common/panfrost.cfg"
+
+    local GPU_MODE
+    GPU_MODE=$(${JQ} -r '.features.gpu // "none"' "${CONFIG_JSON}")
+
+    # Read previous GPU mode from rz-auto.conf
+    local PREV_GPU_MODE
+    PREV_GPU_MODE=$(grep '^GPU_MODE=' "${AUTO_CONF_FILE}" 2>/dev/null | cut -d= -f2)
+
+    log_info "GPU mode: ${GPU_MODE}"
+
+    case "${GPU_MODE}" in
+        panfrost)
+            if grep -q '^# CONFIG_DRM_PANFROST' "${DEFCONFIG}"; then
+                sed -i 's/^# CONFIG_DRM_PANFROST is not set/CONFIG_DRM_PANFROST=y/' "${DEFCONFIG}"
+            elif ! grep -q '^CONFIG_DRM_PANFROST=y' "${DEFCONFIG}"; then
+                echo 'CONFIG_DRM_PANFROST=y' >> "${DEFCONFIG}"
+            fi
+            echo 'CONFIG_DRM_PANFROST=y' > "${PANFROST_CFG}"
+            ;;
+        mali)
+            log_info "GPU: Mali not available"
+            # Disable panfrost in defconfig
+            sed -i '/^CONFIG_DRM_PANFROST/d' "${DEFCONFIG}"
+            echo '# CONFIG_DRM_PANFROST is not set' > "${PANFROST_CFG}"
+            ;;
+        none|"")
+            log_info "GPU: disable GPU drivers"
+            sed -i '/^CONFIG_DRM_PANFROST/d' "${DEFCONFIG}"
+            sed -i '/^CONFIG_MALI/d' "${DEFCONFIG}"
+            echo '# CONFIG_DRM_PANFROST is not set' > "${PANFROST_CFG}"
+            ;;
+        *)
+            log_warn "Unknown GPU mode '${GPU_MODE}', setting back to none"
+            sed -i '/^CONFIG_DRM_PANFROST/d' "${DEFCONFIG}"
+            sed -i '/^CONFIG_MALI/d' "${DEFCONFIG}"
+            echo '# CONFIG_DRM_PANFROST is not set' > "${PANFROST_CFG}"
+            GPU_MODE="none"
+            ;;
+    esac
+
+    # Record the GPU mode in rz-auto.conf
+    sed -i '/^GPU_MODE=/d' "${AUTO_CONF_FILE}"
+    echo "GPU_MODE=\"${GPU_MODE}\"" >> "${AUTO_CONF_FILE}"
+}
+
 # Main build-sdk
 build_sdk() {
 	setup $1
@@ -810,6 +979,15 @@ build() {
 	setup $1
 
 	setup_conf
+
+	AUTO_CONF_FILE="${RZ_TARGET_DIR}/build/conf/rz-auto.conf"
+	export AUTO_CONF_FILE
+
+	prepare_auto_conf
+	apply_meta_rz_features_layers
+	apply_gpu_feature
+    apply_packages_and_libraries
+
 	case "${IMAGE}" in
 		"all-supported-images")
 			# If IMAGE is set to 'all-supported-images', build all images
