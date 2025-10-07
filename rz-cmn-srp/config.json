@@ -38,12 +38,12 @@
 	},
 	"features": {
 		"meta-rz-features": {
-			"enable": [],
-			"disable": ["meta-rz-codecs"]
+			"enable": ["meta-rz-codecs"],
+			"disable": []
 		},
 		"libraries": {
-			"add": ["vim"],
-			"remove": [""]
+			"add": [],
+			"remove": []
 		},
 		"gpu": "panfrost"
 	}

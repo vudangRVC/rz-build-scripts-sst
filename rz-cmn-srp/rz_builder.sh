@@ -747,55 +747,99 @@ auto_conf_append() {
     grep -qxF "${line}" "${inc_file}" || echo "${line}" >> "${inc_file}"
 }
 
-enable_meta_rz_codecs_layer() {
-    local bblayers_conf="${RZ_TARGET_DIR}/build/conf/bblayers.conf"
-    local layer_path="${RZ_TARGET_DIR}/meta-rz-features/meta-rz-codecs"
+enable_meta_rz_features_layer() {
+    local spec="$1"
+    local layer_path bblayers_conf spec_path
 
-	sed -i '\|meta-rz-features/meta-rz-codecs|d' "${bblayers_conf}"
-    if bitbake-layers show-layers 2>/dev/null | grep -Fq "${layer_path}"; then
-        log_info "meta-rz-codecs already present in BBLAYERS"
-    elif bitbake-layers add-layer "${layer_path}" >/dev/null 2>&1; then
-        log_info "Added meta-rz-codecs layer via bitbake-layers"
-    else
-        log_warning "bitbake-layers add-layer failed"
-    fi
+    layer_path="${RZ_TARGET_DIR}/meta-rz-features/${spec}"
+    bblayers_conf="${RZ_TARGET_DIR}/build/conf/bblayers.conf"
+
+	# In case of bblayers.conf template in meta-renesas fixated meta-rz-codecs, cannot bitbake remove-layer normally
+	sed -i '/meta-rz-features\/meta-rz-codecs/d' "${bblayers_conf}"
+
+	if bitbake-layers show-layers 2>/dev/null | grep -Fq "${layer_path}"; then
+		log_info "${spec} already present in BBLAYERS"
+		return 0
+	elif bitbake-layers add-layer "${layer_path}" >/dev/null 2>&1; then
+		log_info "Added ${spec} layer via bitbake-layers"
+		return 0
+	fi
+	log_warning "bitbake-layers add-layer failed for ${spec}"
 }
 
-disable_meta_rz_codecs_layer() {
-    local bblayers_conf="${RZ_TARGET_DIR}/build/conf/bblayers.conf"
-    local layer_path="${RZ_TARGET_DIR}/meta-rz-features/meta-rz-codecs"
+disable_meta_rz_features_layer() {
+    local spec="$1"
+    local layer_path bblayers_conf spec_path
 
-	# Remove layer from bblayers.conf
+    layer_path="${RZ_TARGET_DIR}/meta-rz-features/${spec}"
+    bblayers_conf="${RZ_TARGET_DIR}/build/conf/bblayers.conf"
+
+	# In case of bblayers.conf template in meta-renesas fixated meta-rz-codecs, cannot bitbake remove-layer normally
+	sed -i '/meta-rz-features\/meta-rz-codecs/d' "${bblayers_conf}"
+
     if bitbake-layers show-layers 2>/dev/null | grep -Fq "${layer_path}"; then
         if bitbake-layers remove-layer "${layer_path}" >/dev/null 2>&1; then
-            log_info "Removed meta-rz-codecs layer via bitbake-layers"
+            log_info "Removed ${spec} layer via bitbake-layers"
+            return 0
         else
-            sed -i '\|meta-rz-features/meta-rz-codecs|d' "${bblayers_conf}"
-			log_info "Removed meta-rz-codecs layer"
+            log_warning "bitbake-layers remove-layer failed for ${spec}"
         fi
     fi
-    auto_conf_append 'IMAGE_INSTALL:remove = "omx-user-module gstreamer1.0-omx kernel-module-mmngr kernel-module-mmngrbuf kernel-module-vspm mmngr-user-module mmngrbuf-user-module packagegroup-multimedia-kernel-modules packagegroup-multimedia-libs"'
 }
+
+apply_meta_rz_features_layers() {
+    local META_RZ_ENABLE META_RZ_DISABLE
+    META_RZ_ENABLE=$(${JQ} -r '.features["meta-rz-features"].enable[]? // empty' "${CONFIG_JSON}" | awk 'NF')
+    META_RZ_DISABLE=$(${JQ} -r '.features["meta-rz-features"].disable[]? // empty' "${CONFIG_JSON}" | awk 'NF')
+
+    for layer in ${META_RZ_ENABLE}; do
+        enable_meta_rz_features_layer "${layer}"
+    done
+
+    for layer in ${META_RZ_DISABLE}; do
+        disable_meta_rz_features_layer "${layer}"
+    done
+}
+
+# Ensure the kernel compat patch is available when meta-rz-codecs layer is removed
+ensure_kernel_compat_patch() {
+    local patch_src="${TOP_DIR}/files_to_add/meta-rz-features/0001-rzg2l-sbc-Bring-compat_alloc_user_space-back.patch"
+    local conf_dir="${RZ_TARGET_DIR}/build/conf"
+    local patch_dir="${conf_dir}/files"
+    local patch_dest="${patch_dir}/0001-rzg2l-sbc-Bring-compat_alloc_user_space-back.patch"
+    local bblayers_conf="${conf_dir}/bblayers.conf"
+
+    if [ -f "${bblayers_conf}" ] && grep -q "meta-rz-features/meta-rz-codecs" "${bblayers_conf}"; then
+        # Layer brings its own kernel bbappend
+        if [ -f "${AUTO_CONF_FILE}" ]; then
+            sed -i '/FILESEXTRAPATHS:prepend:pn-linux-yocto = "${TOPDIR}\/conf\/files:"/d' "${AUTO_CONF_FILE}"
+            sed -i '/SRC_URI:append:pn-linux-yocto = " file:\/\/0001-rzg2l-sbc-Bring-compat_alloc_user_space-back.patch"/d' "${AUTO_CONF_FILE}"
+        fi
+        rm -f "${patch_dest}"
+        return 0
+    fi
+
+    mkdir -p "${patch_dir}"
+    cp "${patch_src}" "${patch_dest}"
+
+    auto_conf_append 'FILESEXTRAPATHS:prepend:pn-linux-yocto = "${TOPDIR}/conf/files:"'
+    auto_conf_append 'SRC_URI:append:pn-linux-yocto = " file://0001-rzg2l-sbc-Bring-compat_alloc_user_space-back.patch"'
+}
+
 
 # Parse packages & libraries from config.json and write IMAGE_INSTALL changes
 apply_packages_and_libraries() {
-    local ADD_PKGS REMOVE_PKGS ADD_LIBS REMOVE_LIBS
-    ADD_PKGS=$(${JQ} -r '.features.package.add[]? // empty' "${CONFIG_JSON}" | tr '\n' ' ')
-    REMOVE_PKGS=$(${JQ} -r '.features.package.remove[]? // empty' "${CONFIG_JSON}" | tr '\n' ' ')
-    ADD_LIBS=$(${JQ} -r '.features.library.add[]? // empty' "${CONFIG_JSON}" | tr '\n' ' ')
-    REMOVE_LIBS=$(${JQ} -r '.features.library.remove[]? // empty' "${CONFIG_JSON}" | tr '\n' ' ')
+    local ADD_LIBS REMOVE_LIBS
+    ADD_LIBS=$(${JQ} -r '.features.libraries.add[]? // empty' "${CONFIG_JSON}" | tr '\n' ' ')
+    REMOVE_LIBS=$(${JQ} -r '.features.libraries.remove[]? // empty' "${CONFIG_JSON}" | tr '\n' ' ')
 
     # Append installs
-    if [ -n "${ADD_PKGS}" ]; then
-        auto_conf_append "IMAGE_INSTALL:append = \" ${ADD_PKGS} \""
-    fi
     if [ -n "${ADD_LIBS}" ]; then
         auto_conf_append "IMAGE_INSTALL:append = \" ${ADD_LIBS} \""
     fi
 
-    local ALL_REMOVE_PKGS="${REMOVE_PKGS}"
     # Deduplicate removals
-    ALL_REMOVE_PKGS=$(echo "${ALL_REMOVE_PKGS}" | tr ' ' '\n' | awk 'NF' | sort -u | tr '\n' ' ')
+    ALL_REMOVE_PKGS=$(echo "${REMOVE_LIBS}" | tr ' ' '\n' | awk 'NF' | sort -u | tr '\n' ' ')
 
     # Exclude packages
     if [ -n "${ALL_REMOVE_PKGS}" ]; then
@@ -804,38 +848,6 @@ apply_packages_and_libraries() {
         auto_conf_append "IMAGE_INSTALL:remove = \"${ALL_REMOVE_PKGS}\""
         log_info "Applied package exclusions: ${ALL_REMOVE_PKGS}"
     fi
-}
-
-
-apply_meta_rz_features_layers() {
-    local ADD_BBMASK REMOVE_BBMASK
-    ADD_BBMASK=$(${JQ} -r '.features.bbmask.add[]? // empty' "${CONFIG_JSON}" | awk 'NF')
-    REMOVE_BBMASK=$(${JQ} -r '.features.bbmask.remove[]? // empty' "${CONFIG_JSON}" | awk 'NF')
-    local META_RZ_ENABLE META_RZ_DISABLE
-    META_RZ_ENABLE=$(${JQ} -r '.features["meta-rz-features"].enable[]? // empty' "${CONFIG_JSON}" | awk 'NF')
-    META_RZ_DISABLE=$(${JQ} -r '.features["meta-rz-features"].disable[]? // empty' "${CONFIG_JSON}" | awk 'NF')
-
-    for layer in ${META_RZ_ENABLE}; do
-        case "${layer}" in
-            meta-rz-codecs|meta-rz-features/meta-rz-codecs)
-                enable_meta_rz_codecs_layer
-                ;;
-            *)
-                log_info "Layer ${layer} was not defined"
-                ;;
-        esac
-    done
-
-    for layer in ${META_RZ_DISABLE}; do
-        case "${layer}" in
-            meta-rz-codecs|meta-rz-features/meta-rz-codecs)
-                disable_meta_rz_codecs_layer
-                ;;
-            *)
-                log_info "Layer ${layer} was not defined"
-                ;;
-        esac
-    done
 }
 
 
@@ -863,13 +875,13 @@ apply_gpu_feature() {
             echo 'CONFIG_DRM_PANFROST=y' > "${PANFROST_CFG}"
             ;;
         mali)
-            log_info "GPU: Mali not available"
+            log_info "Mali not available"
             # Disable panfrost in defconfig
             sed -i '/^CONFIG_DRM_PANFROST/d' "${DEFCONFIG}"
             echo '# CONFIG_DRM_PANFROST is not set' > "${PANFROST_CFG}"
             ;;
         none|"")
-            log_info "GPU: disable GPU drivers"
+            log_info "Disable GPU drivers"
             sed -i '/^CONFIG_DRM_PANFROST/d' "${DEFCONFIG}"
             sed -i '/^CONFIG_MALI/d' "${DEFCONFIG}"
             echo '# CONFIG_DRM_PANFROST is not set' > "${PANFROST_CFG}"
@@ -882,10 +894,6 @@ apply_gpu_feature() {
             GPU_MODE="none"
             ;;
     esac
-
-    # Record the GPU mode in rz-auto.conf
-    sed -i '/^GPU_MODE=/d' "${AUTO_CONF_FILE}"
-    echo "GPU_MODE=\"${GPU_MODE}\"" >> "${AUTO_CONF_FILE}"
 }
 
 # Main build-sdk
@@ -985,8 +993,9 @@ build() {
 
 	prepare_auto_conf
 	apply_meta_rz_features_layers
+	ensure_kernel_compat_patch
 	apply_gpu_feature
-    apply_packages_and_libraries
+	apply_packages_and_libraries
 
 	case "${IMAGE}" in
 		"all-supported-images")
