@@ -35,5 +35,22 @@
 	"defaults": {
 		"machine": "rz-cmn",
 		"image": "core-image-weston"
+	},
+	"features": {
+        "layers": {
+            "add": [
+                "meta-openembedded/meta-perl",
+                "meta-rz-features/meta-rz-codecs"
+            ],
+            "remove": [
+                "meta-browser/meta-chromium",
+                "meta-clang"
+            ]
+        },
+		"libraries": {
+			"add": [],
+			"remove": []
+		},
+		"gpu": "none"
 	}
 }
