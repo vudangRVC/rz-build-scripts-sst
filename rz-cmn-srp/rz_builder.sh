@@ -736,12 +736,12 @@ conf_set_variable() {
     echo "${var} = \"${val}\"" >> "${inc_file}"
 }
 
-# Ensure local.conf contains one-time lines
+# Clean and create the template variables for parsing the libraries
 conf_clean_libraries() {
     local lc="${AUTO_CONF_FILE}"
     [ -f "${lc}" ] || touch "${lc}"
 
-    # Removing any previous lines to avoid duplicates
+    # Refresh previous lines in the local.conf
     sed -i '\|^IMAGE_INSTALL:append = " \${USER_IMAGE_ADD}"$|d' "${lc}"
     sed -i '\|^PACKAGE_EXCLUDE += " \${USER_PACKAGE_EXCLUDE}"$|d' "${lc}"
     sed -i '\|^BAD_RECOMMENDATIONS += " \${USER_PACKAGE_EXCLUDE}"$|d' "${lc}"
@@ -768,34 +768,27 @@ add_layer() {
                 log_warning "Failed to add layer ${layer}"
             fi
         fi
-        return 0
-    fi
-
-    # If this is a folder that contains sub-layers, add every child layer under it
-    if [ -d "${layer_path}" ]; then
+	# If this is a folder that contains sub-layers, add every child layer under it
+    elif [ -d "${layer_path}" ]; then
         local match
         if ! match=$(compgen -G "${layer_path}/*/conf/layer.conf"); then
             log_warning "No valid sub-layers found under ${layer}"
-            return 0
-        fi
-        local child_conf child
-        for child_conf in ${match}; do
-            child="${child_conf%/conf/layer.conf}"
-            if ! bitbake-layers show-layers 2>/dev/null | grep -Fq "${child}"; then
-                local out
-                if ! out=$(bitbake-layers add-layer "${child}" 2>&1); then
-                    log_warning "Failed to add layer ${child}: ${out}"
+        else
+            local child_conf child
+            for child_conf in ${match}; do
+                child="${child_conf%/conf/layer.conf}"
+                if ! bitbake-layers show-layers 2>/dev/null | grep -Fq "${child}"; then
+                    local out
+                    if ! out=$(bitbake-layers add-layer "${child}" 2>&1); then
+                        log_warning "Failed to add layer ${child}: ${out}"
+                    fi
                 fi
-            fi
-            # Track codec flag if meta-rz-codecs was among children
-            if [[ "${child}" == *"/meta-rz-codecs" ]]; then
-                RZ_FEATURE_CODEC="True"
-            fi
-        done
-        return 0
+                [[ "${child}" == *"/meta-rz-codecs" ]] && RZ_FEATURE_CODEC="True"
+            done
+        fi
+    else
+        log_warning "Path does not exist or is not a layer: ${layer}"
     fi
-
-    log_warning "Path does not exist or is not a layer: ${layer}"
 }
 
 remove_layer() {
@@ -808,40 +801,33 @@ remove_layer() {
         RZ_FEATURE_CODEC="False"
     fi
 
-    # If this is a real layer (has conf/layer.conf) remove it
+    # If this is a real layer (has conf/layer.conf) add it
     if [ -f "${layer_path}/conf/layer.conf" ]; then
         if bitbake-layers show-layers 2>/dev/null | grep -Fq "${layer_path}"; then
             if ! bitbake-layers remove-layer "${layer_path}" >/dev/null 2>&1; then
                 log_warning "Failed to remove layer ${layer}"
             fi
         fi
-        return 0
-    fi
-
-    # If this is a folder that contains sub-layers, remove each child layer
-    if [ -d "${layer_path}" ]; then
+	# If this is a folder that contains sub-layers, add every child layer under it
+    elif [ -d "${layer_path}" ]; then
         local match
         if ! match=$(compgen -G "${layer_path}/*/conf/layer.conf"); then
             log_warning "No valid sub-layers found under ${layer}"
-            return 0
-        fi
-        local child_conf child
-        for child_conf in ${match}; do
-            child="${child_conf%/conf/layer.conf}"
-            if bitbake-layers show-layers 2>/dev/null | grep -Fq "${child}"; then
-                if ! bitbake-layers remove-layer "${child}" >/dev/null 2>&1; then
-                    log_warning "Failed to remove layer ${child}"
+        else
+            local child_conf child
+            for child_conf in ${match}; do
+                child="${child_conf%/conf/layer.conf}"
+                if bitbake-layers show-layers 2>/dev/null | grep -Fq "${child}"; then
+                    if ! bitbake-layers remove-layer "${child}" >/dev/null 2>&1; then
+                        log_warning "Failed to remove layer ${child}"
+                    fi
                 fi
-            fi
-            # Track codec flag if meta-rz-codecs was among children
-            if [[ "${child}" == *"/meta-rz-codecs" ]]; then
-                RZ_FEATURE_CODEC="False"
-            fi
-        done
-        return 0
+                [[ "${child}" == *"/meta-rz-codecs" ]] && RZ_FEATURE_CODEC="False"
+            done
+        fi
+    else
+        log_warning "Path does not exist or is not a layer: ${layer}"
     fi
-
-    log_warning "Path does not exist or is not a layer: ${layer}"
 }
 
 apply_add_remove_layers() {
@@ -858,6 +844,7 @@ apply_add_remove_layers() {
         remove_layer "${layer}"
     done
 
+	# Control RZ_FEATURE_CODEC in meta-renesas
     if [ "${RZ_FEATURE_CODEC}" = "False" ]; then
         conf_set_variable 'RZ_FEATURE_CODEC' 'False'
     else
@@ -871,9 +858,10 @@ apply_libraries() {
     ADD_LIBS=$(${JQ} -r '.features.libraries?.add[]? // empty' "${CONFIG_JSON}" | tr '\n' ' ')
     REMOVE_LIBS=$(${JQ} -r '.features.libraries?.remove[]? // empty' "${CONFIG_JSON}" | tr '\n' ' ')
 
-    # Ensure local.conf contains one-time lines
+    # Refresh the template
     conf_clean_libraries
 
+	# Clean and parse variables to the template avoiding duplicates
     conf_set_variable 'USER_IMAGE_ADD' "${ADD_LIBS}"
     conf_set_variable 'USER_PACKAGE_EXCLUDE' "${REMOVE_LIBS}"
 
@@ -883,39 +871,24 @@ apply_libraries() {
 }
 
 apply_gpu_feature() {
-	LAYERDIR="${RZ_TARGET_DIR}/meta-renesas"
-    local DEFCONFIG="${LAYERDIR}/recipes-kernel/linux/rz-cmn/common/renesas_defconfig"
-    local PANFROST_CFG="${LAYERDIR}/recipes-kernel/linux/rz-cmn/common/panfrost.cfg"
-
     local GPU_MODE
     GPU_MODE=$(${JQ} -r '.features.gpu // "none"' "${CONFIG_JSON}")
-
     log_info "GPU mode: ${GPU_MODE}"
 
+	# Control RZ_FEATURE_PANFROST in meta-renesas
     case "${GPU_MODE}" in
         panfrost)
-            if grep -q '^# CONFIG_DRM_PANFROST' "${DEFCONFIG}"; then
-                sed -i 's/^# CONFIG_DRM_PANFROST is not set/CONFIG_DRM_PANFROST=y/' "${DEFCONFIG}"
-            elif ! grep -q '^CONFIG_DRM_PANFROST=y' "${DEFCONFIG}"; then
-                echo 'CONFIG_DRM_PANFROST=y' >> "${DEFCONFIG}"
-            fi
-            echo 'CONFIG_DRM_PANFROST=y' > "${PANFROST_CFG}"
+            conf_set_variable 'RZ_FEATURE_PANFROST' '1'
             ;;
         mali)
-            log_info "Mali not available"
-            # Disable panfrost in defconfig
-            sed -i '/^CONFIG_DRM_PANFROST/d' "${DEFCONFIG}"
-            echo '# CONFIG_DRM_PANFROST is not set' > "${PANFROST_CFG}"
+            conf_set_variable 'RZ_FEATURE_PANFROST' '0'
             ;;
         none|"")
-            log_info "Disable GPU drivers"
-            sed -i '/^CONFIG_DRM_PANFROST/d' "${DEFCONFIG}"
-            echo '# CONFIG_DRM_PANFROST is not set' > "${PANFROST_CFG}"
+            conf_set_variable 'RZ_FEATURE_PANFROST' '0'
             ;;
         *)
-            log_warn "Unknown GPU mode '${GPU_MODE}', setting back to none"
-            sed -i '/^CONFIG_DRM_PANFROST/d' "${DEFCONFIG}"
-            echo '# CONFIG_DRM_PANFROST is not set' > "${PANFROST_CFG}"
+            log_warning "Unknown GPU mode '${GPU_MODE}', defaulting to none"
+            conf_set_variable 'RZ_FEATURE_PANFROST' '0'
             ;;
     esac
 }
