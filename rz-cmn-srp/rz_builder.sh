@@ -694,6 +694,18 @@ setup_conf(){
 		echo "This build is based on release tag:$revision_value. Target image: ${IMAGE}"
 	fi
 
+    AUTO_CONF_FILE="${RZ_TARGET_DIR}/build/conf/local.conf"
+    export AUTO_CONF_FILE
+
+    # In case of bblayers.conf template in meta-renesas fixated meta-rz-codecs,
+    # drop the layer entry and manage via bitbake-layers instead
+    local bblayers_conf="${RZ_TARGET_DIR}/build/conf/bblayers.conf"
+    sed -i '/meta-rz-features\/meta-rz-codecs/d' "${bblayers_conf}"
+    
+	apply_layers_add_remove_feature
+    apply_gpu_feature
+    apply_libraries
+
 }
 
 # Main setup
@@ -756,7 +768,7 @@ add_layer() {
     local layer_path
 
     layer_path="${RZ_TARGET_DIR}/${layer}"
-    # Control flag to handle the dependencies of meta-rz-codecs in meta-renesas when building core-image-weston
+    # Control flag to handle the dependencies of meta-rz-codecs in meta-renesas
     if [[ "${layer}" = "meta-rz-codecs" || "${layer_path}" == *"/meta-rz-codecs" ]]; then
         RZ_FEATURE_CODEC="True"
     fi
@@ -796,7 +808,7 @@ remove_layer() {
     local layer_path
 
     layer_path="${RZ_TARGET_DIR}/${layer}"
-    # Control flag to handle the dependencies of meta-rz-codecs in meta-renesas when building core-image-weston
+    # Control flag to handle the dependencies of meta-rz-codecs in meta-renesas
     if [[ "${layer}" = "meta-rz-codecs" || "${layer_path}" == *"/meta-rz-codecs" ]]; then
         RZ_FEATURE_CODEC="False"
     fi
@@ -899,16 +911,6 @@ build_sdk() {
 
 	setup_conf
 
-	AUTO_CONF_FILE="${RZ_TARGET_DIR}/build/conf/local.conf"
-    export AUTO_CONF_FILE
-
-    local bblayers_conf="${RZ_TARGET_DIR}/build/conf/bblayers.conf"
-    # In case of bblayers.conf template in meta-renesas fixated meta-rz-codecs, cannot bitbake remove-layer normally
-    sed -i '/meta-rz-features\/meta-rz-codecs/d' "${bblayers_conf}"
-    apply_add_remove_layers
-	apply_gpu_feature
-	apply_libraries
-
 	# if targe directory is not present, we have to build common before building sdk.
 	if [ ! -d "${RZ_TARGET_DIR}/build/tmp/deploy/images" ];then
 		echo "This SDK build will start from scratch."
@@ -994,16 +996,6 @@ build() {
 	setup $1
 
 	setup_conf
-
-    AUTO_CONF_FILE="${RZ_TARGET_DIR}/build/conf/local.conf"
-    export AUTO_CONF_FILE
-
-    local bblayers_conf="${RZ_TARGET_DIR}/build/conf/bblayers.conf"
-    # In case of bblayers.conf template in meta-renesas fixated meta-rz-codecs, cannot bitbake remove-layer normally
-    sed -i '/meta-rz-features\/meta-rz-codecs/d' "${bblayers_conf}"
-    apply_add_remove_layers
-	apply_gpu_feature
-	apply_libraries
 
 	case "${IMAGE}" in
 		"all-supported-images")
