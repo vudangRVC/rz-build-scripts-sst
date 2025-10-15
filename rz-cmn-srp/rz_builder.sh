@@ -663,80 +663,6 @@ unpack_codec() {
 	rm -fr ${zip_dir}
 }
 
-setup_conf(){
-	# Build RZ
-	cd "${RZ_TARGET_DIR}" || { log_error "Failed to switch to ${RZ_TARGET_DIR}" ; exit 1; }
-	echo "In yocto. pwd = ${PWD}"
-	#source poky/oe-init-build-env
-	echo "Env setup completed. pwd = ${PWD}"
-
-	# New style
-	TEMPLATECONF=$PWD/meta-renesas/conf/templates/${MACHINE}/ . ./poky/oe-init-build-env build
-
-	# Remove templateconf.cfg as it will reference the old workspace directory when installing the eSDK on another host PC
-	rm -f "conf/templateconf.cfg"
-
-	# Check local overrides file
-	if [ ! -e "$WORKSPACE/site.conf" ]; then
-		echo "Local site.conf file not present in this workspace ($WORKSPACE). Assuming developer default build!"
-		if [ -e "../meta-renesas/conf/templates/${MACHINE}/site.conf.sample" ]; then
-			# Copy default template overrides file as yocto doesnt copy site.conf.sample
-			cp ../meta-renesas/conf/templates/${MACHINE}/site.conf.sample conf/site.conf
-		fi
-		echo "This build is a common build for RZ Common System. It is not based on any release tag. Target image: ${IMAGE}"
-	else
-		# Copy local overrides file to yocto build conf folder
-		cp "${WORKSPACE}"/site.conf conf/site.conf
-		# Read and store revision from site.conf
-		site_file="conf/site.conf"
-		revision_value=$(grep '^SRCREV_pn-linux-renesas =' "$site_file" | cut -d '=' -f2)
-		revision_value=$(echo "$revision_value" | sed 's/"//g')
-		echo "This build is based on release tag:$revision_value. Target image: ${IMAGE}"
-	fi
-
-    AUTO_CONF_FILE="${RZ_TARGET_DIR}/build/conf/local.conf"
-    export AUTO_CONF_FILE
-
-    # In case of bblayers.conf template in meta-renesas fixated meta-rz-codecs,
-    # drop the layer entry and manage via bitbake-layers instead
-    local bblayers_conf="${RZ_TARGET_DIR}/build/conf/bblayers.conf"
-    sed -i '/meta-rz-features\/meta-rz-codecs/d' "${bblayers_conf}"
-    
-	apply_layers_add_remove_feature
-    apply_gpu_feature
-    apply_libraries
-
-}
-
-# Main setup
-setup() {
-	# Check and note down directory locations
-	check_and_set_dir "$1"
-
-	log_warning "WARNING: The script will check tags first, then commits, and finally branches if all three are specified. It will check out to the specified tag, commit, or branch as needed."
-
-	check_patch_require
-
-	# if targe directory is not present, we have to create and unpack the contents.
-	if [ ! -d "${RZ_TARGET_DIR}" ];then
-		check_pkg_require
-		mkdir -p "${RZ_TARGET_DIR}"
-		#unpack_bsp
-		get_bsp
-	else
-		echo "${RZ_TARGET_DIR} already exists! Checking for any missing layers..."
-		check_and_clone_missing_layers
-	fi
-
-	bsp_checkout_verification
-
-	echo "Target contents in ${RZ_TARGET_DIR}:"
-	(ls "${RZ_TARGET_DIR}")
-	echo ""
-	echo "Finished preparing the Yocto build source repository for the RZ Common System."
-	echo "========================================================================="
-}
-
 # Set or replace a variable in local.conf
 conf_set_variable() {
     local var="$1"
@@ -782,22 +708,21 @@ add_layer() {
         fi
 	# If this is a folder that contains sub-layers, add every child layer under it
     elif [ -d "${layer_path}" ]; then
-        local match
-        if ! match=$(compgen -G "${layer_path}/*/conf/layer.conf"); then
-            log_warning "No valid sub-layers found under ${layer}"
-        else
-            local child_conf child
-            for child_conf in ${match}; do
-                child="${child_conf%/conf/layer.conf}"
-                if ! bitbake-layers show-layers 2>/dev/null | grep -Fq "${child}"; then
-                    local out
-                    if ! out=$(bitbake-layers add-layer "${child}" 2>&1); then
-                        log_warning "Failed to add layer ${child}: ${out}"
-                    fi
+        local child_conf child found
+        found=0
+        for child_conf in "${layer_path}"/*/conf/layer.conf; do
+            [ -f "${child_conf}" ] || continue
+            found=1
+            child="${child_conf%/conf/layer.conf}"
+            if ! bitbake-layers show-layers 2>/dev/null | grep -Fq "${child}"; then
+                local out
+                if ! out=$(bitbake-layers add-layer "${child}" 2>&1); then
+                    log_warning "Failed to add layer ${child}: ${out}"
                 fi
-                [[ "${child}" == *"/meta-rz-codecs" ]] && RZ_FEATURE_CODEC="True"
-            done
-        fi
+            fi
+            [[ "${child}" == *"/meta-rz-codecs" ]] && RZ_FEATURE_CODEC="True"
+        done
+        [ "${found}" -eq 1 ] || log_warning "No valid sub-layers found under ${layer}"
     else
         log_warning "Path does not exist or is not a layer: ${layer}"
     fi
@@ -822,21 +747,20 @@ remove_layer() {
         fi
 	# If this is a folder that contains sub-layers, add every child layer under it
     elif [ -d "${layer_path}" ]; then
-        local match
-        if ! match=$(compgen -G "${layer_path}/*/conf/layer.conf"); then
-            log_warning "No valid sub-layers found under ${layer}"
-        else
-            local child_conf child
-            for child_conf in ${match}; do
-                child="${child_conf%/conf/layer.conf}"
-                if bitbake-layers show-layers 2>/dev/null | grep -Fq "${child}"; then
-                    if ! bitbake-layers remove-layer "${child}" >/dev/null 2>&1; then
-                        log_warning "Failed to remove layer ${child}"
-                    fi
+        local child_conf child found
+        found=0
+        for child_conf in "${layer_path}"/*/conf/layer.conf; do
+            [ -f "${child_conf}" ] || continue
+            found=1
+            child="${child_conf%/conf/layer.conf}"
+            if bitbake-layers show-layers 2>/dev/null | grep -Fq "${child}"; then
+                if ! bitbake-layers remove-layer "${child}" >/dev/null 2>&1; then
+                    log_warning "Failed to remove layer ${child}"
                 fi
-                [[ "${child}" == *"/meta-rz-codecs" ]] && RZ_FEATURE_CODEC="False"
-            done
-        fi
+            fi
+            [[ "${child}" == *"/meta-rz-codecs" ]] && RZ_FEATURE_CODEC="False"
+        done
+        [ "${found}" -eq 1 ] || log_warning "No valid sub-layers found under ${layer}"
     else
         log_warning "Path does not exist or is not a layer: ${layer}"
     fi
@@ -845,6 +769,10 @@ remove_layer() {
 apply_add_remove_layers() {
     local layers_add layers_remove layer
     RZ_FEATURE_CODEC="True"
+
+	# Due to bblayers.conf template in meta-renesas fixated meta-rz-codecs,
+    # drop codec layer entry and manage via bitbake-layers instead
+	sed -i '/meta-rz-features\/meta-rz-codecs/d' "${RZ_TARGET_DIR}/build/conf/bblayers.conf"
 
     layers_add=$(${JQ} -r '.features.layers.add[]? // empty' "${CONFIG_JSON}" | awk 'NF')
     for layer in ${layers_add}; do
@@ -887,22 +815,91 @@ apply_gpu_feature() {
     GPU_MODE=$(${JQ} -r '.features.gpu // "none"' "${CONFIG_JSON}")
     log_info "GPU mode: ${GPU_MODE}"
 
-	# Control RZ_FEATURE_PANFROST in meta-renesas
+    # Control RZ_FEATURE_PANFROST in meta-renesas
+    conf_set_variable 'RZ_FEATURE_PANFROST' 'False'
+
     case "${GPU_MODE}" in
         panfrost)
-            conf_set_variable 'RZ_FEATURE_PANFROST' '1'
+            conf_set_variable 'RZ_FEATURE_PANFROST' 'True'
             ;;
         mali)
-            conf_set_variable 'RZ_FEATURE_PANFROST' '0'
+            log_warning "GPU mode 'mali' is not supported, set back to none"
             ;;
         none|"")
-            conf_set_variable 'RZ_FEATURE_PANFROST' '0'
+            : # no action
             ;;
         *)
-            log_warning "Unknown GPU mode '${GPU_MODE}', defaulting to none"
-            conf_set_variable 'RZ_FEATURE_PANFROST' '0'
+            log_warning "Unknown GPU mode '${GPU_MODE}', set back to none"
             ;;
     esac
+}
+
+setup_conf(){
+	# Build RZ
+	cd "${RZ_TARGET_DIR}" || { log_error "Failed to switch to ${RZ_TARGET_DIR}" ; exit 1; }
+	echo "In yocto. pwd = ${PWD}"
+	#source poky/oe-init-build-env
+	echo "Env setup completed. pwd = ${PWD}"
+
+	# New style
+	TEMPLATECONF=$PWD/meta-renesas/conf/templates/${MACHINE}/ . ./poky/oe-init-build-env build
+
+	# Remove templateconf.cfg as it will reference the old workspace directory when installing the eSDK on another host PC
+	rm -f "conf/templateconf.cfg"
+
+	# Check local overrides file
+	if [ ! -e "$WORKSPACE/site.conf" ]; then
+		echo "Local site.conf file not present in this workspace ($WORKSPACE). Assuming developer default build!"
+		if [ -e "../meta-renesas/conf/templates/${MACHINE}/site.conf.sample" ]; then
+			# Copy default template overrides file as yocto doesnt copy site.conf.sample
+			cp ../meta-renesas/conf/templates/${MACHINE}/site.conf.sample conf/site.conf
+		fi
+		echo "This build is a common build for RZ Common System. It is not based on any release tag. Target image: ${IMAGE}"
+	else
+		# Copy local overrides file to yocto build conf folder
+		cp "${WORKSPACE}"/site.conf conf/site.conf
+		# Read and store revision from site.conf
+		site_file="conf/site.conf"
+		revision_value=$(grep '^SRCREV_pn-linux-renesas =' "$site_file" | cut -d '=' -f2)
+		revision_value=$(echo "$revision_value" | sed 's/"//g')
+		echo "This build is based on release tag:$revision_value. Target image: ${IMAGE}"
+	fi
+
+    AUTO_CONF_FILE="${RZ_TARGET_DIR}/build/conf/local.conf"
+    export AUTO_CONF_FILE
+    
+	apply_add_remove_layers
+    apply_gpu_feature
+    apply_libraries
+}
+
+# Main setup
+setup() {
+	# Check and note down directory locations
+	check_and_set_dir "$1"
+
+	log_warning "WARNING: The script will check tags first, then commits, and finally branches if all three are specified. It will check out to the specified tag, commit, or branch as needed."
+
+	check_patch_require
+
+	# if targe directory is not present, we have to create and unpack the contents.
+	if [ ! -d "${RZ_TARGET_DIR}" ];then
+		check_pkg_require
+		mkdir -p "${RZ_TARGET_DIR}"
+		#unpack_bsp
+		get_bsp
+	else
+		echo "${RZ_TARGET_DIR} already exists! Checking for any missing layers..."
+		check_and_clone_missing_layers
+	fi
+
+	bsp_checkout_verification
+
+	echo "Target contents in ${RZ_TARGET_DIR}:"
+	(ls "${RZ_TARGET_DIR}")
+	echo ""
+	echo "Finished preparing the Yocto build source repository for the RZ Common System."
+	echo "========================================================================="
 }
 
 # Main build-sdk

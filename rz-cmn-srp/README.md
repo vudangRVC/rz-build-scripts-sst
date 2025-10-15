@@ -5,20 +5,17 @@ This directory contains automated build scripts and resources for performing Yoc
 ## Hierarchy
 
 ```
-$ tree -L 4
+$ tree -L 3
 .
 ├── config.json
 ├── files_to_add
 │   └── meta-rz-features
 │       └── meta-rz-codecs
-│           ├── 0001-rzg2l-sbc-Bring-compat_alloc_user_space-back.patch
-│           └── 0004-rzg2l-sbc-Get-interrupt-number.patch
 ├── git_patch.json
 ├── jq-linux-amd64
 ├── patches
 │   ├── meta-rz-features
 │   │   └── meta-rz-codecs
-│   │       └── 0001-support-codec-for-linux-6.10-and-yocto-styhead.patch
 │   ├── meta-summit-radio
 │   │   ├── 0001-rz-sbc-meta-summit-radio-Support-build-in-yocto-styh.patch
 │   │   └── 0002-rz-sbc-summit-radio-support-eSDK-build.patch
@@ -29,72 +26,23 @@ $ tree -L 4
 └── ubuntu
     ├── config
     │   ├── ubuntu_core
-    │   │   ├── audio-init-core.sh
-    │   │   ├── network_interfaces.conf
-    │   │   ├── NetworkManager.conf
-    │   │   └── resolved.conf
     │   └── ubuntu_lxde
-    │       ├── audio-init-lxde.sh
-    │       ├── connman-gtk.desktop
-    │       ├── force-display-xorg.sh
-    │       ├── force-xorg-display.service
-    │       ├── interfaces
-    │       ├── lightdm.conf
-    │       ├── NetworkManager.conf
-    │       ├── panel
-    │       ├── rsyslog
-    │       ├── ttyS0.conf
-    │       └── v4l2-init.sh
     ├── config.ini
     ├── docs
     │   ├── ubuntu_core
-    │   │   └── README.md
     │   └── ubuntu_lxde
-    │       ├── Pictures
-    │       └── README.md
     ├── include
     │   ├── common
-    │   │   ├── allow_empty_password.sh
-    │   │   ├── create_wic.sh
-    │   │   ├── install_gstreamer.sh
-    │   │   ├── install_weston.sh
-    │   │   ├── mount.sh
-    │   │   ├── prepare_env_rootfs.sh
-    │   │   ├── prepare_env.sh
-    │   │   ├── prepare_ubuntu_base.sh
-    │   │   └── yocto_working.sh
     │   ├── ubuntu_core
-    │   │   ├── prepare_conf.sh
-    │   │   ├── prepare_env.sh
-    │   │   ├── prepare_rootfs.sh
-    │   │   └── setup_dns.sh
     │   └── ubuntu_lxde
-    │       ├── create_swap.sh
-    │       ├── prepare_conf.sh
-    │       └── prepare_rootfs_qt.sh
     ├── README.md
     ├── script
     │   ├── common
-    │   │   ├── dpkg-install-lock-fix.sh
-    │   │   └── setup_dns_and_time.sh
     │   ├── ubuntu_core
-    │   │   ├── apt_install_base.sh
-    │   │   ├── link_to_leagcy_iptables.sh
-    │   │   └── set_root_password.sh
     │   └── ubuntu_lxde
-    │       ├── apt_audio_video.sh
-    │       ├── apt_blueman.sh
-    │       ├── apt_install_base.sh
-    │       ├── apt_lxde_desktop.sh
-    │       ├── apt_wifi_ble.sh
-    │       ├── create_user.sh
-    │       ├── enable_service.sh
-    │       ├── set_root_password.sh
-    │       ├── set_swap_enable.sh
-    │       └── setup-set-permissions.sh
     └── setup_ubuntu_environment.sh
 
-25 directories, 62 files
+24 directories, 11 files
 
 ``` 
 
@@ -152,12 +100,17 @@ It also lists the available `machine` types
     - `machine` : Specify the default machine chosen when no machine is passed as arguement.
     - `image` : Specify the default image to build where none is specified.
 
-- **features**: Quick toggles applied by the build scripts before BitBake. Lets you adjust layers, image packages, and GPU settings without editing code.
-    - `layers`: Control Yocto layers. Supports either a specific layer path (has `conf/layer.conf`) or a folder of layers (adds/removes all valid sub-layers under it).
-    - `libraries`: Control image packages. `add` appends packages, `remove` excludes packages (and marks as bad recommendations).
-    - `gpu`: Choose the graphic mode between Panfrost or no support. Use `"none"` or `"panfrost"` to toggle the configuration flag in kernel.
+### Layers and Graphics Customization
 
-    Example:
+The `features` section in `config.json` applies customization before BitBake runs. It adds or removes entries of meta-layer in BBLAYERS, adjusts image package lists, and sets GPU configuration.
+
+- `layers`: Supports `add`/`remove` entries of meta-layer in BBLAYERS, either a specific layer path (has `conf/layer.conf`) or a folder of layers (adds/removes all valid sub-layers under it).
+- `libraries`: Control image packages. `add` appends packages, `remove` excludes packages (and marks as bad recommendations).
+- `gpu`: Choose a graphic mode. Available values:
+    - `"none"`: Disables graphics and no graphic configurations are applied.
+    - `"panfrost"`: Enables the Panfrost DRM driver via a conditional kernel configuration fragment.
+    - `"mali"`: Not currently supported by this build. Selecting `"mali"` has no effect and is treated the same as `"none"`.
+Example:
     ```json
     "features": {
         "layers": {
