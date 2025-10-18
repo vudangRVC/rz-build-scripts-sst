@@ -667,26 +667,27 @@ unpack_codec() {
 conf_set_variable() {
     local var="$1"
     local val="$2"
-    local inc_file="${AUTO_CONF_FILE}"
-    [ -f "${inc_file}" ] || touch "${inc_file}"
-    # Remove any existing lines that set the var
-    sed -i -E "/^${var}[[:space:]]*=.*/d" "${inc_file}"
-    echo "${var} = \"${val}\"" >> "${inc_file}"
+    local lconf="${AUTO_CONF_FILE}"
+
+	[ -f "$lconf" ] || { log_error "Missing ${lconf}"; exit 1; }
+	# Remove any existing lines that set the var
+    sed -i "/^${var}[[:space:]]*=.*/d" "${lconf}"
+    echo "${var} = \"${val}\"" >> "${lconf}"
 }
 
 # Clean and create the template variables for parsing the libraries
 conf_clean_libraries() {
-    local lc="${AUTO_CONF_FILE}"
-    [ -f "${lc}" ] || touch "${lc}"
+    local lconf="${AUTO_CONF_FILE}"
 
-    # Refresh previous lines in the local.conf
-    sed -i '\|^IMAGE_INSTALL:append = " \${USER_IMAGE_ADD}"$|d' "${lc}"
-    sed -i '\|^PACKAGE_EXCLUDE += " \${USER_PACKAGE_EXCLUDE}"$|d' "${lc}"
-    sed -i '\|^BAD_RECOMMENDATIONS += " \${USER_PACKAGE_EXCLUDE}"$|d' "${lc}"
+	[ -f "$lconf" ] || { log_error "Missing ${lconf}"; exit 1; }
+	# Refresh previous lines in the local.conf
+    sed -i '\|^IMAGE_INSTALL:append = " \${USER_IMAGE_ADD}"$|d' "${lconf}"
+    sed -i '\|^PACKAGE_EXCLUDE += " \${USER_PACKAGE_EXCLUDE}"$|d' "${lconf}"
+    sed -i '\|^BAD_RECOMMENDATIONS += " \${USER_PACKAGE_EXCLUDE}"$|d' "${lconf}"
 
-    echo 'IMAGE_INSTALL:append = " ${USER_IMAGE_ADD}"' >> "${lc}"
-    echo 'PACKAGE_EXCLUDE += " ${USER_PACKAGE_EXCLUDE}"' >> "${lc}"
-    echo 'BAD_RECOMMENDATIONS += " ${USER_PACKAGE_EXCLUDE}"' >> "${lc}"
+    echo 'IMAGE_INSTALL:append = " ${USER_IMAGE_ADD}"' >> "${lconf}"
+    echo 'PACKAGE_EXCLUDE += " ${USER_PACKAGE_EXCLUDE}"' >> "${lconf}"
+    echo 'BAD_RECOMMENDATIONS += " ${USER_PACKAGE_EXCLUDE}"' >> "${lconf}"
 }
 
 add_layer() {
@@ -695,9 +696,7 @@ add_layer() {
 
     layer_path="${RZ_TARGET_DIR}/${layer}"
     # Control flag to handle the dependencies of meta-rz-codecs in meta-renesas
-    if [[ "${layer}" = "meta-rz-codecs" || "${layer_path}" == *"/meta-rz-codecs" ]]; then
-        RZ_FEATURE_CODEC="True"
-    fi
+    case "${layer_path}" in */meta-rz-codecs) RZ_FEATURE_CODEC="True" ;; esac
 
     # If this is a real layer (has conf/layer.conf) add it
     if [ -f "${layer_path}/conf/layer.conf" ]; then
@@ -720,7 +719,7 @@ add_layer() {
                     log_warning "Failed to add layer ${child}: ${out}"
                 fi
             fi
-            [[ "${child}" == *"/meta-rz-codecs" ]] && RZ_FEATURE_CODEC="True"
+            case "${child}" in */meta-rz-codecs) RZ_FEATURE_CODEC="True" ;; esac
         done
         [ "${found}" -eq 1 ] || log_warning "No valid sub-layers found under ${layer}"
     else
@@ -734,9 +733,7 @@ remove_layer() {
 
     layer_path="${RZ_TARGET_DIR}/${layer}"
     # Control flag to handle the dependencies of meta-rz-codecs in meta-renesas
-    if [[ "${layer}" = "meta-rz-codecs" || "${layer_path}" == *"/meta-rz-codecs" ]]; then
-        RZ_FEATURE_CODEC="False"
-    fi
+	case "${layer_path}" in */meta-rz-codecs) RZ_FEATURE_CODEC="False" ;; esac
 
     # If this is a real layer (has conf/layer.conf) add it
     if [ -f "${layer_path}/conf/layer.conf" ]; then
@@ -758,7 +755,7 @@ remove_layer() {
                     log_warning "Failed to remove layer ${child}"
                 fi
             fi
-            [[ "${child}" == *"/meta-rz-codecs" ]] && RZ_FEATURE_CODEC="False"
+            case "${child}" in */meta-rz-codecs) RZ_FEATURE_CODEC="False" ;; esac
         done
         [ "${found}" -eq 1 ] || log_warning "No valid sub-layers found under ${layer}"
     else
@@ -816,11 +813,11 @@ apply_gpu_feature() {
     log_info "GPU mode: ${GPU_MODE}"
 
     # Control RZ_FEATURE_PANFROST in meta-renesas
-    conf_set_variable 'RZ_FEATURE_PANFROST' 'False'
+    conf_set_variable 'RZ_FEATURE_PANFROST' '0'
 
     case "${GPU_MODE}" in
         panfrost)
-            conf_set_variable 'RZ_FEATURE_PANFROST' 'True'
+            conf_set_variable 'RZ_FEATURE_PANFROST' '1'
             ;;
         mali)
             log_warning "GPU mode 'mali' is not supported, set back to none"
