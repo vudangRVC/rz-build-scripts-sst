@@ -90,6 +90,15 @@
 		"type": "git",
 		"enable": "false"
 	},
+	"meta-rz-graphics": {
+		"url": "https://gitlab.global.renesas.com/fsp1_poc_demo/rz/meta-rz-graphics.git",
+		"branch": "styhead/support-graphic-kernel-6.10",
+		"tag": "",
+		"commit": "",
+		"patches": [],
+		"type": "git",
+		"enable": "false"
+	},
 	"meta-rz-features": {
 		"patches": ["patches/meta-rz-features/0001-support-codec-for-linux-6.10-and-yocto-styhead.patch"],
 		"type": "local",
