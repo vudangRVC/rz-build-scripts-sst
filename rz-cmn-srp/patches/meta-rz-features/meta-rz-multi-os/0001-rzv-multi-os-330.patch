@@ -1,0 +1,1691 @@
+From f7a2c219ba6555f363cf8b9db0634a2434bdcf7a Mon Sep 17 00:00:00 2001
+From: Son Nguyen <son.nguyen.xg@bp.renesas.com>
+Date: Tue, 10 Mar 2026 15:48:43 +0700
+Subject: [PATCH] rzv-multi-os-330
+
+Signed-off-by: Son Nguyen <son.nguyen.xg@bp.renesas.com>
+---
+ meta-rzv2l-vlp4/conf/layer.conf               |   6 +-
+ .../0001-disable-reserved-area-check.patch    |  26 -
+ .../files/0002-cmd-Add-cm33-command.patch     | 182 ------
+ ...-rzv2l_defconfig-Enable-CM33-command.patch |  22 -
+ .../u-boot/u-boot_2024.07.bbappend            |   7 -
+ .../rpmsg-sample/files/Makefile               |   2 +-
+ .../rpmsg-sample/rpmsg-sample_0.1.bb          |  19 +-
+ .../cm33-firmware/cm33-firmware_0.1.bb        |   4 +-
+ ...multi-os-dtsi-for-supporting-OpenAMP.patch |  86 ---
+ ...4-dts-renesas-rz-smarc-Disable-OSTM2.patch |  26 -
+ ...as-rzv2l-Set-SCIF2-OSTM2-as-critical.patch |  25 -
+ ...4-clk-renesas-r9a07g054-Add-I2-clock.patch |  54 --
+ ...g054-Add-CM33-clock-and-reset-signal.patch |  87 ---
+ ...s-renesas-rzv2l-smarc-Add-rproc-node.patch |  74 ---
+ ...dd-bindings-for-RZ-remoteproc-driver.patch | 155 -----
+ .../0008-Add-RZ-remoteproc-driver.patch       | 554 ------------------
+ .../linux/linux-renesas/remoteproc.cfg        |   3 -
+ .../linux/linux-renesas/uio.cfg               |   4 -
+ .../linux/linux-renesas_6.1.bbappend          |  20 -
+ ...inux-device-Allow-multi-driver-probe.patch |   1 +
+ .../files/0001-machine-chipname-fix.patch     |   2 +
+ ...linux-device-Initialize-the-irq-info.patch |   1 +
+ .../files/0003-processor-arm-yield.patch      |   2 +
+ .../files/0004-bit-functions-fix.patch        |   3 +
+ .../open-amp/files/0001-fix-allocate-id.patch |   2 +
+ ...r_return_of_virtio_create_virtqueues.patch |   1 +
+ ...ix_error_return_of_remoteproc_remove.patch |   1 +
+ ...3_fix_compilation_error_of_virtqueue.patch |   1 +
+ ...k_buffer_size_when_get_buffer_failed.patch |   1 +
+ ...sg_virtio_fix_get_buffer_size_return.patch |   1 +
+ ...fer_allocate_from_shared_memory_pool.patch |   1 +
+ ...0007-Remove-nested-structs-in-header.patch |   1 +
+ 32 files changed, 33 insertions(+), 1341 deletions(-)
+ delete mode 100644 meta-rzv2l-vlp4/recipes-bsp/u-boot/files/0001-disable-reserved-area-check.patch
+ delete mode 100644 meta-rzv2l-vlp4/recipes-bsp/u-boot/files/0002-cmd-Add-cm33-command.patch
+ delete mode 100644 meta-rzv2l-vlp4/recipes-bsp/u-boot/files/0003-configs-smarc-rzv2l_defconfig-Enable-CM33-command.patch
+ delete mode 100644 meta-rzv2l-vlp4/recipes-bsp/u-boot/u-boot_2024.07.bbappend
+ delete mode 100644 meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0001-Add-rzg2l-smarc-multi-os-dtsi-for-supporting-OpenAMP.patch
+ delete mode 100644 meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0002-arm64-dts-renesas-rz-smarc-Disable-OSTM2.patch
+ delete mode 100644 meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0003-clk-renesas-rzv2l-Set-SCIF2-OSTM2-as-critical.patch
+ delete mode 100644 meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0004-clk-renesas-r9a07g054-Add-I2-clock.patch
+ delete mode 100644 meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0005-clk-renesas-r9a07g054-Add-CM33-clock-and-reset-signal.patch
+ delete mode 100644 meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0006-arm64-dts-renesas-rzv2l-smarc-Add-rproc-node.patch
+ delete mode 100644 meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0007-Add-bindings-for-RZ-remoteproc-driver.patch
+ delete mode 100644 meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0008-Add-RZ-remoteproc-driver.patch
+ delete mode 100644 meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/remoteproc.cfg
+ delete mode 100644 meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/uio.cfg
+ delete mode 100644 meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas_6.1.bbappend
+
+diff --git a/meta-rzv2l-vlp4/conf/layer.conf b/meta-rzv2l-vlp4/conf/layer.conf
+index ac909cf..e9f4a01 100644
+--- a/meta-rzv2l-vlp4/conf/layer.conf
++++ b/meta-rzv2l-vlp4/conf/layer.conf
+@@ -3,7 +3,7 @@ BBPATH .= ":${LAYERDIR}"
+ 
+ include ${LAYERDIR}/include/openamp.inc
+ 
+-#MACHINE_FEATURES:append = " CM33_REMOTEPROC"
++MACHINE_FEATURES:append = " CM33_REMOTEPROC"
+ 
+ # We have recipes-* directories, add to BBFILES
+ BBFILES += "${LAYERDIR}/recipes-*/*/*.bb \
+@@ -12,5 +12,5 @@ BBFILES += "${LAYERDIR}/recipes-*/*/*.bb \
+ BBFILE_COLLECTIONS += "rz-multi-os"
+ BBFILE_PATTERN_rz-multi-os := "^${LAYERDIR}/"
+ 
+-LAYERDEPENDS_rz-multi-os = "meta-rz-bsp"
+-LAYERSERIES_COMPAT_rz-multi-os = "scarthgap"
++#LAYERDEPENDS_rz-multi-os = "meta-rz-bsp"
++LAYERSERIES_COMPAT_rz-multi-os = "styhead"
+diff --git a/meta-rzv2l-vlp4/recipes-bsp/u-boot/files/0001-disable-reserved-area-check.patch b/meta-rzv2l-vlp4/recipes-bsp/u-boot/files/0001-disable-reserved-area-check.patch
+deleted file mode 100644
+index 991725b..0000000
+--- a/meta-rzv2l-vlp4/recipes-bsp/u-boot/files/0001-disable-reserved-area-check.patch
++++ /dev/null
+@@ -1,26 +0,0 @@
+-From e5f4167ced75c0d0f627f8412ca03e974c62d5bf Mon Sep 17 00:00:00 2001
+-From: Nguyen Thanh Tam <tam.nguyen.wr@renesas.com>
+-Date: Wed, 10 Dec 2025 13:49:28 +0700
+-Subject: [PATCH] disable-reserved-area-check
+-
+----
+- fs/fs.c | 3 +--
+- 1 file changed, 1 insertion(+), 2 deletions(-)
+-
+-diff --git a/fs/fs.c b/fs/fs.c
+-index acf465bdd8..8e7c8bd443 100644
+---- a/fs/fs.c
+-+++ b/fs/fs.c
+-@@ -556,8 +556,7 @@ static int fs_read_lmb_check(const char *filename, ulong addr, loff_t offset,
+- 	if (lmb_alloc_addr(&lmb, addr, read_len) == addr)
+- 		return 0;
+- 
+--	log_err("** Reading file would overwrite reserved memory **\n");
+--	return -ENOSPC;
+-+	return 0;
+- }
+- #endif
+- 
+--- 
+-2.34.1
+-
+diff --git a/meta-rzv2l-vlp4/recipes-bsp/u-boot/files/0002-cmd-Add-cm33-command.patch b/meta-rzv2l-vlp4/recipes-bsp/u-boot/files/0002-cmd-Add-cm33-command.patch
+deleted file mode 100644
+index 163454f..0000000
+--- a/meta-rzv2l-vlp4/recipes-bsp/u-boot/files/0002-cmd-Add-cm33-command.patch
++++ /dev/null
+@@ -1,182 +0,0 @@
+-From fe9d96fc510eea381efd8b656e01e8f9f4282861 Mon Sep 17 00:00:00 2001
+-From: Nguyen Thanh Tam <tam.nguyen.wr@renesas.com>
+-Date: Wed, 10 Dec 2025 14:20:17 +0700
+-Subject: [PATCH] cmd-Add-cm33-command
+-
+----
+- cmd/Kconfig  |   7 +++
+- cmd/Makefile |   1 +
+- cmd/cm33.c   | 131 +++++++++++++++++++++++++++++++++++++++++++++++++++
+- 3 files changed, 139 insertions(+)
+- create mode 100644 cmd/cm33.c
+-
+-diff --git a/cmd/Kconfig b/cmd/Kconfig
+-index 7499ca85f5..8c0f2ab682 100644
+---- a/cmd/Kconfig
+-+++ b/cmd/Kconfig
+-@@ -11,6 +11,13 @@ menuconfig CMDLINE
+- 
+- if CMDLINE
+- 
+-+menu "Renesas specific commands"
+-+config CMD_CM33
+-+	bool "RZ/G2L CM33 commands"
+-+	help
+-+	  Commands used to enable and control the embedded CM33 in the RZ/G2L.
+-+endmenu
+-+
+- config HUSH_PARSER
+- 	bool "Use hush shell"
+- 	help
+-diff --git a/cmd/Makefile b/cmd/Makefile
+-index cf57ed73e5..f6a5b70582 100644
+---- a/cmd/Makefile
+-+++ b/cmd/Makefile
+-@@ -46,6 +46,7 @@ obj-$(CONFIG_CMD_CACHE) += cache.o
+- obj-$(CONFIG_CMD_CBFS) += cbfs.o
+- obj-$(CONFIG_CMD_CEDIT) += cedit.o
+- obj-$(CONFIG_CMD_CLK) += clk.o
+-+obj-$(CONFIG_CMD_CM33) += cm33.o
+- obj-$(CONFIG_CMD_CLS) += cls.o
+- obj-$(CONFIG_CMD_CONFIG) += config.o
+- obj-$(CONFIG_CMD_CONITRACE) += conitrace.o
+-diff --git a/cmd/cm33.c b/cmd/cm33.c
+-new file mode 100644
+-index 0000000000..d7d6914b8f
+---- /dev/null
+-+++ b/cmd/cm33.c
+-@@ -0,0 +1,131 @@
+-+#include <common.h>
+-+#include <command.h>
+-+#include <linux/delay.h>
+-+
+-+DECLARE_GLOBAL_DATA_PTR;
+-+
+-+#define CPG_SIPLL3_MON	(*(volatile u32 *)0x1101013C)	// PLL3 (SSCG) Monitor Register
+-+#define CPG_CLKON_CM33	(*(volatile u32 *)0x11010504)	// Clock Control Register Cortex-M33
+-+#define CPG_CLKMON_CM33	(*(volatile u32 *)0x11010684)	// Clock Monitor Register Cortex-M33
+-+#define CPG_RST_CM33	(*(volatile u32 *)0x11010804)	// Reset Control Register Cortex-M33
+-+#define CPG_RSTMON_CM33	(*(volatile u32 *)0x11010984)	// Reset Monitor Register Cortex-M33
+-+
+-+#define SYS_CM33_CFG0	(*(volatile u32 *)0x11020804)	// CM33 Config Register0
+-+#define SYS_CM33_CFG1	(*(volatile u32 *)0x11020808)	// CM33 Config Register1
+-+#define SYS_CM33_CFG2	(*(volatile u32 *)0x1102080C)	// CM33 Config Register2
+-+#define SYS_CM33_CFG3	(*(volatile u32 *)0x11020810)	// CM33 Config Register3
+-+#define SYS_CM33_CTL	(*(volatile u32 *)0x11020818)	// CM33 Control Register
+-+#define SYS_LSI_MODE	(*(volatile u32 *)0x11020A00)	// LSI Mode Signal Register
+-+#define SYS_LP_CM33CTL1	(*(volatile u32 *)0x11020D28)	// Lowpower Sequence CM33 Control Register1
+-+
+-+static void cm33_boot_normal_mode()
+-+{
+-+	// Supply clock to CM33_CLKIN
+-+	CPG_CLKON_CM33 = 0x00010001;
+-+
+-+	// Poll CPG_CLKMON_CM33 to confirm that CM33_CLKIN clock is supplied
+-+	while (CPG_CLKMON_CM33 != 0x1)
+-+		mdelay(10);
+-+
+-+	// Stop the reset signals (released from the reset state)
+-+	CPG_RST_CM33 = 0x00070007;
+-+
+-+	// Poll CPG_RSTMON_CM33 to confirm that all the reset signals are not applied
+-+	while(CPG_RSTMON_CM33 != 0)
+-+		mdelay(10);
+-+}
+-+
+-+static void cm33_boot_debug_mode()
+-+{
+-+	// Supply clock to CM33_TSCLK and CM33_CLKIN
+-+	CPG_CLKON_CM33 = 0x00030003;
+-+
+-+	// Poll CPG_CLKMON_CM33 to confirm that both CM33_TSCLK and CM33_CLKIN clock are supplied
+-+	while (CPG_CLKMON_CM33 != 0x3)
+-+		mdelay(10);
+-+
+-+	// Set DEBUGQREQn bit of SYS_LP_CM33CTL1 to 1
+-+	SYS_LP_CM33CTL1 = 0x00001100;
+-+
+-+	// Poll SYS_LP_CM33CTL1 to check if DEBUGQACCEPTn bit becomes 1
+-+	// Fixme. Lacking of SYS_LP_CM33CTL1.DEBUGQACCEPTn info
+-+
+-+	// Set FETCHCNT bit of SYS_CM33_CTL register to 1
+-+	SYS_CM33_CTL = 0x00000001;
+-+
+-+	// Stop the reset signals (released from the reset state)
+-+	CPG_RST_CM33 = 0x00070007;
+-+
+-+	// Poll CPG_RSTMON_CM33 to confirm that all the reset signals are not applied
+-+	while (CPG_RSTMON_CM33 != 0)
+-+		mdelay(10);
+-+
+-+	// Set FETCHCNT bit of SYS_CM33_CTL register to 0
+-+	SYS_CM33_CTL = 0x00000000;
+-+}
+-+
+-+void cm33_start(u8 debug, u32 s_addr, u32 ns_addr)
+-+{
+-+	// Check if the SSCG PLL3 is ON or not
+-+	if ((CPG_SIPLL3_MON & 0x1) == 0x1) {
+-+		SYS_CM33_CFG0 = 0x00103CE5;
+-+		SYS_CM33_CFG1 = 0x00103CE5;
+-+	} else {
+-+		SYS_CM33_CFG0 = 0x00003D08;
+-+		SYS_CM33_CFG1 = 0x00003D08;
+-+	}
+-+
+-+	// Set the secure vector address of Cortex-M33
+-+	SYS_CM33_CFG2 = s_addr;
+-+
+-+	// Set the non secure vector address of Cortex-M33
+-+	SYS_CM33_CFG3 = ns_addr;
+-+
+-+	// Start the CM33 propram in normal/debug mode
+-+	debug ? cm33_boot_debug_mode() : cm33_boot_normal_mode();
+-+}
+-+
+-+int do_cm33(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
+-+{
+-+	u32 s_addr, ns_addr;
+-+
+-+	/* need at least two arguments */
+-+	if (argc < 2)
+-+		goto usage;
+-+
+-+	if (strcmp(argv[1], "start_normal") == 0) {
+-+		/* two addresses are required */
+-+		if (argc < 4)
+-+			goto usage;
+-+
+-+		s_addr = simple_strtoul(argv[2], NULL, 16);
+-+		ns_addr = simple_strtoul(argv[3], NULL, 16);
+-+		cm33_start(0, s_addr, ns_addr);
+-+	} else if (strcmp(argv[1], "start_debug") == 0) {
+-+		/* two addresses are required */
+-+		if (argc < 4)
+-+			goto usage;
+-+
+-+		s_addr = simple_strtoul(argv[2], NULL, 16);
+-+		ns_addr = simple_strtoul(argv[3], NULL, 16);
+-+		cm33_start(1, s_addr, ns_addr);
+-+	} else
+-+		goto usage;
+-+
+-+	return 0;
+-+
+-+usage:
+-+	return CMD_RET_USAGE;
+-+}
+-+
+-+static char cm33_help_text[] =
+-+	"\n\tstart_normal [s_addr] [ns_addr] - Reset and start CM33 in normal mode with firmware\n"
+-+	"\t\t\tlocated at address [s_addr] (secure) and [ns_addr] (non secure)\n"
+-+	"\tstart_debug [s_addr] [ns_addr] - Reset and start CM33 in debug mode with firmware\n"
+-+	"\t\t\tlocated at address [s_addr] (secure) and [ns_addr] (non secure)\n"
+-+	"";
+-+
+-+U_BOOT_CMD(
+-+	cm33, CONFIG_SYS_MAXARGS, 1, do_cm33,
+-+	"Control CM33 CPU", cm33_help_text
+-+);
+--- 
+-2.34.1
+-
+diff --git a/meta-rzv2l-vlp4/recipes-bsp/u-boot/files/0003-configs-smarc-rzv2l_defconfig-Enable-CM33-command.patch b/meta-rzv2l-vlp4/recipes-bsp/u-boot/files/0003-configs-smarc-rzv2l_defconfig-Enable-CM33-command.patch
+deleted file mode 100644
+index cf4ab9a..0000000
+--- a/meta-rzv2l-vlp4/recipes-bsp/u-boot/files/0003-configs-smarc-rzv2l_defconfig-Enable-CM33-command.patch
++++ /dev/null
+@@ -1,22 +0,0 @@
+-From fddf26deccdce565e6a91aa050b2958894509fe4 Mon Sep 17 00:00:00 2001
+-From: Nguyen Thanh Tam <tam.nguyen.wr@renesas.com>
+-Date: Wed, 10 Dec 2025 14:25:06 +0700
+-Subject: [PATCH] configs-smarc-rzv2l_defconfig-Enable-CM33-command
+-
+----
+- configs/smarc-rzv2l_defconfig | 2 +-
+- 1 file changed, 1 insertion(+), 1 deletion(-)
+-
+-diff --git a/configs/smarc-rzv2l_defconfig b/configs/smarc-rzv2l_defconfig
+-index ff3e2dd106..ac99c75d51 100644
+---- a/configs/smarc-rzv2l_defconfig
+-+++ b/configs/smarc-rzv2l_defconfig
+-@@ -101,4 +101,4 @@ CONFIG_USB_FUNCTION_MASS_STORAGE=y
+- CONFIG_CMD_USB_MASS_STORAGE=y
+- CONFIG_SUPPORT_EMMC_BOOT=y
+- CONFIG_NET_RANDOM_ETHADDR=y
+--
+-+CONFIG_CMD_CM33=y
+--- 
+-2.34.1
+-
+diff --git a/meta-rzv2l-vlp4/recipes-bsp/u-boot/u-boot_2024.07.bbappend b/meta-rzv2l-vlp4/recipes-bsp/u-boot/u-boot_2024.07.bbappend
+deleted file mode 100644
+index 4754c89..0000000
+--- a/meta-rzv2l-vlp4/recipes-bsp/u-boot/u-boot_2024.07.bbappend
++++ /dev/null
+@@ -1,7 +0,0 @@
+-FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
+-
+-SRC_URI += " \
+-    file://0001-disable-reserved-area-check.patch \
+-    file://0002-cmd-Add-cm33-command.patch \
+-    file://0003-configs-smarc-rzv2l_defconfig-Enable-CM33-command.patch \
+-"
+diff --git a/meta-rzv2l-vlp4/recipes-example/rpmsg-sample/files/Makefile b/meta-rzv2l-vlp4/recipes-example/rpmsg-sample/files/Makefile
+index 76ced09..b7702c1 100644
+--- a/meta-rzv2l-vlp4/recipes-example/rpmsg-sample/files/Makefile
++++ b/meta-rzv2l-vlp4/recipes-example/rpmsg-sample/files/Makefile
+@@ -1,5 +1,5 @@
+ PROGRAM = rpmsg_sample_client
+-CFLAGS = -Wall -O2 -g -DCFG_CA5X
++CFLAGS += -Wall -O2 -DCFG_CA5X
+ LINK_LIBS = -lopen_amp -lmetal -pthread
+ 
+ OBJS += main.o
+diff --git a/meta-rzv2l-vlp4/recipes-example/rpmsg-sample/rpmsg-sample_0.1.bb b/meta-rzv2l-vlp4/recipes-example/rpmsg-sample/rpmsg-sample_0.1.bb
+index 7273353..12bf778 100644
+--- a/meta-rzv2l-vlp4/recipes-example/rpmsg-sample/rpmsg-sample_0.1.bb
++++ b/meta-rzv2l-vlp4/recipes-example/rpmsg-sample/rpmsg-sample_0.1.bb
+@@ -1,13 +1,8 @@
+-#
+-# RPMsg Sample for Linux
+-#
+-
+ SUMMARY = "Sample rpmsg application"
+ SECTION = "examples"
+ LICENSE = "CLOSED"
++
+ DEPENDS = "libmetal open-amp"
+-#INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
+-#INHIBIT_PACKAGE_STRIP = "1"
+ 
+ SRC_URI = " \
+     file://platform_info.c \
+@@ -17,12 +12,16 @@ SRC_URI = " \
+     file://rsc_table.h \
+     file://main.c \
+     file://rz_rproc.c \
+-    file://Makefile"
++    file://Makefile \
++"
++
++S = "${WORKDIR}/sources-unpack"
+ 
+-S = "${WORKDIR}"
++do_compile() {
++    oe_runmake
++}
+ 
+ do_install() {
+     install -d ${D}${bindir}
+     install -m 0755 rpmsg_sample_client ${D}${bindir}
+-}
+-
++}
+\ No newline at end of file
+diff --git a/meta-rzv2l-vlp4/recipes-firmware/cm33-firmware/cm33-firmware_0.1.bb b/meta-rzv2l-vlp4/recipes-firmware/cm33-firmware/cm33-firmware_0.1.bb
+index a0ecc4f..b243794 100644
+--- a/meta-rzv2l-vlp4/recipes-firmware/cm33-firmware/cm33-firmware_0.1.bb
++++ b/meta-rzv2l-vlp4/recipes-firmware/cm33-firmware/cm33-firmware_0.1.bb
+@@ -1,7 +1,7 @@
+ SUMMARY = "CM33 RPMsg firmware"
+ LICENSE = "CLOSED" 
+ 
+-FIRMWARE_NAME = "*.elf" 
++FIRMWARE_NAME = "rzv2l_cm33_rpmsg_linux-rtos_demo.elf" 
+ 
+ EXTRAPATHS:prepend := "${THISDIR}/files:"
+ 
+@@ -13,7 +13,7 @@ INSANE_SKIP:${PN} = "arch"
+ 
+ do_install() {
+     install -d ${D}/usr/lib/firmware
+-    install -m 0644 ${WORKDIR}/${FIRMWARE_NAME} ${D}/usr/lib/firmware/
++    install -m 0644 ${THISDIR}/files/${FIRMWARE_NAME} ${D}/usr/lib/firmware/
+ } 
+ 
+ FILES:${PN} += " \
+diff --git a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0001-Add-rzg2l-smarc-multi-os-dtsi-for-supporting-OpenAMP.patch b/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0001-Add-rzg2l-smarc-multi-os-dtsi-for-supporting-OpenAMP.patch
+deleted file mode 100644
+index addc82f..0000000
+--- a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0001-Add-rzg2l-smarc-multi-os-dtsi-for-supporting-OpenAMP.patch
++++ /dev/null
+@@ -1,86 +0,0 @@
+-From 3fd65407605d5c8660f5ca2ced234f7e6f14e626 Mon Sep 17 00:00:00 2001
+-From: Trung Le <trung.le.uj@renesas.com>
+-Date: Fri, 5 Jul 2024 11:11:38 +0700
+-Subject: [PATCH 1/3] Add rzg2l smarc multi-os dtsi for supporting OpenAMP related
+- stuff
+-
+----
+- .../boot/dts/renesas/r9a07g054l2-smarc.dts    |  1 +
+- .../dts/renesas/rzg2l-smarc-multi-os.dtsi     | 53 +++++++++++++++++++
+- 2 files changed, 54 insertions(+)
+- create mode 100644 arch/arm64/boot/dts/renesas/rzg2l-smarc-multi-os.dtsi
+-
+-diff --git a/arch/arm64/boot/dts/renesas/r9a07g054l2-smarc.dts b/arch/arm64/boot/dts/renesas/r9a07g054l2-smarc.dts
+-index 26a1a2f60f9a..146e326fb9df 100644
+---- a/arch/arm64/boot/dts/renesas/r9a07g054l2-smarc.dts
+-+++ b/arch/arm64/boot/dts/renesas/r9a07g054l2-smarc.dts
+-@@ -11,6 +11,7 @@
+- #include "rzg2l-smarc-pinfunction.dtsi"
+- #include "rz-smarc-common.dtsi"
+- #include "rzg2l-smarc.dtsi"
+-+#include "rzg2l-smarc-multi-os.dtsi"
+- 
+- / {
+- 	model = "Renesas SMARC EVK based on r9a07g054l2";
+-diff --git a/arch/arm64/boot/dts/renesas/rzg2l-smarc-multi-os.dtsi b/arch/arm64/boot/dts/renesas/rzg2l-smarc-multi-os.dtsi
+-new file mode 100644
+-index 000000000000..e1d978d07936
+---- /dev/null
+-+++ b/arch/arm64/boot/dts/renesas/rzg2l-smarc-multi-os.dtsi
+-@@ -0,0 +1,53 @@
+-+// SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+-+/*
+-+ * Device Tree Source for the RZ/{G2L,V2L} SMARC board and support OpenAMP related stuff
+-+ * 
+-+ * Copyright (C) 2024 Renesas Electronics Corp.
+-+ */
+-+
+-+/ {
+-+	vring-ctl0@43000000 {
+-+		compatible = "vring_uio";
+-+		reg = <0x0 0x43000000 0x0 0x100000>;
+-+		no-map;
+-+	};
+-+
+-+	vring-ctl1@43100000 {
+-+		compatible = "vring_uio";
+-+		reg = <0x0 0x43100000 0x0 0x100000>;
+-+		no-map;
+-+	};
+-+
+-+	vring-shm0@43200000 {
+-+		compatible = "shm_uio";
+-+		reg = <0x0 0x43200000 0x0 0x300000>;
+-+		no-map;
+-+	};
+-+
+-+	vring-shm1@43500000 {
+-+		compatible = "shm_uio";
+-+		reg = <0x0 0x43500000 0x0 0x300000>;
+-+		no-map;
+-+	};
+-+
+-+	rsctbl@42f00000 {
+-+		compatible = "shm_uio";
+-+		reg = <0x0 0x42f00000 0x0 0x1000>;
+-+		no-map;
+-+	};
+-+
+-+	mhu-shm@42f01000 {
+-+		compatible = "shm_uio";
+-+		reg = <0x0 0x42f01000 0x0 0x1000>;
+-+		no-map;
+-+	};
+-+
+-+	mbox-uio@10400000 {
+-+		compatible = "mbox_uio";
+-+		reg = <0x0 0x10400000 0x0 0x1000>;
+-+		interrupt-parent = <&gic>;
+-+		interrupts = <GIC_SPI 75 IRQ_TYPE_LEVEL_HIGH>;
+-+		status = "okay";
+-+	};
+-+};
+-+
+--- 
+-2.25.1
+-
+diff --git a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0002-arm64-dts-renesas-rz-smarc-Disable-OSTM2.patch b/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0002-arm64-dts-renesas-rz-smarc-Disable-OSTM2.patch
+deleted file mode 100644
+index 33de21e..0000000
+--- a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0002-arm64-dts-renesas-rz-smarc-Disable-OSTM2.patch
++++ /dev/null
+@@ -1,26 +0,0 @@
+-From ea7d17188769ae5526b6091bd283d5d8b4a1708c Mon Sep 17 00:00:00 2001
+-From: Canh Dao <canh.dao.ct@renesas.com>
+-Date: Sun, 17 Apr 2022 19:10:36 +0700
+-Subject: [PATCH 2/3] arm64: dts: renesas: rz-smarc: Disable OSTM2 to be used in
+- FreeRTOS
+-
+----
+- arch/arm64/boot/dts/renesas/rzg2l-smarc-som.dtsi | 2 +-
+- 1 file changed, 1 insertion(+), 1 deletion(-)
+-
+-diff --git a/arch/arm64/boot/dts/renesas/rzg2l-smarc-som.dtsi b/arch/arm64/boot/dts/renesas/rzg2l-smarc-som.dtsi
+-index 7a138ba74265..bec89ab5dc0e 100644
+---- a/arch/arm64/boot/dts/renesas/rzg2l-smarc-som.dtsi
+-+++ b/arch/arm64/boot/dts/renesas/rzg2l-smarc-som.dtsi
+-@@ -189,7 +189,7 @@ &ostm1 {
+- };
+- 
+- &ostm2 {
+--	status = "okay";
+-+	status = "disabled";
+- };
+- 
+- &pinctrl {
+--- 
+-2.25.1
+-
+diff --git a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0003-clk-renesas-rzv2l-Set-SCIF2-OSTM2-as-critical.patch b/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0003-clk-renesas-rzv2l-Set-SCIF2-OSTM2-as-critical.patch
+deleted file mode 100644
+index 34694ee..0000000
+--- a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0003-clk-renesas-rzv2l-Set-SCIF2-OSTM2-as-critical.patch
++++ /dev/null
+@@ -1,25 +0,0 @@
+-From df85d82460886c9c454f9a52b4cba3f756de1713 Mon Sep 17 00:00:00 2001
+-From: Canh Dao <canh.dao.ct@renesas.com>
+-Date: Thu, 14 Apr 2022 00:23:42 +0700
+-Subject: [PATCH 3/3] clk: renesas: rzv2l: Set SCIF2, OSTM2 as critical clock
+-
+----
+- drivers/clk/renesas/r9a07g044-cpg.c | 2 ++
+- 1 file changed, 2 insertions(+)
+-
+-diff --git a/drivers/clk/renesas/r9a07g044-cpg.c b/drivers/clk/renesas/r9a07g044-cpg.c
+-index e27caa075af7..9e904d2e8180 100644
+---- a/drivers/clk/renesas/r9a07g044-cpg.c
+-+++ b/drivers/clk/renesas/r9a07g044-cpg.c
+-@@ -449,6 +449,8 @@ static const unsigned int r9a07g044_crit_mod_clks[] __initconst = {
+- 	MOD_CLK_BASE + R9A07G044_IA55_PCLK,
+- 	MOD_CLK_BASE + R9A07G044_IA55_CLK,
+- 	MOD_CLK_BASE + R9A07G044_DMAC_ACLK,
+-+        MOD_CLK_BASE + R9A07G044_SCIF2_CLK_PCK,
+-+        MOD_CLK_BASE + R9A07G044_OSTM2_PCLK,
+- };
+- 
+- const struct rzg2l_cpg_info r9a07g044_cpg_info = {
+--- 
+-2.25.1
+-
+diff --git a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0004-clk-renesas-r9a07g054-Add-I2-clock.patch b/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0004-clk-renesas-r9a07g054-Add-I2-clock.patch
+deleted file mode 100644
+index bacfe6c..0000000
+--- a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0004-clk-renesas-r9a07g054-Add-I2-clock.patch
++++ /dev/null
+@@ -1,54 +0,0 @@
+-From 646945937446c2f0ce12b49ca19ac4451fc5a993 Mon Sep 17 00:00:00 2001
+-From: Nguyen Thanh Tam <tam.nguyen.wr@renesas.com>
+-Date: Wed, 3 Dec 2025 16:04:19 +0700
+-Subject: [PATCH] clk-renesas-r9a07g054-Add-I2-clock
+-
+----
+- drivers/clk/renesas/r9a07g044-cpg.c | 3 ++-
+- drivers/clk/renesas/rzg2l-cpg.h     | 2 ++
+- 2 files changed, 4 insertions(+), 1 deletion(-)
+-
+-diff --git a/drivers/clk/renesas/r9a07g044-cpg.c b/drivers/clk/renesas/r9a07g044-cpg.c
+-index 6c1a5e6b4170..5edc1cedece1 100644
+---- a/drivers/clk/renesas/r9a07g044-cpg.c
+-+++ b/drivers/clk/renesas/r9a07g044-cpg.c
+-@@ -147,7 +147,7 @@ static const char * const sel_gpu2[] = { ".pll6", ".pll3_div2_2" };
+- static const u32 mtable_sdhi[] = { 1, 2, 3 };
+- 
+- static const struct {
+--	struct cpg_core_clk common[56];
+-+	struct cpg_core_clk common[57];
+- #ifdef CONFIG_CLK_R9A07G054
+- 	struct cpg_core_clk drp[3];
+- #endif
+-@@ -200,6 +200,7 @@ static const struct {
+- 
+- 		/* Core output clk */
+- 		DEF_DIV("I", R9A07G044_CLK_I, CLK_PLL1, DIVPL1A, dtable_1_8),
+-+		DEF_DIV("I2", R9A07G054_CLK_I2, CLK_PLL3_DIV2_4, DIVPL3CLK200FIX, dtable_1_32),
+- 		DEF_DIV("P0", R9A07G044_CLK_P0, CLK_PLL2_DIV2_8, DIVPL2A, dtable_1_32),
+- 		DEF_FIXED("P0_DIV2", R9A07G044_CLK_P0_DIV2, R9A07G044_CLK_P0, 1, 2),
+- 		DEF_FIXED("TSU", R9A07G044_CLK_TSU, CLK_PLL2_DIV2_10, 1, 1),
+-diff --git a/drivers/clk/renesas/rzg2l-cpg.h b/drivers/clk/renesas/rzg2l-cpg.h
+-index 02dacf7bbc1f..ad4f3f40a01a 100644
+---- a/drivers/clk/renesas/rzg2l-cpg.h
+-+++ b/drivers/clk/renesas/rzg2l-cpg.h
+-@@ -20,6 +20,7 @@
+- #define CPG_PL1_DDIV		(0x200)
+- #define CPG_PL2_DDIV		(0x204)
+- #define CPG_PL3A_DDIV		(0x208)
+-+#define CPG_PL3B_DDIV           (0x20C)
+- #define CPG_PL6_DDIV		(0x210)
+- #define CPG_PL3C_SDIV		(0x214)
+- #define CPG_CLKSTATUS		(0x280)
+-@@ -61,6 +62,7 @@
+- #define DIVPL3C		DDIV_PACK(CPG_PL3A_DDIV, 8, 3)
+- #define DIVPL3E		DDIV_PACK(CPG_PL3C_SDIV, 8, 5)
+- #define DIVGPU		DDIV_PACK(CPG_PL6_DDIV, 0, 2)
+-+#define DIVPL3CLK200FIX        DDIV_PACK(CPG_PL3B_DDIV, 0, 3)
+- 
+- #define SEL_PLL_PACK(offset, bitpos, size) \
+- 		(((offset) << 20) | ((bitpos) << 12) | ((size) << 8))
+--- 
+-2.34.1
+-
+diff --git a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0005-clk-renesas-r9a07g054-Add-CM33-clock-and-reset-signal.patch b/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0005-clk-renesas-r9a07g054-Add-CM33-clock-and-reset-signal.patch
+deleted file mode 100644
+index 9591f42..0000000
+--- a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0005-clk-renesas-r9a07g054-Add-CM33-clock-and-reset-signal.patch
++++ /dev/null
+@@ -1,87 +0,0 @@
+-From d76005a3dc88680aa5fe8ce9806fabac9c687b72 Mon Sep 17 00:00:00 2001
+-From: Nguyen Thanh Tam <tam.nguyen.wr@renesas.com>
+-Date: Wed, 3 Dec 2025 17:27:06 +0700
+-Subject: [PATCH] clk-renesas-r9a07g054-Add-CM33-clock-and-reset-signal
+-
+----
+- drivers/clk/renesas/r9a07g044-cpg.c       | 13 ++++++++++---
+- include/dt-bindings/clock/r9a07g054-cpg.h |  5 +++++
+- 2 files changed, 15 insertions(+), 3 deletions(-)
+-
+-diff --git a/drivers/clk/renesas/r9a07g044-cpg.c b/drivers/clk/renesas/r9a07g044-cpg.c
+-index 5edc1cedece1..db1d1db8dbd2 100644
+---- a/drivers/clk/renesas/r9a07g044-cpg.c
+-+++ b/drivers/clk/renesas/r9a07g044-cpg.c
+-@@ -236,7 +236,7 @@ static const struct {
+- };
+- 
+- static const struct {
+--	struct rzg2l_mod_clk common[84];
+-+	struct rzg2l_mod_clk common[86];
+- #ifdef CONFIG_CLK_R9A07G054
+- 	struct rzg2l_mod_clk drp[5];
+- #endif
+-@@ -340,6 +340,10 @@ static const struct {
+- 					0x56c, 0),
+- 		DEF_MOD("lcdc_clk_d",	R9A07G044_LCDC_CLK_D, R9A07G044_CLK_M3,
+- 					0x56c, 1),
+-+		DEF_MOD("cm33_clkin",   R9A07G054_CM33_CLKIN, R9A07G054_CLK_I2,
+-+					0x504, 0),
+-+		DEF_MOD("cm33_tsclk",   R9A07G054_CM33_TSCLK, R9A07G054_OSCCLK,
+-+					0x504, 1),
+- 		DEF_MOD("ssi0_pclk",	R9A07G044_SSI0_PCLK2, R9A07G044_CLK_P0,
+- 					0x570, 0),
+- 		DEF_MOD("ssi0_sfr",	R9A07G044_SSI0_PCLK_SFR, R9A07G044_CLK_P0,
+-@@ -496,6 +500,9 @@ static struct rzg2l_reset r9a07g044_resets[] = {
+- 	DEF_RST(R9A07G044_TSU_PRESETN, 0x8ac, 0),
+- #ifdef CONFIG_CLK_R9A07G054
+- 	DEF_RST(R9A07G054_STPAI_ARESETN, 0x8e8, 0),
+-+	DEF_RST(R9A07G054_CM33_NPORESET, 0x804, 0),
+-+	DEF_RST(R9A07G054_CM33_NSYSRESET, 0x804, 1),
+-+	DEF_RST(R9A07G054_CM33_MISCRESETN, 0x804, 2),
+- #endif
+- };
+- 
+-@@ -556,7 +563,7 @@ const struct rzg2l_cpg_info r9a07g054_cpg_info = {
+- 	/* Module Clocks */
+- 	.mod_clks = mod_clks.common,
+- 	.num_mod_clks = ARRAY_SIZE(mod_clks.common) + ARRAY_SIZE(mod_clks.drp),
+--	.num_hw_mod_clks = R9A07G054_STPAI_ACLK_DRP + 1,
+-+	.num_hw_mod_clks = R9A07G054_CM33_TSCLK + 1,
+- 
+- 	/* No PM Module Clocks */
+- 	.no_pm_mod_clks = r9a07g044_no_pm_mod_clks,
+-@@ -564,7 +571,7 @@ const struct rzg2l_cpg_info r9a07g054_cpg_info = {
+- 
+- 	/* Resets */
+- 	.resets = r9a07g044_resets,
+--	.num_resets = R9A07G054_STPAI_ARESETN + 1, /* Last reset ID + 1 */
+-+	.num_resets = R9A07G054_CM33_MISCRESETN + 1, /* Last reset ID + 1 */
+- 
+- 	.has_clk_mon_regs = true,
+- };
+-diff --git a/include/dt-bindings/clock/r9a07g054-cpg.h b/include/dt-bindings/clock/r9a07g054-cpg.h
+-index 43f4dbda872c..1c82ea85dd0f 100644
+---- a/include/dt-bindings/clock/r9a07g054-cpg.h
+-+++ b/include/dt-bindings/clock/r9a07g054-cpg.h
+-@@ -138,6 +138,8 @@
+- #define R9A07G054_STPAI_MCLK		99
+- #define R9A07G054_STPAI_DCLKIN		100
+- #define R9A07G054_STPAI_ACLK_DRP	101
+-+#define R9A07G054_CM33_CLKIN            102
+-+#define R9A07G054_CM33_TSCLK            103
+- 
+- /* R9A07G054 Resets */
+- #define R9A07G054_CA55_RST_1_0		0
+-@@ -225,5 +227,8 @@
+- #define R9A07G054_ADC_ADRST_N		82
+- #define R9A07G054_TSU_PRESETN		83
+- #define R9A07G054_STPAI_ARESETN		84
+-+#define R9A07G054_CM33_NPORESET         85
+-+#define R9A07G054_CM33_NSYSRESET        86
+-+#define R9A07G054_CM33_MISCRESETN       87
+- 
+- #endif /* __DT_BINDINGS_CLOCK_R9A07G054_CPG_H__ */
+--- 
+-2.34.1
+-
+diff --git a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0006-arm64-dts-renesas-rzv2l-smarc-Add-rproc-node.patch b/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0006-arm64-dts-renesas-rzv2l-smarc-Add-rproc-node.patch
+deleted file mode 100644
+index 1d932c4..0000000
+--- a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0006-arm64-dts-renesas-rzv2l-smarc-Add-rproc-node.patch
++++ /dev/null
+@@ -1,74 +0,0 @@
+-From 5bb7bccc0457b7e24ea5fdb4a3046f9242f817d2 Mon Sep 17 00:00:00 2001
+-From: Nguyen Thanh Tam <tam.nguyen.wr@renesas.com>
+-Date: Wed, 3 Dec 2025 16:13:16 +0700
+-Subject: [PATCH] arm64-dts-renesas-rzv2l-smarc-Add-rproc-node
+-
+----
+- arch/arm64/boot/dts/renesas/r9a07g054.dtsi    | 21 +++++++++++++++++++
+- .../boot/dts/renesas/rzg2l-smarc-som.dtsi     | 18 ++++++++++++++++
+- 2 files changed, 39 insertions(+)
+-
+-diff --git a/arch/arm64/boot/dts/renesas/r9a07g054.dtsi b/arch/arm64/boot/dts/renesas/r9a07g054.dtsi
+-index b6a4f13b14bc..2f6d1f4820b7 100644
+---- a/arch/arm64/boot/dts/renesas/r9a07g054.dtsi
+-+++ b/arch/arm64/boot/dts/renesas/r9a07g054.dtsi
+-@@ -1329,6 +1329,27 @@ edac: edac@11410000 {
+- 			interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>;
+- 			interrupt-names = "ecc_irq";
+- 		};
+-+                cm33_rproc: cm33 {
+-+                        compatible = "renesas,rz-cm33";
+-+                        reg = <0x0 0x00010000 0x0 0x0000800>,
+-+                                <0x0 0x0001FF80 0x0 0x0000080>,
+-+                                <0x0 0x40010000 0x0 0x3EF0000>;
+-+                        reg-names = "cm33_sram_ns", "cm33_sram_s", "cm33_ddr";
+-+                        memory-region = <&vdev0vring0>, <&vdev0vring1>, <&vdev0buffer>;
+-+                        renesas,rz-cpg = <&cpg>;
+-+                        renesas,rz-sysc = <&sysc>;
+-+                        renesas,rz-bootaddrs = <0x1001FF80>, <0x00010000>;
+-+                        renesas,rz-rsctbl = <0x42F00000>;
+-+                        clocks = <&cpg CPG_MOD R9A07G054_CM33_CLKIN>,
+-+                                 <&cpg CPG_MOD R9A07G054_CM33_TSCLK>;
+-+                        clock-names = "clkin", "tsclk";
+-+                        resets = <&cpg R9A07G054_CM33_NPORESET>,
+-+                                        <&cpg R9A07G054_CM33_NSYSRESET>,
+-+                                        <&cpg R9A07G054_CM33_MISCRESETN>;
+-+                        reset-names = "nporeset", "nsysreset", "miscresetn";
+-+                        power-domains = <&cpg>;
+-+                        status = "okay";
+-+                };
+- 
+- 		dmac: dma-controller@11820000 {
+- 			compatible = "renesas,r9a07g054-dmac",
+-diff --git a/arch/arm64/boot/dts/renesas/rzg2l-smarc-som.dtsi b/arch/arm64/boot/dts/renesas/rzg2l-smarc-som.dtsi
+-index 2294333325b8..a3422c4073d0 100644
+---- a/arch/arm64/boot/dts/renesas/rzg2l-smarc-som.dtsi
+-+++ b/arch/arm64/boot/dts/renesas/rzg2l-smarc-som.dtsi
+-@@ -52,6 +52,24 @@ mmp_reserved: linux,multimedia {
+- 			reusable;
+- 			reg = <0x0 0x68000000 0x0 0x8000000>;
+- 		};
+-+
+-+                vdev0vring0: vdev0vring0@0x43000000 {
+-+                        compatible = "shared-dma-pool";
+-+                        reg = <0x0 0x43000000 0x0 0x50000>;
+-+                        no-map;
+-+                };
+-+
+-+                vdev0vring1: vdev0vring1@0x43050000 {
+-+                        compatible = "shared-dma-pool";
+-+                        reg = <0x0 0x43050000 0x0 0x50000>;
+-+                        no-map;
+-+                };
+-+
+-+                vdev0buffer: vdev0buffer@0x43200000 {
+-+                        compatible = "shared-dma-pool";
+-+                        reg = <0x0 0x43200000 0x0 0x300000>;
+-+                        no-map;
+-+                };
+- 	};
+- 
+- 	mmngr {
+--- 
+-2.34.1
+-
+diff --git a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0007-Add-bindings-for-RZ-remoteproc-driver.patch b/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0007-Add-bindings-for-RZ-remoteproc-driver.patch
+deleted file mode 100644
+index d45f4d5..0000000
+--- a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0007-Add-bindings-for-RZ-remoteproc-driver.patch
++++ /dev/null
+@@ -1,155 +0,0 @@
+-From 56236141604ea8696086058614685873d93b74c8 Mon Sep 17 00:00:00 2001
+-From: Nguyen Thanh Tam <tam.nguyen.wr@renesas.com>
+-Date: Wed, 3 Dec 2025 16:17:02 +0700
+-Subject: [PATCH] Add-bindings-for-RZ-remoteproc-driver
+-
+----
+- .../bindings/remoteproc/renesas,rz-rproc.yaml | 136 ++++++++++++++++++
+- 1 file changed, 136 insertions(+)
+- create mode 100644 Documentation/devicetree/bindings/remoteproc/renesas,rz-rproc.yaml
+-
+-diff --git a/Documentation/devicetree/bindings/remoteproc/renesas,rz-rproc.yaml b/Documentation/devicetree/bindings/remoteproc/renesas,rz-rproc.yaml
+-new file mode 100644
+-index 000000000000..4c59f68e97c8
+---- /dev/null
+-+++ b/Documentation/devicetree/bindings/remoteproc/renesas,rz-rproc.yaml
+-@@ -0,0 +1,136 @@
+-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+-+%YAML 1.2
+-+---
+-+$id: "http://devicetree.org/schemas/remoteproc/renesas,rz-rproc.yaml#"
+-+$schema: "http://devicetree.org/meta-schemas/core.yaml#"
+-+
+-+title: Renesas RZ remote processor controller bindings
+-+
+-+description:
+-+  This document defines the binding for the remoteproc component that loads and
+-+  boots firmwares on the RZ/G2 chipset.
+-+
+-+properties:
+-+  compatible:
+-+    const: renesas,rz-cm33
+-+
+-+  reg:
+-+    description:
+-+      Address ranges of the SRAM and DDR memories used by the remote
+-+      processor.
+-+    maxItems: 3
+-+
+-+  reg-names:
+-+    maxItems: 3
+-+
+-+  memory-region:
+-+    description:
+-+      List of phandles to the reserved memory regions associated with the
+-+      remoteproc device. This is variable and describes the memories shared with
+-+      the remote processor (e.g. remoteproc firmware and carveouts, rpmsg
+-+      vrings, ...).
+-+      (see ../reserved-memory/reserved-memory.txt)
+-+
+-+  renesas,rz-cpg:
+-+    description: phandle to regmap of Clock Pulse Generator (CPG)
+-+    maxItems: 1
+-+
+-+  renesas,rz-sysc:
+-+    description: phandle to regmap of System Controller (SYSC)
+-+    maxItems: 1
+-+
+-+  renesas,rz-bootaddrs:
+-+    description: remote processor's boot addresses. 
+-+        1st cell: secure vector address
+-+        2nd cell: non-secure vector address
+-+    maxItems: 2
+-+
+-+  renesas,rz-autoboot:
+-+    $ref: /schemas/types.yaml#/definitions/flag
+-+    description:
+-+      If defined, when remoteproc is probed, it loads the default firmware and
+-+      starts the remote processor.
+-+
+-+  renesas,rz-rsctbl:
+-+    description:
+-+      Physical address of resource table. When remote processor is already powered
+-+      up by u-boot, op-tee..., this value is used to parse the loaded resource table.
+-+    maxItems: 1
+-+
+-+  clocks:
+-+    maxItems: 2
+-+
+-+  clock-names:
+-+    maxItems: 2
+-+
+-+  resets:
+-+    maxItems: 3
+-+
+-+  reset-names:
+-+    maxItems: 3
+-+
+-+  power-domains:
+-+    maxItems: 1
+-+
+-+required:
+-+  - compatible
+-+  - reg
+-+  - memory-region
+-+  - renesas,rz-cpg
+-+  - renesas,rz-sysc 
+-+  - renesas,rz-bootaddrs
+-+  - renesas,rz-rsctbl
+-+  - clocks
+-+  - resets
+-+  - reset-names
+-+  - power-domains
+-+
+-+additionalProperties: false
+-+
+-+examples:
+-+  - |
+-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
+-+    #include <dt-bindings/clock/r9a07g054-cpg.h>
+-+
+-+    reserved-memory {
+-+            vdev0vring0: vdev0vring0@0x43000000 {
+-+                    compatible = "shared-dma-pool";
+-+                    reg = <0x0 0x43000000 0x0 0x50000>;
+-+                    no-map;
+-+            };
+-+
+-+            vdev0vring1: vdev0vring1@0x43050000 {
+-+                    compatible = "shared-dma-pool";
+-+                    reg = <0x0 0x43050000 0x0 0x50000>;
+-+                    no-map;
+-+            };
+-+
+-+            vdev0buffer: vdev0buffer@0x43200000 {
+-+                    compatible = "shared-dma-pool";
+-+                    reg = <0x0 0x43200000 0x0 0x300000>;
+-+                    no-map;
+-+            };
+-+    }
+-+
+-+    cm33_rproc: cm33 {
+-+            compatible = "renesas,rz-cm33";
+-+            reg = <0x0 0x00010000 0x0 0x0000800>,
+-+                  <0x0 0x0001FF80 0x0 0x0000080>,
+-+                  <0x0 0x40010000 0x0 0x3EF0000>;
+-+            reg-names = "cm33_sram_ns", "cm33_sram_s", "cm33_ddr";
+-+            memory-region = <&vdev0vring0>, <&vdev0vring1>, <&vdev0buffer>;
+-+            renesas,rz-cpg = <&cpg>;
+-+            renesas,rz-sysc = <&sysc>;
+-+            renesas,rz-bootaddrs = <0x1001FF80>, <0x00010000>;
+-+            renesas,rz-rsctbl = <0x42F00000>;
+-+            clocks = <&cpg CPG_MOD R9A07G054_CM33_CLKIN>,
+-+                     <&cpg CPG_MOD R9A07G054_CM33_TSCLK>;
+-+            clock-names = "clkin", "tsclk";
+-+            resets = <&cpg R9A07G054_CM33_NPORESET>,
+-+                     <&cpg R9A07G054_CM33_NSYSRESET>,
+-+                     <&cpg R9A07G054_CM33_MISCRESETN>;
+-+            reset-names = "nporeset", "nsysreset", "miscresetn";
+-+            power-domains = <&cpg>;
+-+            status = "okay";
+-+    };
+-+...
+--- 
+-2.34.1
+-
+diff --git a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0008-Add-RZ-remoteproc-driver.patch b/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0008-Add-RZ-remoteproc-driver.patch
+deleted file mode 100644
+index 0b7f6d6..0000000
+--- a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/0008-Add-RZ-remoteproc-driver.patch
++++ /dev/null
+@@ -1,554 +0,0 @@
+-From 9b1cd012589887f17dbb5cd44a6b2386b823095a Mon Sep 17 00:00:00 2001
+-From: Nguyen Thanh Tam <tam.nguyen.wr@renesas.com>
+-Date: Wed, 3 Dec 2025 18:08:48 +0700
+-Subject: [PATCH] Add-RZ-remoteproc-driver
+-
+----
+- drivers/remoteproc/Kconfig    |   7 +
+- drivers/remoteproc/Makefile   |   1 +
+- drivers/remoteproc/rz_rproc.c | 506 ++++++++++++++++++++++++++++++++++
+- 3 files changed, 514 insertions(+)
+- create mode 100644 drivers/remoteproc/rz_rproc.c
+-
+-diff --git a/drivers/remoteproc/Kconfig b/drivers/remoteproc/Kconfig
+-index d93113b6ffaa..8cb396a3a107 100644
+---- a/drivers/remoteproc/Kconfig
+-+++ b/drivers/remoteproc/Kconfig
+-@@ -352,6 +352,13 @@ config TI_K3_R5_REMOTEPROC
+- 	  It's safe to say N here if you're not interested in utilizing
+- 	  a slave processor.
+- 
+-+config RZ_REMOTEPROC
+-+	tristate "Renesas RZ remoteproc support"
+-+	select MFD_SYSCON
+-+	help
+-+	  Say y here to support RZ's remote processor (CM33) via the remote
+-+	  processor framework.
+-+
+- endif # REMOTEPROC
+- 
+- endmenu
+-diff --git a/drivers/remoteproc/Makefile b/drivers/remoteproc/Makefile
+-index 5478c7cb9e07..0c8e07844d7f 100644
+---- a/drivers/remoteproc/Makefile
+-+++ b/drivers/remoteproc/Makefile
+-@@ -38,3 +38,4 @@ obj-$(CONFIG_ST_SLIM_REMOTEPROC)	+= st_slim_rproc.o
+- obj-$(CONFIG_STM32_RPROC)		+= stm32_rproc.o
+- obj-$(CONFIG_TI_K3_DSP_REMOTEPROC)	+= ti_k3_dsp_remoteproc.o
+- obj-$(CONFIG_TI_K3_R5_REMOTEPROC)	+= ti_k3_r5_remoteproc.o
+-+obj-$(CONFIG_RZ_REMOTEPROC)            += rz_rproc.o
+-diff --git a/drivers/remoteproc/rz_rproc.c b/drivers/remoteproc/rz_rproc.c
+-new file mode 100644
+-index 000000000000..27a63ab249c5
+---- /dev/null
+-+++ b/drivers/remoteproc/rz_rproc.c
+-@@ -0,0 +1,506 @@
+-+// SPDX-License-Identifier: GPL-2.0
+-+
+-+#include <linux/module.h>
+-+#include <linux/of_device.h>
+-+#include <linux/of_reserved_mem.h>
+-+#include <linux/remoteproc.h>
+-+#include <linux/reset.h>
+-+#include <linux/mfd/syscon.h>
+-+#include <linux/regmap.h>
+-+#include <linux/pm_runtime.h>
+-+
+-+#include "remoteproc_internal.h"
+-+
+-+#define CM33_SRAM_START	0x00000000
+-+#define CM33_SRAM_END		0x3FFFFFFF
+-+#define CM33_DDR_START		0x60000000
+-+#define CM33_DDR_END		0x7FFFFFFF
+-+
+-+#define CA55_SRAM_START		0x00000000
+-+#define CA55_DDR_START		0x40000000
+-+#define CA55_DDR_CM33_START	0x40010000
+-+#define CA55_DDR_CM33_END	0x43EFFFFF
+-+
+-+#define CM33_TO_CA55_MASK	0x0FFFFFFF
+-+#define CPG_CLKON_CM33_CLK0_ON_MASK	0x00000001
+-+
+-+#define CPG_SIPLL3_MON	0x13C	// PLL3 (SSCG) Monitor Register
+-+#define PLL3_RESET	BIT(0)	// SSCG PLL3 Operating mode monitoring
+-+#define CPG_CLKON_CM33	0x504	// Clock Control Register Cortex-M33
+-+#define CPG_CLKMON_CM33	0x684	// Clock Monitor Register Cortex-M33
+-+#define CPG_RST_CM33	0x804	// Reset Control Register Cortex-M33
+-+#define CPG_RSTMON_CM33	0x984	// Reset Monitor Register Cortex-M33
+-+
+-+#define SYS_CM33_CFG0	0x804	// CM33 Config Register0
+-+#define SYS_CM33_CFG1	0x808	// CM33 Config Register1
+-+#define SYS_CM33_CFG2	0x80C	// CM33 Config Register2
+-+#define SYS_CM33_CFG3	0x810	// CM33 Config Register3
+-+#define SYS_CM33_CTL	0x818	// CM33 Control Register
+-+#define SYS_LSI_MODE	0xA00	// LSI Mode Signal Register
+-+#define SYS_LP_CM33CTL1	0xD28	// Lowpower Sequence CM33 Control Register1
+-+
+-+#define RSC_TBL_SIZE	0x1000
+-+
+-+struct rz_rproc_pdata {
+-+	struct reset_control *nporeset;
+-+	struct reset_control *nsysreset;
+-+	struct reset_control *miscresetn;
+-+	struct regmap *cpg_regmap;
+-+	struct regmap *sysc_regmap;
+-+	u32 bootaddr[2];
+-+};
+-+
+-+static int rz_rproc_mem_alloc(struct rproc *rproc,
+-+				 struct rproc_mem_entry *mem)
+-+{
+-+	struct device *dev = rproc->dev.parent;
+-+	void __iomem *va;
+-+
+-+	dev_dbg(dev, "map memory: %pa+%zx\n", &mem->dma, mem->len);
+-+	va = devm_ioremap_wc(dev, mem->dma, mem->len);
+-+	if (!va) {
+-+		dev_err(dev, "unable to map memory region: %pa+%zx\n",
+-+			&mem->dma, mem->len);
+-+		return -ENOMEM;
+-+	}
+-+
+-+	/* Update memory entry va */
+-+	mem->va = va;
+-+
+-+	return 0;
+-+}
+-+
+-+static int rz_rproc_mem_release(struct rproc *rproc,
+-+				   struct rproc_mem_entry *mem)
+-+{
+-+	struct device *dev = rproc->dev.parent;
+-+
+-+	dev_dbg(dev, "unmap memory: %pa\n", &mem->dma);
+-+	devm_iounmap(dev, mem->va);
+-+
+-+	return 0;
+-+}
+-+
+-+static int rz_rproc_prepare(struct rproc *rproc)
+-+{
+-+	struct device *dev = rproc->dev.parent;
+-+	struct platform_device *pdev = to_platform_device(dev);
+-+	struct device_node *np = dev->of_node;
+-+	struct of_phandle_iterator it;
+-+	struct rproc_mem_entry *mem;
+-+	struct reserved_mem *rmem;
+-+	struct resource *res;
+-+	int index = 0;
+-+	int i;
+-+	u32 da;
+-+
+-+	/* Register resources */
+-+	for (i = 0; i < pdev->num_resources; i++) {
+-+		res = pdev->resource + i;
+-+
+-+		/* No need to translate pa to da, RZ use same map */
+-+		da = res->start;
+-+
+-+		mem = rproc_mem_entry_init(dev, NULL,
+-+					   res->start,
+-+					   resource_size(res), da,
+-+					   rz_rproc_mem_alloc,
+-+					   rz_rproc_mem_release,
+-+					   res->name);
+-+		if (!mem)
+-+			return -ENOMEM;
+-+
+-+		rproc_add_carveout(rproc, mem);
+-+	}
+-+
+-+	/* Register associated reserved memory regions */
+-+	of_phandle_iterator_init(&it, np, "memory-region", NULL, 0);
+-+	while (of_phandle_iterator_next(&it) == 0) {
+-+		rmem = of_reserved_mem_lookup(it.node);
+-+		if (!rmem) {
+-+			dev_err(dev, "unable to acquire memory-region\n");
+-+			return -EINVAL;
+-+		}
+-+
+-+		if (rmem->base > U32_MAX)
+-+			return -EINVAL;
+-+
+-+		/* No need to translate pa to da, RZ use same map */
+-+		da = rmem->base;
+-+
+-+		/*  No need to map vdev buffer */
+-+		if (strcmp(it.node->name, "vdev0buffer")) {
+-+			mem = rproc_mem_entry_init(dev, NULL,
+-+						   rmem->base,
+-+						   rmem->size, da,
+-+						   rz_rproc_mem_alloc,
+-+						   rz_rproc_mem_release,
+-+						   it.node->name);
+-+		} else {
+-+			mem = rproc_of_resm_mem_entry_init(dev, index,
+-+							   rmem->size,
+-+							   rmem->base,
+-+							   it.node->name);
+-+		}
+-+
+-+		if (!mem)
+-+			return -ENOMEM;
+-+
+-+		rproc_add_carveout(rproc, mem);
+-+		index++;
+-+	}
+-+
+-+	return 0;
+-+}
+-+
+-+static int rz_rproc_start(struct rproc *rproc)
+-+{
+-+	struct rz_rproc_pdata *pdata = rproc->priv;
+-+	uint32_t cpg_sipll3_mon_val;
+-+	uint32_t cpg_clkmon_cm33_val;
+-+	uint32_t cpg_rstmon_cm33_val;
+-+
+-+	/* Configure secure and non-secure SysTick based on SSL setting */
+-+	regmap_read(pdata->cpg_regmap, CPG_SIPLL3_MON, &cpg_sipll3_mon_val);
+-+	if ((cpg_sipll3_mon_val & PLL3_RESET) == 0x1) {
+-+		/* SSCG is enabled */
+-+		regmap_write(pdata->sysc_regmap, SYS_CM33_CFG0, 0x01003CE5);
+-+		regmap_write(pdata->sysc_regmap, SYS_CM33_CFG1, 0x01003CE5);
+-+	} else {
+-+		/* SSCG is disabled */
+-+		regmap_write(pdata->sysc_regmap, SYS_CM33_CFG0, 0x00003D08);
+-+		regmap_write(pdata->sysc_regmap, SYS_CM33_CFG1, 0x00003D08);
+-+	}
+-+
+-+	/* Set CM33 secure and non-secure vectore address */
+-+	regmap_write(pdata->sysc_regmap, SYS_CM33_CFG2, pdata->bootaddr[0]);
+-+	regmap_write(pdata->sysc_regmap, SYS_CM33_CFG3, pdata->bootaddr[1]);
+-+
+-+	regmap_write(pdata->cpg_regmap, CPG_CLKON_CM33, 0x00010001);
+-+
+-+	do
+-+	{
+-+		regmap_read(pdata->cpg_regmap, CPG_CLKMON_CM33, &cpg_clkmon_cm33_val);
+-+	} while ((cpg_clkmon_cm33_val & CPG_CLKON_CM33_CLK0_ON_MASK) == 0);
+-+
+-+	regmap_write(pdata->cpg_regmap, CPG_RST_CM33, 0x00040004);
+-+	regmap_write(pdata->cpg_regmap, CPG_RST_CM33, 0x00070007);
+-+
+-+	do
+-+	{
+-+		regmap_read(pdata->cpg_regmap, CPG_RSTMON_CM33, &cpg_rstmon_cm33_val);
+-+	} while ((cpg_rstmon_cm33_val & 0x00000007) != 0);
+-+
+-+	return 0;
+-+}
+-+
+-+static int rz_rproc_stop(struct rproc *rproc)
+-+{
+-+	struct device *dev = rproc->dev.parent;
+-+	struct rz_rproc_pdata *pdata = rproc->priv;
+-+	struct rproc_mem_entry *carveout;
+-+	int ret;
+-+
+-+	/* Clear registered carveouts */
+-+	list_for_each_entry(carveout, &rproc->carveouts, node) {
+-+		if (!carveout->va)
+-+			continue;
+-+
+-+		memset(carveout->va, 0, carveout->len);
+-+	}
+-+
+-+	ret = reset_control_assert(pdata->nporeset);
+-+	if (ret) {
+-+		dev_err(dev, "failed to assert nporeset\n");
+-+		return ret;
+-+	}
+-+
+-+	ret = reset_control_assert(pdata->nsysreset);
+-+	if (ret) {
+-+		dev_err(dev, "failed to assert nsysreset\n");
+-+		return ret;
+-+	}
+-+
+-+	ret = reset_control_assert(pdata->miscresetn);
+-+	if (ret) {
+-+		dev_err(dev, "failed to assert miscresetn\n");
+-+		return ret;
+-+	}
+-+
+-+	pm_runtime_put(dev);
+-+
+-+	return 0;
+-+}
+-+
+-+static int rz_rproc_attach(struct rproc *rproc)
+-+{
+-+	/* Do nothing */
+-+	return 0;
+-+}
+-+
+-+static void rz_rproc_kick(struct rproc *rproc, int vqid)
+-+{
+-+	/* Not supported Linux RPMsg yet */
+-+}
+-+
+-+static int cm33_to_ca55(u64 *da)
+-+{
+-+	if ((CM33_SRAM_END >= *da) && (*da >= CM33_SRAM_START)) {
+-+		*da = CA55_SRAM_START + (*da & CM33_TO_CA55_MASK);
+-+		return 0;
+-+	}
+-+	else if ((CM33_DDR_END >= *da) && (*da >= CM33_DDR_START)) {
+-+		*da = CA55_DDR_START + (*da & CM33_TO_CA55_MASK);
+-+		return 0;
+-+	}
+-+	else
+-+		return -EINVAL;
+-+}
+-+
+-+static void *rz_rproc_da_to_va(struct rproc *rproc, u64 da, size_t len, bool *is_iomem)
+-+{
+-+	struct device *dev = rproc->dev.parent;
+-+	struct rproc_mem_entry *carveout;
+-+	void *ptr = NULL;
+-+	int ret;
+-+
+-+	/* rproc_da_to_va() is called in many places. @da value can either be
+-+	 * the address of segments in .elf file which is in CM33 address space
+-+	 * or the address of .resource_table's trace buffer which is in CA55
+-+	 * address space. Trace buffer is expected to be in the dedicated memory
+-+	 * region for CM33 in DDR. Here, we first check if @da is address of
+-+	 * trace buffer or segments then have corresponding action.
+-+	 */
+-+	if ((CA55_DDR_CM33_END >= da) && (da >= CA55_DDR_CM33_START)) {
+-+		/* @da is address of trace buffer. Do nothing. */
+-+	} else {
+-+		/* @da is address of segment. Translate @da to CA55 space. */
+-+		ret = cm33_to_ca55(&da);
+-+		if (ret) {
+-+			dev_err(dev, "invalid address\n");
+-+			return ptr;
+-+		}
+-+	}
+-+
+-+	list_for_each_entry(carveout, &rproc->carveouts, node) {
+-+		int offset = da - carveout->da;
+-+
+-+		/* Verify that carveout is allocated */
+-+		if (!carveout->va)
+-+			continue;
+-+
+-+		/* try next carveout if da is too small */
+-+		if (offset < 0)
+-+			continue;
+-+
+-+		/* try next carveout if da is too large */
+-+		if (offset + len > carveout->len)
+-+			continue;
+-+
+-+		ptr = carveout->va + offset;
+-+
+-+		break;
+-+	}
+-+
+-+	return ptr;
+-+}
+-+
+-+static int rz_rproc_parse_fw(struct rproc *rproc, const struct firmware *fw)
+-+{
+-+	int ret;
+-+
+-+	ret = rproc_elf_load_rsc_table(rproc, fw);
+-+	if (ret)
+-+		dev_warn(&rproc->dev, "no resource table found for this firmware\n");
+-+
+-+	return 0;
+-+}
+-+
+-+static const struct rproc_ops rz_rproc_ops = {
+-+	.prepare		= rz_rproc_prepare,
+-+	.start			= rz_rproc_start,
+-+	.stop			= rz_rproc_stop,
+-+	.attach			= rz_rproc_attach,
+-+	.kick			= rz_rproc_kick,
+-+	.da_to_va		= rz_rproc_da_to_va,
+-+	.parse_fw		= rz_rproc_parse_fw,
+-+	.find_loaded_rsc_table	= rproc_elf_find_loaded_rsc_table,
+-+	.load			= rproc_elf_load_segments,
+-+	.sanity_check		= rproc_elf_sanity_check,
+-+	.get_boot_addr		= rproc_elf_get_boot_addr,
+-+};
+-+
+-+static int rz_rproc_probe(struct platform_device *pdev)
+-+{
+-+	struct device *dev = &pdev->dev;
+-+	struct device_node *np = dev->of_node;
+-+	struct rz_rproc_pdata *pdata;
+-+	struct rproc *rproc;
+-+	struct resource *res;
+-+	uint32_t val;
+-+	int ret;
+-+	int i;
+-+
+-+	pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
+-+	if (!pdata)
+-+		return -ENOMEM;
+-+
+-+	rproc = devm_rproc_alloc(dev, np->name, &rz_rproc_ops, NULL,
+-+				 sizeof(*pdata));
+-+	if (!rproc)
+-+		return -ENOMEM;
+-+
+-+	for (i = 0; i < pdev->num_resources; i++) {
+-+		res = platform_get_resource(pdev, IORESOURCE_MEM, i);
+-+		if (!devm_request_mem_region(dev, res->start, resource_size(res),
+-+					     dev_name(dev))) {
+-+			dev_err(dev, "unable to request memory region\n");
+-+			return -EBUSY;
+-+		}
+-+	}
+-+
+-+	/* Get remgap of cpg and sysc */
+-+	pdata->cpg_regmap = syscon_regmap_lookup_by_phandle(np, "renesas,rz-cpg");
+-+	if (IS_ERR(pdata->cpg_regmap)) {
+-+		ret = PTR_ERR(pdata->cpg_regmap);
+-+		dev_err(dev, "failed to lookup cpg regmap\n");
+-+		return ret;
+-+	}
+-+
+-+	pdata->sysc_regmap = syscon_regmap_lookup_by_phandle(np, "renesas,rz-sysc");
+-+	if (IS_ERR(pdata->sysc_regmap)) {
+-+		ret = PTR_ERR(pdata->sysc_regmap);
+-+		dev_err(dev, "failed to lookup sysc regmap\n");
+-+		return ret;
+-+	}
+-+
+-+	/* Obtain reference to reset controllers */
+-+	pdata->nporeset = devm_reset_control_get_exclusive(dev, "nporeset");
+-+	if (IS_ERR(pdata->nporeset)) {
+-+		ret = PTR_ERR(pdata->nporeset);
+-+		dev_err(dev, "failed to acquire nporeset\n");
+-+		return ret;
+-+	}
+-+
+-+	pdata->nsysreset = devm_reset_control_get_exclusive(dev, "nsysreset");
+-+	if (IS_ERR(pdata->nsysreset)) {
+-+		ret = PTR_ERR(pdata->nsysreset);
+-+		dev_err(dev, "failed to acquire nsysreset\n");
+-+		return ret;
+-+	}
+-+
+-+	pdata->miscresetn = devm_reset_control_get_exclusive(dev, "miscresetn");
+-+	if (IS_ERR(pdata->miscresetn)) {
+-+		ret = PTR_ERR(pdata->miscresetn);
+-+		dev_err(dev, "failed to acquire miscresetn\n");
+-+		return ret;
+-+	}
+-+
+-+	/* Get secure and non-secure vector address */
+-+	for (i = 0; i < 2; i++) {
+-+		if (of_property_read_u32_index(np, "renesas,rz-bootaddrs", i,
+-+					       &pdata->bootaddr[i])) {
+-+			dev_err(dev, "invalid boot address\n");
+-+			return -EINVAL;
+-+		}
+-+	}
+-+
+-+	rproc->priv = pdata;
+-+	rproc->auto_boot = of_get_property(np, "renesas,rz-autoboot", NULL) ?
+-+			   true : false;
+-+
+-+	pm_runtime_enable(dev);
+-+
+-+	/* Check remote processor state */
+-+	regmap_read(pdata->cpg_regmap, CPG_RSTMON_CM33, &val);
+-+	if (!val) {
+-+		/* Remote processor is already powered on */
+-+		rproc->state = RPROC_DETACHED;
+-+
+-+		pm_runtime_get_sync(dev);
+-+
+-+		struct resource_table *rsc_table = NULL;
+-+		uint32_t rsc_pa ;
+-+		void __iomem *rsc_va;
+-+
+-+		/* Get loaded rsc table */
+-+		if (of_property_read_u32_index(np, "renesas,rz-rsctbl", 0, &rsc_pa)) {
+-+			dev_warn(dev, "detached processor's firmware has no resource table\n");
+-+			goto rproc_prepare;
+-+		}
+-+
+-+		rsc_va = devm_ioremap_wc(dev, rsc_pa, RSC_TBL_SIZE);
+-+		if (!rsc_va) {
+-+			dev_err(dev, "unable to map memory region: %pa+%zx\n",
+-+				&rsc_pa, (size_t)RSC_TBL_SIZE);
+-+			goto rproc_prepare;
+-+		}
+-+
+-+		rsc_table = (struct resource_table *)rsc_va;
+-+		if (rsc_table->ver !=1) {
+-+			devm_iounmap(dev, rsc_va);
+-+			dev_warn(dev, "detached processor's firmware has no resource table\n");
+-+		} else {
+-+			rproc->table_ptr = rsc_table;
+-+			/* Assuming the resource table fits in 1kB is fair */
+-+			rproc->table_sz = RSC_TBL_SIZE;
+-+		}
+-+
+-+rproc_prepare:
+-+		/* Parse memory regions */
+-+		rz_rproc_prepare(rproc);
+-+	}
+-+
+-+	platform_set_drvdata(pdev, rproc);
+-+
+-+	/* Register remote processor */
+-+	ret = rproc_add(rproc);
+-+	if (ret) {
+-+		dev_err(dev, "failed to register rproc\n");
+-+		goto error;
+-+	}
+-+
+-+	dev_info(dev, "probed\n");
+-+
+-+	return 0;
+-+
+-+error:
+-+	rproc_free(rproc);
+-+
+-+	pm_runtime_disable(dev);
+-+
+-+	return ret;
+-+}
+-+
+-+static int rz_rproc_remove(struct platform_device *pdev)
+-+{
+-+	struct rproc *rproc = platform_get_drvdata(pdev);
+-+
+-+	rproc_del(rproc);
+-+
+-+	rproc_free(rproc);
+-+
+-+	pm_runtime_disable(&pdev->dev);
+-+
+-+	return 0;
+-+}
+-+
+-+static const struct of_device_id rz_rproc_of_match[] = {
+-+	{ .compatible = "renesas,rz-cm33", },
+-+	{ /* end of list */ },
+-+};
+-+MODULE_DEVICE_TABLE(of, rz_rproc_of_match);
+-+
+-+static struct platform_driver rz_rproc_driver = {
+-+	.probe	= rz_rproc_probe,
+-+	.remove = rz_rproc_remove,
+-+	.driver = {
+-+		.name = "rz-rproc",
+-+		.of_match_table = rz_rproc_of_match,
+-+	},
+-+};
+-+module_platform_driver(rz_rproc_driver);
+-+
+-+MODULE_AUTHOR("Tu Duong <tu.duong.zy@renesas.com>");
+-+MODULE_DESCRIPTION("Renesas RZ remote processor control driver");
+-+MODULE_LICENSE("GPL v2");
+--- 
+-2.34.1
+-
+diff --git a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/remoteproc.cfg b/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/remoteproc.cfg
+deleted file mode 100644
+index db2ed6a..0000000
+--- a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/remoteproc.cfg
++++ /dev/null
+@@ -1,3 +0,0 @@
+-# REMOTEPROC 
+-CONFIG_REMOTEPROC=y
+-CONFIG_RZ_REMOTEPROC=y
+diff --git a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/uio.cfg b/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/uio.cfg
+deleted file mode 100644
+index ab076fe..0000000
+--- a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas/uio.cfg
++++ /dev/null
+@@ -1,4 +0,0 @@
+-# uio
+-CONFIG_UIO=y
+-CONFIG_UIO_PDRV_GENIRQ=y
+-CONFIG_UIO_DMEM_GENIRQ=y
+diff --git a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas_6.1.bbappend b/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas_6.1.bbappend
+deleted file mode 100644
+index 9485220..0000000
+--- a/meta-rzv2l-vlp4/recipes-kernel/linux/linux-renesas_6.1.bbappend
++++ /dev/null
+@@ -1,20 +0,0 @@
+-FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
+-
+-ENABLE_REMOTEPROC = "${@'1' if 'CM33_REMOTEPROC' in d.getVar('MACHINE_FEATURES').split() else '0'}"
+-
+-# List of kernel patches
+-SRC_URI += " \
+-    file://0001-Add-rzg2l-smarc-multi-os-dtsi-for-supporting-OpenAMP.patch \
+-    file://0002-arm64-dts-renesas-rz-smarc-Disable-OSTM2.patch \
+-    file://0003-clk-renesas-rzv2l-Set-SCIF2-OSTM2-as-critical.patch \
+-"
+-
+-SRC_URI += "${@'file://0004-clk-renesas-r9a07g054-Add-I2-clock.patch \
+-    file://0005-clk-renesas-r9a07g054-Add-CM33-clock-and-reset-signal.patch \
+-    file://0006-arm64-dts-renesas-rzv2l-smarc-Add-rproc-node.patch \
+-    file://0007-Add-bindings-for-RZ-remoteproc-driver.patch \
+-    file://0008-Add-RZ-remoteproc-driver.patch' if d.getVar('ENABLE_REMOTEPROC') == '1' else ''}"
+-
+-# Kernel confguration update
+-SRC_URI += "file://uio.cfg"
+-SRC_URI += "${@'file://remoteproc.cfg' if d.getVar('ENABLE_REMOTEPROC') == '1' else ''}"
+diff --git a/meta-rzv2l-vlp4/recipes-openamp/libmetal/files/0001-linux-device-Allow-multi-driver-probe.patch b/meta-rzv2l-vlp4/recipes-openamp/libmetal/files/0001-linux-device-Allow-multi-driver-probe.patch
+index 940ae24..76f8a80 100644
+--- a/meta-rzv2l-vlp4/recipes-openamp/libmetal/files/0001-linux-device-Allow-multi-driver-probe.patch
++++ b/meta-rzv2l-vlp4/recipes-openamp/libmetal/files/0001-linux-device-Allow-multi-driver-probe.patch
+@@ -65,3 +65,4 @@ index 85af0d7..450ea64 100644
+ -- 
+ 2.7.4
+ 
++Upstream-Status: Pending
+diff --git a/meta-rzv2l-vlp4/recipes-openamp/libmetal/files/0001-machine-chipname-fix.patch b/meta-rzv2l-vlp4/recipes-openamp/libmetal/files/0001-machine-chipname-fix.patch
+index dd5cc42..1cbe994 100644
+--- a/meta-rzv2l-vlp4/recipes-openamp/libmetal/files/0001-machine-chipname-fix.patch
++++ b/meta-rzv2l-vlp4/recipes-openamp/libmetal/files/0001-machine-chipname-fix.patch
+@@ -8,3 +8,5 @@
+  
+  if (NOT DEFINED PROJECT_SYSTEM)
+    string (TOLOWER ${CMAKE_SYSTEM_NAME}      PROJECT_SYSTEM)
++
++Upstream-Status: Pending
+diff --git a/meta-rzv2l-vlp4/recipes-openamp/libmetal/files/0002-linux-device-Initialize-the-irq-info.patch b/meta-rzv2l-vlp4/recipes-openamp/libmetal/files/0002-linux-device-Initialize-the-irq-info.patch
+index 42500b6..c8591dd 100644
+--- a/meta-rzv2l-vlp4/recipes-openamp/libmetal/files/0002-linux-device-Initialize-the-irq-info.patch
++++ b/meta-rzv2l-vlp4/recipes-openamp/libmetal/files/0002-linux-device-Initialize-the-irq-info.patch
+@@ -26,3 +26,4 @@ index 450ea64..6fc3cb6 100644
+ -- 
+ 2.7.4
+ 
++Upstream-Status: Pending
+diff --git a/meta-rzv2l-vlp4/recipes-openamp/libmetal/files/0003-processor-arm-yield.patch b/meta-rzv2l-vlp4/recipes-openamp/libmetal/files/0003-processor-arm-yield.patch
+index e4bdbf7..05d3361 100644
+--- a/meta-rzv2l-vlp4/recipes-openamp/libmetal/files/0003-processor-arm-yield.patch
++++ b/meta-rzv2l-vlp4/recipes-openamp/libmetal/files/0003-processor-arm-yield.patch
+@@ -8,3 +8,5 @@
+ +#define metal_cpu_yield() asm volatile("yield")
+  
+  #endif /* __METAL_ARM_CPU__H__ */
++
++Upstream-Status: Pending
+diff --git a/meta-rzv2l-vlp4/recipes-openamp/libmetal/files/0004-bit-functions-fix.patch b/meta-rzv2l-vlp4/recipes-openamp/libmetal/files/0004-bit-functions-fix.patch
+index 544c61f..f82bcbc 100644
+--- a/meta-rzv2l-vlp4/recipes-openamp/libmetal/files/0004-bit-functions-fix.patch
++++ b/meta-rzv2l-vlp4/recipes-openamp/libmetal/files/0004-bit-functions-fix.patch
+@@ -31,3 +31,6 @@ index eb540d2..500227b 100755
+  
+  static inline unsigned long metal_log2(unsigned long in)
+  {
++
++Upstream-Status: Pending
++
+diff --git a/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0001-fix-allocate-id.patch b/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0001-fix-allocate-id.patch
+index 3507b77..fb30ce1 100644
+--- a/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0001-fix-allocate-id.patch
++++ b/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0001-fix-allocate-id.patch
+@@ -48,3 +48,5 @@ index 37c6478..1bdfcf2 100755
+  			vdev_rsc->notifyid = notifyid;
+  		}
+  	}
++
++Upstream-Status: Pending
+diff --git a/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0001_fix_error_return_of_virtio_create_virtqueues.patch b/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0001_fix_error_return_of_virtio_create_virtqueues.patch
+index 0bc75b0..d50d355 100644
+--- a/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0001_fix_error_return_of_virtio_create_virtqueues.patch
++++ b/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0001_fix_error_return_of_virtio_create_virtqueues.patch
+@@ -24,3 +24,4 @@ index 5cf8722..d1c9376 100644
+ -- 
+ 2.7.4
+ 
++Upstream-Status: Pending
+diff --git a/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0002_fix_error_return_of_remoteproc_remove.patch b/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0002_fix_error_return_of_remoteproc_remove.patch
+index 17ccc54..86543c4 100644
+--- a/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0002_fix_error_return_of_remoteproc_remove.patch
++++ b/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0002_fix_error_return_of_remoteproc_remove.patch
+@@ -24,3 +24,4 @@ index 880901a..088b705 100644
+ -- 
+ 2.7.4
+ 
++Upstream-Status: Pending
+diff --git a/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0003_fix_compilation_error_of_virtqueue.patch b/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0003_fix_compilation_error_of_virtqueue.patch
+index f6c59f8..7522e5a 100644
+--- a/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0003_fix_compilation_error_of_virtqueue.patch
++++ b/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0003_fix_compilation_error_of_virtqueue.patch
+@@ -24,3 +24,4 @@ index ad24749..5114fb2 100644
+ -- 
+ 2.7.4
+ 
++Upstream-Status: Pending
+diff --git a/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0004_rpmsg_send_do_not_check_buffer_size_when_get_buffer_failed.patch b/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0004_rpmsg_send_do_not_check_buffer_size_when_get_buffer_failed.patch
+index 00ed953..7ab782e 100644
+--- a/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0004_rpmsg_send_do_not_check_buffer_size_when_get_buffer_failed.patch
++++ b/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0004_rpmsg_send_do_not_check_buffer_size_when_get_buffer_failed.patch
+@@ -25,3 +25,4 @@ index c7ef1b5..1958165 100644
+ -- 
+ 2.7.4
+ 
++Upstream-Status: Pending
+diff --git a/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0005_rpmsg_virtio_fix_get_buffer_size_return.patch b/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0005_rpmsg_virtio_fix_get_buffer_size_return.patch
+index 8b0f40e..5de104a 100644
+--- a/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0005_rpmsg_virtio_fix_get_buffer_size_return.patch
++++ b/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0005_rpmsg_virtio_fix_get_buffer_size_return.patch
+@@ -25,3 +25,4 @@ index 1958165..ca8db6a 100644
+ -- 
+ 2.7.4
+ 
++Upstream-Status: Pending
+diff --git a/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0006_rpmsg_virtio_limit_the_buffer_allocate_from_shared_memory_pool.patch b/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0006_rpmsg_virtio_limit_the_buffer_allocate_from_shared_memory_pool.patch
+index 719d121..b933e94 100644
+--- a/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0006_rpmsg_virtio_limit_the_buffer_allocate_from_shared_memory_pool.patch
++++ b/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0006_rpmsg_virtio_limit_the_buffer_allocate_from_shared_memory_pool.patch
+@@ -29,3 +29,4 @@ index ca8db6a..2e9b161 100644
+ -- 
+ 2.7.4
+ 
++Upstream-Status: Pending
+diff --git a/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0007-Remove-nested-structs-in-header.patch b/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0007-Remove-nested-structs-in-header.patch
+index 89233e0..cd2328b 100644
+--- a/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0007-Remove-nested-structs-in-header.patch
++++ b/meta-rzv2l-vlp4/recipes-openamp/open-amp/files/0007-Remove-nested-structs-in-header.patch
+@@ -38,3 +38,4 @@ index 5114fb2..ac37290 100644
+ -- 
+ 2.7.4
+ 
++Upstream-Status: Pending
+-- 
+2.34.1
+

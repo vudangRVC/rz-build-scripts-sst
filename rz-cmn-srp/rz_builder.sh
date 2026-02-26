@@ -23,6 +23,10 @@ REN_GPU_MALI_LIB_META_FEATURE="meta-rz-features_graphics_v1.1.2"
 REN_VEDIO_CODEC_LIB_PKG="RTK0EF0045Z15001ZJ-v1.1.0_EN"
 REN_VEDIO_CODEC_LIB_META_FEATURE="meta-rz-features_codec_v1.1.0"
 
+# RZ MPU Multi OS RZV Library Evaluation Version V3.3.0
+REN_MULTI_OS_LIB_PKG="r01an7254ej0330_rzv-multi-os-pkg"
+REN_MULTI_OS_LIB_META_FEATURE="meta-rz-features_multi-os_v3.3.0"
+
 SUFFIX_ZIP=".zip"
 SUFFIX_TAR=".tar.gz"
 
@@ -295,6 +299,11 @@ check_pkg_require(){
 		log_error "Cannot found ${REN_VEDIO_CODEC_LIB_PKG}${SUFFIX_ZIP} !"
 		echo "Please download 'RZ MPU Codec Library' from Renesas RZ/G2L Website (https://www.renesas.com/us/en/document/swo/rz-mpu-video-codec-library-evaluation-version-rzg2l-rtk0ef0045z15001zj-v110xxzip?r=1535641)"
 		check=3
+	fi
+	if [ ! -e ${REN_MULTI_OS_LIB_PKG}${SUFFIX_ZIP} ];then
+		log_error "Cannot found ${REN_MULTI_OS_LIB_PKG}${SUFFIX_ZIP} !"
+		echo "Please download 'RZ MPU Multi OS Library' from Renesas RZ/V Website (https://www.renesas.com/en/document/sws/rzv-multi-os-package-v330)"
+		check=4
 	fi
 
 	[ ${check} -ne 0 ] && echo "Package check failed. Fix errors and copy dependencies here." && exit 1
@@ -663,6 +672,37 @@ unpack_codec() {
 	rm -fr ${zip_dir}
 }
 
+apply_muti_os() {
+	echo "WORKSPACE: $WORKSPACE"
+	cd "$WORKSPACE"
+	echo "pwd: $(pwd)"
+
+	local zip_dir=${WORKSPACE}/${REN_MULTI_OS_LIB_PKG}
+	echo "zip_dir: $zip_dir"
+	rm -fr ${zip_dir}
+
+	local pkg_file=${WORKSPACE}/${REN_MULTI_OS_LIB_PKG}${SUFFIX_ZIP}
+	echo "pkg_file: $pkg_file"
+	unzip "${pkg_file}"
+
+	local muti_os=$zip_dir/${REN_MULTI_OS_LIB_META_FEATURE}${SUFFIX_TAR}
+	echo "muti_os: $muti_os"
+
+	echo "Extracting ${muti_os} to ${RZ_TARGET_DIR}"
+	tar -xzvf "${muti_os}" -C ${RZ_TARGET_DIR}
+	rm -fr ${zip_dir}
+
+	local patch_dir=${WORKSPACE}/patches
+	echo "patch_dir: $patch_dir"
+
+	cd ${RZ_TARGET_DIR}/meta-rz-features/meta-rz-multi-os
+	echo "pwd: $(pwd)"
+
+	patch -p1 < ${patch_dir}/meta-rz-features/meta-rz-multi-os/0001-rzv-multi-os-330.patch
+
+	cd ${RZ_TARGET_DIR}/build
+}
+
 # Set or replace a variable in local.conf
 conf_set_variable() {
     local var="$1"
@@ -864,7 +904,9 @@ setup_conf(){
 
     AUTO_CONF_FILE="${RZ_TARGET_DIR}/build/conf/local.conf"
     export AUTO_CONF_FILE
-    
+
+	apply_muti_os
+
 	apply_add_remove_layers
     apply_gpu_feature
     apply_libraries
@@ -989,7 +1031,6 @@ build_sdk() {
 build() {
 	log_info_header "Commencing 'build'..."
 	setup $1
-
 	setup_conf
 
 	case "${IMAGE}" in
