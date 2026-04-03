@@ -39,7 +39,8 @@
 	"features": {
         "layers": {
             "add": [
-                "meta-rz-features/meta-rz-codecs"
+                "meta-rz-features/meta-rz-codecs",
+                "meta-rz-multi-os"
             ],
             "remove": [
             ]
