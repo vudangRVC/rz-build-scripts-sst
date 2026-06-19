@@ -869,6 +869,7 @@ setup_conf(){
 	apply_add_remove_layers
     apply_gpu_feature
     apply_libraries
+    conf_set_variable 'KERNEL_VERSION_SANITY_SKIP' '1'
 }
 
 # Main setup
